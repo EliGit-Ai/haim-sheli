@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "build-program": "node scripts/build-program.mjs",
+    "mint-access": "node scripts/mint-access.mjs"
   },
   "dependencies": {
     "@mux/mux-node": "^8.8.0",
