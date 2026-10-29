@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#EEF1EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141B16" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="חיים שלי">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/app/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/app/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/app/favicon-64.png">
+<title>חיים שלי</title>
+<style>
+/* Everything here is local: fonts are self-hosted, no analytics, no third-party requests.
+   The man's answers live only in this device's storage (localStorage). */
+@font-face{font-family:"Frank Ruhl Libre";font-weight:700;font-display:swap;src:url(/app/fonts/frank-ruhl-libre-hebrew-700-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Frank Ruhl Libre";font-weight:900;font-display:swap;src:url(/app/fonts/frank-ruhl-libre-hebrew-900-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Frank Ruhl Libre";font-weight:700 900;font-display:swap;src:url(/app/fonts/frank-ruhl-libre-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Assistant";font-weight:400;font-display:swap;src:url(/app/fonts/assistant-hebrew-400-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Assistant";font-weight:600 700;font-display:swap;src:url(/app/fonts/assistant-hebrew-700-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Assistant";font-weight:400;font-display:swap;src:url(/app/fonts/assistant-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Assistant";font-weight:600 700;font-display:swap;src:url(/app/fonts/assistant-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{
+  --bg:#EEF1EA; --surface:#F7F8F4; --band:#E2E8DC; --ink:#1D2820; --muted:#56635A; --line:#C9D2C3;
+  --moss:#4E6B3C; --moss-ink:#F4F7F0; --sand:#B89A6A;
+  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0;
+  --display:"Frank Ruhl Libre", "David Libre", Georgia, serif;
+  --body:"Assistant", "Heebo", "Segoe UI", Arial, sans-serif;
+  --safe-b:env(safe-area-inset-bottom, 0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
+  --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
+  --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; color-scheme:dark}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.65;direction:rtl;min-height:100dvh;
+  padding-top:env(safe-area-inset-top, 0px)}
+button,input,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.2;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+[hidden]{display:none!important}
+.muted{color:var(--muted)}
+.small{font-size:15px}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.03em;color:var(--moss)}
+:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+main{max-width:620px;margin:0 auto;padding:20px 16px calc(96px + var(--safe-b))}
+main.no-nav{padding-bottom:calc(32px + var(--safe-b))}
+.stack{display:grid;gap:16px}
+.stack-lg{display:grid;gap:28px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--moss);color:var(--moss-ink);font-weight:700;font-size:18px;
+  border:0;border-radius:999px;padding:13px 24px;cursor:pointer;text-decoration:none;min-height:48px}
+.btn.wide{width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.quiet{background:transparent;color:var(--moss);padding:8px 4px;min-height:auto;font-size:16px}
+.btn[disabled]{opacity:.5;cursor:default}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.card.band{background:var(--band);border-color:transparent}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;min-height:40px}
+.brand{font-family:var(--display);font-weight:900;font-size:22px}
+.back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:8px 0;cursor:pointer;color:var(--muted);font-size:16px}
+.back svg{width:18px;height:18px}
+
+/* bottom nav */
+nav.tabs{position:fixed;inset:auto 0 0 0;z-index:5;background:color-mix(in srgb, var(--bg) 92%, transparent);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);padding-bottom:var(--safe-b)}
+nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.tabs a{display:grid;justify-items:center;gap:2px;padding:9px 4px 8px;text-decoration:none;font-size:13px;font-weight:700;color:var(--muted)}
+nav.tabs a svg{width:22px;height:22px}
+nav.tabs a[aria-current="page"]{color:var(--moss)}
+
+/* home */
+.hello h1{font-size:clamp(30px,8vw,40px);font-weight:900}
+.today-card{display:grid;gap:12px;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px}
+.today-card h2{font-size:28px}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--muted)}
+.status i{width:10px;height:10px;border-radius:50%;background:var(--line);display:inline-block}
+.status.done i{background:var(--moss)}
+.status.started i{background:var(--sand)}
+.track{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:7px}
+.dot{aspect-ratio:1;border-radius:50%;border:0;padding:0;background:var(--faint);cursor:default}
+.dot.open{background:transparent;border:2px solid var(--m1);cursor:pointer}
+.dot.m2.open{border-color:var(--m2)} .dot.m3.open{border-color:var(--m3)} .dot.rest.open{border-color:var(--rest)}
+.dot.done{background:var(--m1);border:0;cursor:pointer}
+.dot.m2.done{background:var(--m2)} .dot.m3.done{background:var(--m3)} .dot.rest.done{background:var(--rest)}
+.dot.today{outline:2px solid var(--sand);outline-offset:2px}
+.dot.paid{background:transparent;border:2px dashed var(--faint)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--m1)}
+.legend i.o{background:transparent;border:2px solid var(--m1)}
+.legend i.f{background:var(--faint)}
+
+.notice{display:grid;gap:10px;border-radius:16px;padding:16px 18px;background:var(--band)}
+.notice h3{font-size:19px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* day */
+.day-head{display:grid;gap:8px}
+.day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:900}
+.narration{display:grid;gap:14px;font-family:var(--display);font-weight:700;font-size:20px;line-height:1.6}
+.part{display:grid;gap:18px}
+.part-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:2px solid var(--m1);padding-top:14px}
+.part-title h2{font-size:24px}
+.part-title .when{font-size:14px;font-weight:700;color:var(--muted)}
+.block{display:grid;gap:10px}
+.prompt{font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
+.scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;direction:rtl}
+.scale button{aspect-ratio:1;min-height:30px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:16px;padding:0;font-variant-numeric:tabular-nums}
+.scale button[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
+.scale-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.compare{font-size:15px;color:var(--muted);background:var(--band);border-radius:10px;padding:8px 12px}
+.compare b{color:var(--ink)}
+textarea{width:100%;min-height:76px;resize:vertical;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;font-size:17px;line-height:1.5}
+.note-toggle{justify-self:start}
+.check{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:13px 16px;background:var(--surface);cursor:pointer;font-weight:700;width:100%;text-align:start}
+.check .box{width:24px;height:24px;border-radius:7px;border:2px solid var(--m2);display:grid;place-items:center;flex:none}
+.check .box svg{width:16px;height:16px;opacity:0}
+.check[aria-pressed="true"]{border-color:var(--moss);background:color-mix(in srgb, var(--moss) 10%, var(--surface))}
+.check[aria-pressed="true"] .box{background:var(--moss);border-color:var(--moss)}
+.check[aria-pressed="true"] .box svg{opacity:1;color:var(--moss-ink)}
+.midday{display:grid;gap:4px;border-inline-start:3px solid var(--sand);padding:4px 14px}
+.midday .t{font-size:14px;font-weight:700;color:var(--muted)}
+.saved{font-size:14px;color:var(--muted);text-align:center}
+.daynav{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+audio{width:100%}
+
+/* journal */
+.entry{display:grid;gap:8px;padding-block:16px;border-top:1px solid var(--line)}
+.entry:first-child{border-top:0}
+.entry h3{font-size:20px}
+.entry .meta{font-size:14px;color:var(--muted)}
+.entry ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:16px}
+.entry li b{font-weight:700}
+.empty{padding:28px 0;text-align:center;color:var(--muted)}
+
+/* forms */
+fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}
+legend{padding:0;font-weight:700}
+.seg{display:flex;gap:10px}
+.seg button{flex:1;border:1px solid var(--line);border-radius:999px;padding:10px 12px;background:var(--surface);font-weight:700;cursor:pointer;min-height:46px}
+.seg button[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
+input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;font-size:16px;direction:ltr;text-align:right}
+.settings section{display:grid;gap:12px;padding-block:22px;border-top:1px solid var(--line)}
+.settings section:first-of-type{border-top:0;padding-top:4px}
+.settings h2{font-size:22px}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:4px 12px;background:var(--band);font-size:15px;font-weight:700}
+
+/* install sheet */
+.sheet-wrap{position:fixed;inset:0;z-index:20;background:rgba(10,15,12,.45);display:grid;align-items:end}
+.sheet{background:var(--bg);border-radius:22px 22px 0 0;padding:22px 18px calc(22px + var(--safe-b));max-width:620px;width:100%;margin:0 auto;display:grid;gap:16px;max-height:88dvh;overflow:auto}
+.steps{margin:0;padding:0;list-style:none;display:grid;gap:12px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;counter-increment:s}
+.steps li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:var(--moss);color:var(--moss-ink);display:grid;place-items:center;font-weight:700}
+.ico{display:inline-block;vertical-align:-4px;width:20px;height:20px}
+
+.toast{position:fixed;inset-inline:16px;bottom:calc(84px + var(--safe-b));z-index:30;max-width:520px;margin:0 auto;background:var(--ink);color:var(--bg);
+  border-radius:14px;padding:12px 16px;font-size:16px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.loading{display:grid;place-items:center;min-height:60dvh;color:var(--muted)}
+</style>
+</head>
+<body>
+<main id="view" aria-live="polite"><div class="loading">רגע...</div></main>
+<nav class="tabs" id="tabs" hidden aria-label="ניווט">
+  <div class="in">
+    <a href="#/" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>היום</a>
+    <a href="#/journal" data-tab="journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14.5H7a1.5 1.5 0 0 1-1.5-1.5V4"/><path d="M5.5 18a1.5 1.5 0 0 1 1.5-1.5h11.5"/><path d="M9.5 8h5.5M9.5 11.5h4"/></svg>היומן שלי</a>
+    <a href="#/settings" data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>הגדרות</a>
+  </div>
+</nav>
+<div id="sheet"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(() => {
+"use strict";
+
+// ---------------------------------------------------------------- storage
+// Everything the man answers stays in this object, in this browser only.
+const KEY = "haim-sheli:v1";
+const PROGRAM_KEY = "haim-sheli:program";
+const blank = () => ({ profile: null, start: null, code: null, answers: {} });
+
+function load() {
+  try { return Object.assign(blank(), JSON.parse(localStorage.getItem(KEY)) || {}); }
+  catch { return blank(); }
+}
+let state = load();
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); return true; }
+  catch { toast("לא הצלחנו לשמור במכשיר. כדאי לבדוק שיש מקום פנוי."); return false; }
+}
+let program = (() => { try { return JSON.parse(localStorage.getItem(PROGRAM_KEY)); } catch { return null; } })();
+
+// ---------------------------------------------------------------- helpers
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ICON = {
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  share: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M8 7.5l4-4 4 4"/><path d="M7 11H5.5v9.5h13V11H17"/></svg>',
+  plus: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+  dots: '<svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+};
+
+let toastTimer;
+function toast(text) {
+  const t = $("#toast");
+  t.textContent = text; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (t.hidden = true), 3200);
+}
+
+// dates are handled as local calendar days, "YYYY-MM-DD"
+const pad = n => String(n).padStart(2, "0");
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const parseISO = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const daysBetween = (a, b) => Math.round((Date.UTC(...ymd(b)) - Date.UTC(...ymd(a))) / 86400000);
+const ymd = s => { const [y, m, d] = s.split("-").map(Number); return [y, m - 1, d]; };
+const dateOfDay = n => { const d = parseISO(state.start); d.setDate(d.getDate() + n - 1); return d; };
+const WEEKDAY = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+
+const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+// ---------------------------------------------------------------- program access
+// The only network request: "send me the content". Nothing about the man is sent.
+async function fetchProgram() {
+  const headers = state.code ? { authorization: `Bearer ${state.code}` } : {};
+  const res = await fetch("/api/program", { headers, cache: "no-store" });
+  if (!res.ok) throw new Error("program " + res.status);
+  const data = await res.json();
+  program = data;
+  try { localStorage.setItem(PROGRAM_KEY, JSON.stringify(data)); } catch { /* the app still works this session */ }
+  return data;
+}
+
+const allowedDays = () => (program?.access === "full" ? 90 : program?.freeDays || 3);
+
+// which day the calendar has reached; Shabbat observers get Saturday's day on Friday
+function reachedDay() {
+  if (!state.start) return 1;
+  let n = daysBetween(state.start, todayISO()) + 1;
+  if (state.profile?.shabbat === "yes" && new Date().getDay() === 5) n += 1;
+  return Math.max(1, Math.min(90, n));
+}
+const openThrough = () => Math.min(reachedDay(), allowedDays());
+
+function dayContent(n) {
+  if (!program) return null;
+  const alt = state.profile?.relationship === "no" && program.alternates?.noRelationship?.find(d => d.day === n)
+    || state.profile?.kids === "no" && program.alternates?.noKids?.find(d => d.day === n);
+  return alt || program.days.find(d => d.day === n) || null;
+}
+const dayMeta = n => program?.map?.find(d => d.day === n) || { day: n, title: "", month: n <= 30 ? 1 : n <= 60 ? 2 : 3 };
+
+// ---------------------------------------------------------------- answers
+const ans = n => state.answers[n] || (state.answers[n] = { step: {}, evening: {} });
+const peek = n => state.answers[n];
+function touch(n) { ans(n).at = Date.now(); save(); }
+
+function dayStatus(n) {
+  const a = peek(n);
+  if (!a) return "none";
+  const ev = Object.keys(a.evening || {}).length > 0 || (a.eveningNote || "").trim();
+  if (a.stepDone && (ev || dayMeta(n).rest || n === 1)) return "done";
+  if (a.stepDone || ev || Object.keys(a.step || {}).length || (a.stepNote || "").trim()) return "started";
+  return "none";
+}
+
+// find an answer by its question key ("control", "fulfilled"...) on another day
+function answerByKey(n, key) {
+  const content = program?.days.find(x => x.day === n);
+  const a = peek(n);
+  if (!content || !a) return undefined;
+  for (const part of ["step", "evening"]) {
+    const blocks = content[part]?.blocks || [];
+    for (let i = 0; i < blocks.length; i++) if (blocks[i].key === key && a[part]?.[i] !== undefined) return a[part][i];
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------- router
+const routes = { home: renderHome, day: renderDay, journal: renderJournal, settings: renderSettings, welcome: renderWelcome, install: renderInstallFirst };
+
+function route() {
+  const hash = location.hash.replace(/^#\/?/, "");
+  const [name, arg] = hash.split("/");
+  if (!state.profile) {
+    // on iPhone the home-screen app keeps its own storage, so set it up there and not in Safari
+    if (isIOS() && !isStandalone() && sessionStorage.getItem("hs-skip-install") !== "1") return show("install");
+    return show("welcome");
+  }
+  if (name === "day" && arg) return show("day", Number(arg));
+  if (name === "journal") return show("journal");
+  if (name === "settings") return show("settings");
+  return show("home");
+}
+
+function show(name, arg) {
+  const tabs = $("#tabs");
+  const withTabs = ["home", "journal", "settings"].includes(name);
+  tabs.hidden = !withTabs;
+  $("#view").classList.toggle("no-nav", !withTabs);
+  tabs.querySelectorAll("a").forEach(a => { if (a.dataset.tab === name) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  routes[name](arg);
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+
+// ---------------------------------------------------------------- screens
+function renderInstallFirst() {
+  const code = state.code;
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="topbar"><span class="brand">חיים שלי</span></div>
+      <div class="stack">
+        <p class="eyebrow">לפני שמתחילים</p>
+        <h1 style="font-size:34px;font-weight:900">מוסיפים את "חיים שלי" למסך הבית</h1>
+        <p class="muted">ככה האפליקציה נפתחת כמו כל אפליקציה אחרת, והתשובות שלך נשמרות בה בבטחה, רק בטלפון שלך.</p>
+      </div>
+      ${installSteps()}
+      ${code ? `<div class="notice">
+        <h3>יש לך קוד לתוכנית המלאה</h3>
+        <p class="small muted">באייפון, האפליקציה במסך הבית לא רואה את מה שנשמר בספארי. כדאי להעתיק את הקוד עכשיו ולהדביק אותו באפליקציה בהגדרות.</p>
+        <button class="btn ghost" id="copy-code" type="button">העתקת הקוד</button>
+      </div>` : ""}
+      <button class="btn quiet" id="skip" type="button">להמשיך בדפדפן בינתיים</button>
+    </div>`;
+  $("#skip").onclick = () => { sessionStorage.setItem("hs-skip-install", "1"); route(); };
+  $("#copy-code")?.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(code); toast("הקוד הועתק"); } catch { toast("לא הצלחנו להעתיק. אפשר להדביק את הקישור מהמייל בהגדרות."); }
+  });
+}
+
+function installSteps() {
+  if (isIOS()) return `
+    <ol class="steps">
+      <li><span>לוחצים על כפתור השיתוף ${ICON.share} בתחתית ספארי.</span></li>
+      <li><span>גוללים ובוחרים "הוספה למסך הבית" ${ICON.plus}.</span></li>
+      <li><span>לוחצים "הוסף", ופותחים את "חיים שלי" מהמסך הראשי.</span></li>
+    </ol>
+    <p class="small muted">לא רואים את האפשרות? כנראה שהקישור נפתח מתוך אינסטגרם, טלגרם או מייל. פותחים אותו קודם בספארי.</p>`;
+  return `
+    <ol class="steps">
+      <li><span>פותחים את התפריט ${ICON.dots} של הדפדפן.</span></li>
+      <li><span>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</span></li>
+      <li><span>פותחים את "חיים שלי" מהמסך הראשי.</span></li>
+    </ol>`;
+}
+
+function segField(name, legend, hint, value) {
+  return `<fieldset data-field="${name}">
+    <legend>${esc(legend)}${hint ? `<span class="small muted" style="display:block;font-weight:400">${esc(hint)}</span>` : ""}</legend>
+    <div class="seg">
+      <button type="button" data-v="yes" aria-pressed="${value === "yes"}">כן</button>
+      <button type="button" data-v="no" aria-pressed="${value === "no"}">לא</button>
+    </div>
+  </fieldset>`;
+}
+function bindSegs(root, target) {
+  root.querySelectorAll("fieldset[data-field]").forEach(fs => {
+    fs.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      target[fs.dataset.field] = b.dataset.v;
+      fs.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      root.dispatchEvent(new Event("segchange"));
+    }));
+  });
+}
+
+function renderWelcome() {
+  const draft = { shabbat: null, relationship: null, kids: null };
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="topbar"><span class="brand">חיים שלי</span></div>
+      <div class="stack">
+        <p class="eyebrow">ברוך הבא</p>
+        <h1 style="font-size:clamp(32px,9vw,42px);font-weight:900">אתה נותן הכול, אז למה זה לא מרגיש מספיק?</h1>
+        <p class="muted">תשעים יום. כל יום כמה דקות של תוכן, צעד אחד קטן ושאלה אחת לערב.</p>
+      </div>
+      <div class="notice">
+        <h3>מה שאתה עונה נשאר רק אצלך</h3>
+        <p class="small muted">התשובות נשמרות בטלפון הזה בלבד. הן לא נשלחות אלינו ולא לאף אחד אחר, ואף אחד לא רואה אותן. בהגדרות אפשר לשמור גיבוי לקובץ.</p>
+      </div>
+      <form class="card stack" id="wf">
+        <p style="font-weight:700">שלוש שאלות קצרות, כדי שהתוכנית תתאים לחיים שלך:</p>
+        ${segField("shabbat", "שומר שבת?", "התוכן של שבת ייפתח לך כבר ביום שישי", null)}
+        ${segField("relationship", "בזוגיות?", "", null)}
+        ${segField("kids", "יש לך ילדים?", "", null)}
+        <button class="btn wide" id="go" type="submit" disabled>להתחיל את יום 1</button>
+      </form>
+    </div>`;
+  const form = $("#wf");
+  bindSegs(form, draft);
+  form.addEventListener("segchange", () => { $("#go").disabled = !(draft.shabbat && draft.relationship && draft.kids); });
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    state.profile = draft;
+    state.start = state.start || todayISO();
+    save();
+    // ask the browser to keep this storage even when space is low
+    navigator.storage?.persist?.().catch(() => {});
+    location.hash = "#/day/1";
+    route();
+  });
+}
+
+function trackHTML() {
+  const open = openThrough(), reached = reachedDay(), allowed = allowedDays();
+  let html = "";
+  for (let n = 1; n <= 90; n++) {
+    const m = dayMeta(n);
+    const cls = ["dot", m.month === 2 ? "m2" : m.month === 3 ? "m3" : "", m.rest ? "rest" : ""];
+    const st = dayStatus(n);
+    if (n <= open) cls.push(st === "done" ? "done" : "open");
+    else if (n > allowed && n <= reached) cls.push("paid");
+    if (n === Math.min(reached, 90)) cls.push("today");
+    const can = n <= open;
+    html += `<button type="button" class="${cls.join(" ").replace(/\s+/g, " ")}" ${can ? `data-day="${n}"` : "disabled"} aria-label="יום ${n}${can ? "" : " (עוד לא נפתח)"}"></button>`;
+  }
+  return `<div class="track" id="track">${html}</div>`;
+}
+
+function renderHome() {
+  if (!program) return renderNoContent();
+  const reached = reachedDay(), allowed = allowedDays();
+  const n = Math.min(reached, allowed);
+  const locked = reached > allowed;
+  const m = dayMeta(n), c = dayContent(n);
+  const st = dayStatus(n);
+  const stText = { none: "עוד לא התחלת", started: "בתהליך", done: "הושלם" }[st];
+  const nextDate = dateOfDay(reached + 1);
+  const finished = reached >= 90 && dayStatus(90) === "done";
+
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${reached} מתוך 90</span></div>
+      ${installBanner()}
+      ${locked ? paywall() : `
+      <a class="today-card" href="#/day/${n}">
+        <span class="eyebrow">${n === reached ? "היום" : "היום שלך"} · יום ${n}${m.weekName ? ` · ${esc(m.weekName)}` : ""}</span>
+        <h2>${esc(c?.title || m.title)}</h2>
+        <span class="status ${st}"><i></i>${stText}</span>
+        <span class="btn" style="justify-self:start">${st === "none" ? "להתחיל" : st === "done" ? "לחזור ליום" : "להמשיך"}</span>
+      </a>`}
+      ${finished ? `<div class="notice"><h3>סיימת את 90 הימים.</h3><p class="small muted">כל מה שכתבת נשאר ביומן שלך. אפשר לחזור לכל יום, מתי שתרצה.</p></div>` : ""}
+      <div class="stack">
+        <div class="row" style="justify-content:space-between"><h3 style="font-size:20px">המסלול</h3><span class="small muted">${countDone() === 1 ? "יום אחד הושלם" : `${countDone()} ימים הושלמו`}</span></div>
+        ${trackHTML()}
+        <div class="legend"><span><i></i>הושלם</span><span><i class="o"></i>פתוח</span><span><i class="f"></i>עוד לא נפתח</span></div>
+        ${reached < 90 && !locked ? `<p class="small muted">היום הבא נפתח ביום ${WEEKDAY[nextDate.getDay()]}.</p>` : ""}
+      </div>
+    </div>`;
+  bindTrack();
+  bindInstallBanner();
+}
+
+function countDone() { let k = 0; for (let n = 1; n <= 90; n++) if (dayStatus(n) === "done") k++; return k; }
+
+function bindTrack() {
+  $("#track")?.addEventListener("click", e => {
+    const b = e.target.closest("[data-day]");
+    if (b) location.hash = `#/day/${b.dataset.day}`;
+  });
+}
+
+function paywall() {
+  return `<div class="notice" style="padding:22px">
+    <span class="eyebrow">סיימת את שלושת ימי האתגר</span>
+    <h3 style="font-size:24px">רוצה להמשיך לתוכנית המלאה?</h3>
+    <p class="small muted">כל 90 הימים, עם הכלים לשקט, לביטחון ולהגשמה. התשובות שכבר נתת נשארות כאן.</p>
+    <div class="row">
+      <a class="btn" href="/" rel="noopener">לתוכנית המלאה</a>
+      <a class="btn ghost" href="#/settings">יש לי קוד</a>
+    </div>
+  </div>`;
+}
+
+function renderNoContent() {
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="topbar"><span class="brand">חיים שלי</span></div>
+      <div class="notice"><h3>צריך חיבור לרשת פעם אחת</h3>
+      <p class="small muted">כדי להוריד את התוכן לטלפון. אחרי זה האפליקציה עובדת גם בלי רשת.</p>
+      <button class="btn" id="retry" type="button">לנסות שוב</button></div>
+    </div>`;
+  $("#retry").onclick = () => fetchProgram().then(route).catch(() => toast("עדיין אין חיבור."));
+}
+
+// ---------- installing
+let deferredPrompt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredPrompt = e; if (location.hash.replace(/^#\/?/, "") === "") route(); });
+window.addEventListener("appinstalled", () => { deferredPrompt = null; toast("האפליקציה נוספה למסך הבית"); });
+
+function installBanner() {
+  if (isStandalone() || localStorage.getItem("hs-install-dismissed") === "1") return "";
+  return `<div class="notice" id="install">
+    <h3>להוסיף למסך הבית?</h3>
+    <p class="small muted">נפתח בלחיצה אחת, ותשובות נשמרות בבטחה גם אם מנקים את הדפדפן.</p>
+    <div class="row"><button class="btn" id="install-go" type="button">${deferredPrompt ? "התקנה" : "איך מתקינים"}</button>
+    <button class="btn quiet" id="install-no" type="button">אחר כך</button></div>
+  </div>`;
+}
+function bindInstallBanner() {
+  $("#install-no")?.addEventListener("click", () => { localStorage.setItem("hs-install-dismissed", "1"); $("#install").remove(); });
+  $("#install-go")?.addEventListener("click", async () => {
+    if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice.catch(() => {}); deferredPrompt = null; return; }
+    openSheet(`<h2 style="font-size:24px">מוסיפים למסך הבית</h2>${installSteps()}<button class="btn wide" data-close type="button">הבנתי</button>`);
+  });
+}
+function openSheet(inner) {
+  const s = $("#sheet");
+  s.innerHTML = `<div class="sheet-wrap" data-close><div class="sheet" role="dialog" aria-modal="true">${inner}</div></div>`;
+  s.querySelector(".sheet-wrap").addEventListener("click", e => { if (e.target.hasAttribute("data-close")) s.innerHTML = ""; });
+}
+
+// ---------- a day
+function renderDay(n) {
+  if (!program) return renderNoContent();
+  if (!(n >= 1 && n <= 90)) { location.hash = "#/"; return; }
+  if (n > allowedDays()) {
+    $("#view").innerHTML = `<div class="stack-lg">${backBar()}${paywall()}</div>`; bindBack(); return;
+  }
+  if (n > reachedDay()) {
+    const d = dateOfDay(n);
+    if (state.profile?.shabbat === "yes" && d.getDay() === 6) d.setDate(d.getDate() - 1);
+    $("#view").innerHTML = `<div class="stack-lg">${backBar()}<div class="notice"><h3>יום ${n} עוד לא נפתח</h3><p class="small muted">הוא ייפתח ביום ${WEEKDAY[d.getDay()]}. צעד אחד בכל יום.</p></div></div>`;
+    bindBack(); return;
+  }
+  const c = dayContent(n), m = dayMeta(n);
+  if (!c) return renderNoContent();
+  const a = ans(n);
+  const onShabbat = state.profile?.shabbat === "yes" && dateOfDay(n).getDay() === 6;
+
+  const parts = [];
+  if (c.step) parts.push(partHTML(n, "step", c.step, a));
+  else parts.push(`<div class="part">${checkHTML(a.stepDone, c.rest ? "נחתי היום" : "עברתי על היום")}</div>`);
+  if (c.midday) parts.push(`<div class="midday"><span class="t">לאמצע היום</span><p>${esc(c.midday)}</p></div>`);
+  if (c.evening) parts.push(partHTML(n, "evening", c.evening, a, onShabbat));
+
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      ${backBar()}
+      <div class="day-head">
+        <span class="eyebrow">יום ${n}${m.weekName || c.weekName ? ` · ${esc(c.weekName || m.weekName)}` : ""}</span>
+        <h1>${esc(c.title)}</h1>
+      </div>
+      ${c.audio ? `<audio controls preload="none" src="${esc(c.audio)}"></audio>` : ""}
+      <div class="narration">${c.narration.map(p => `<p>${esc(p)}</p>`).join("")}</div>
+      ${parts.join("")}
+      <p class="saved">${ICON.check.replace("<svg", '<svg class="ico"')} נשמר רק בטלפון שלך</p>
+      <div class="daynav">
+        ${n > 1 ? `<a class="btn ghost" href="#/day/${n - 1}">יום ${n - 1}</a>` : "<span></span>"}
+        ${n < openThrough() ? `<a class="btn ghost" href="#/day/${n + 1}">יום ${n + 1}</a>` : `<a class="btn ghost" href="#/">למסך הבית</a>`}
+      </div>
+    </div>`;
+  bindBack();
+  bindDay(n, c);
+}
+
+function backBar() {
+  return `<div class="topbar"><button class="back" id="back" type="button">${ICON.back}חזרה</button><span class="brand" style="font-size:18px">חיים שלי</span></div>`;
+}
+function bindBack() { $("#back")?.addEventListener("click", () => { location.hash = "#/"; }); }
+
+function checkHTML(on, label) {
+  return `<button class="check" type="button" data-done aria-pressed="${Boolean(on)}"><span class="box">${ICON.check}</span><span>${esc(label)}</span></button>`;
+}
+
+function partHTML(n, part, content, a, onShabbat) {
+  const vals = a[part] || {};
+  const blocks = content.blocks.map((b, i) => blockHTML(n, part, b, i, vals[i])).join("");
+  const noteKey = part + "Note";
+  const note = a[noteKey] || "";
+  const onlyText = content.blocks.every(b => b.type === "text");
+  const isEvening = part === "evening";
+  return `<section class="part" data-part="${part}">
+    <div class="part-title"><h2>${isEvening ? "שאלה לערב" : esc(content.title || "הצעד של היום")}</h2>
+      <span class="when">${isEvening ? (onShabbat ? "במוצאי שבת" : "בערב") : "היום"}</span></div>
+    ${blocks}
+    ${isEvening && onlyText
+      ? `<textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך">${esc(note)}</textarea>`
+      : `<button class="btn quiet note-toggle" type="button" data-note-toggle="${noteKey}" ${note ? "hidden" : ""}>+ להוסיף כמה מילים משלי</button>
+         <textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך" ${note ? "" : "hidden"}>${esc(note)}</textarea>`}
+    ${part === "step" && n !== 1 ? checkHTML(a.stepDone, "עשיתי את הצעד") : ""}
+  </section>`;
+}
+
+function blockHTML(n, part, b, i, value) {
+  const id = `${part}-${i}`;
+  if (b.type === "text") return `<p class="block">${esc(b.text)}</p>`;
+  if (b.type === "choice") {
+    const picked = Array.isArray(value) ? value : value != null ? [value] : [];
+    return `<div class="block" role="group" aria-labelledby="${id}">
+      ${b.prompt ? `<p class="prompt" id="${id}">${esc(b.prompt)}</p>` : ""}
+      ${b.multi ? `<p class="small muted">אפשר לבחור יותר מאחת</p>` : ""}
+      <div class="chips" data-choice="${i}" data-multi="${b.multi ? 1 : 0}">
+        ${b.options.map((o, k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${picked.includes(k)}">${esc(o)}</button>`).join("")}
+      </div>
+      ${compareChoice(n, b, picked)}
+    </div>`;
+  }
+  if (b.type === "rating") {
+    return `<div class="block" role="group" aria-labelledby="${id}">
+      <p class="prompt" id="${id}">${esc(b.prompt)}</p>
+      <div class="scale" data-rating="${i}">
+        ${Array.from({ length: 10 }, (_, k) => `<button type="button" data-v="${k + 1}" aria-pressed="${value === k + 1}" aria-label="${k + 1}">${k + 1}</button>`).join("")}
+      </div>
+      <div class="scale-ends"><span>1 · בכלל לא</span><span>10 · לגמרי</span></div>
+      ${compareRating(n, b, value)}
+    </div>`;
+  }
+  return "";
+}
+
+// after answering, show what he answered on day 1 (never before, so it won't steer him)
+function compareRating(n, b, value) {
+  if (n === 1 || !b.key || value == null) return "";
+  const first = answerByKey(1, b.key);
+  if (first == null) return "";
+  const diff = value - first;
+  const word = diff > 0 ? `עלייה של ${diff}` : diff < 0 ? `ירידה של ${-diff}` : "אותו מקום";
+  return `<p class="compare">ביום 1 ענית <b>${first}</b>. היום <b>${value}</b> · ${word}</p>`;
+}
+function compareChoice(n, b, picked) {
+  if (n === 1 || b.key !== "fulfilled" || !picked.length) return "";
+  const first = answerByKey(1, "fulfilled");
+  const list = Array.isArray(first) ? first : first != null ? [first] : [];
+  if (!list.length) return "";
+  return `<p class="compare">ביום 1 בחרת: <b>${list.map(k => esc(b.options[k])).join(", ")}</b></p>`;
+}
+
+function bindDay(n, c) {
+  const root = $("#view").firstElementChild; // new element on every render, so listeners never pile up
+  root.addEventListener("click", e => {
+    const chip = e.target.closest(".chip");
+    const rate = e.target.closest("[data-rating] button");
+    const done = e.target.closest("[data-done]");
+    const noteBtn = e.target.closest("[data-note-toggle]");
+    if (chip) {
+      const group = chip.closest("[data-choice]"), part = chip.closest(".part").dataset.part;
+      const i = Number(group.dataset.choice), multi = group.dataset.multi === "1", k = Number(chip.dataset.k);
+      const a = ans(n); a[part] = a[part] || {};
+      if (multi) {
+        const cur = new Set(Array.isArray(a[part][i]) ? a[part][i] : []);
+        cur.has(k) ? cur.delete(k) : cur.add(k);
+        if (cur.size) a[part][i] = [...cur].sort((x, y) => x - y); else delete a[part][i];
+      } else if (a[part][i] === k) delete a[part][i];
+      else a[part][i] = k;
+      afterAnswer(n, c, part, i, group);
+    } else if (rate) {
+      const group = rate.closest("[data-rating]"), part = rate.closest(".part").dataset.part;
+      const i = Number(group.dataset.rating), v = Number(rate.dataset.v);
+      const a = ans(n); a[part] = a[part] || {};
+      if (a[part][i] === v) delete a[part][i]; else a[part][i] = v;
+      afterAnswer(n, c, part, i, group);
+    } else if (done) {
+      const a = ans(n); a.stepDone = !a.stepDone; touch(n);
+      done.setAttribute("aria-pressed", String(a.stepDone));
+      if (a.stepDone && dayStatus(n) === "done") toast(n === 90 ? "סיימת את 90 הימים." : `יום ${n} הושלם`);
+    } else if (noteBtn) {
+      noteBtn.hidden = true;
+      const t = root.querySelector(`textarea[data-note="${noteBtn.dataset.noteToggle}"]`);
+      t.hidden = false; t.focus();
+    }
+  });
+  root.querySelectorAll("textarea[data-note]").forEach(t => {
+    let timer;
+    const store = () => { ans(n)[t.dataset.note] = t.value.trim() ? t.value : ""; touch(n); };
+    t.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(store, 350); });
+    t.addEventListener("blur", () => { clearTimeout(timer); store(); });
+  });
+}
+
+// day 1 has no "done" button: answering the whole starting point completes it
+function syncDayOne(n, c) {
+  if (n !== 1) return;
+  const a = ans(1);
+  const need = (c.step?.blocks || []).filter(b => b.type !== "text").length;
+  a.stepDone = Object.keys(a.step || {}).length >= need;
+}
+
+function afterAnswer(n, c, part, i, group) {
+  const wasDone = dayStatus(n) === "done";
+  syncDayOne(n, c);
+  touch(n);
+  const block = group.closest(".block");
+  const tmp = document.createElement("div");
+  tmp.innerHTML = blockHTML(n, part, c[part].blocks[i], i, ans(n)[part][i]);
+  block.replaceWith(tmp.firstElementChild);
+  if (!wasDone && dayStatus(n) === "done") toast(n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
+}
+
+// ---------- journal
+function summary(n, part, content, a) {
+  const out = [];
+  (content?.[part]?.blocks || []).forEach((b, i) => {
+    const v = a[part]?.[i];
+    if (v == null) return;
+    const label = b.prompt ? b.prompt.replace(/[:?]$/, "") : part === "step" ? "בחרתי" : "בערב";
+    if (b.type === "rating") out.push(`<li>${esc(label)}: <b>${v}</b></li>`);
+    if (b.type === "choice") out.push(`<li>${esc(label)}: <b>${(Array.isArray(v) ? v : [v]).map(k => esc(b.options[k])).join(", ")}</b></li>`);
+  });
+  const note = a[part + "Note"];
+  if (note) out.push(`<li>${esc(note)}</li>`);
+  return out.join("");
+}
+
+function renderJournal() {
+  const days = Object.keys(state.answers).map(Number).filter(n => {
+    const a = state.answers[n];
+    return a && (Object.keys(a.step || {}).length || Object.keys(a.evening || {}).length || a.stepNote || a.eveningNote || a.stepDone);
+  }).sort((x, y) => y - x);
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="topbar"><span class="brand">היומן שלי</span></div>
+      <p class="small muted">כל מה שענית, יום אחרי יום. זה נמצא רק בטלפון הזה.</p>
+      <div>
+        ${days.length ? days.map(n => {
+          const c = dayContent(n), a = state.answers[n];
+          const step = summary(n, "step", c, a), ev = summary(n, "evening", c, a);
+          return `<article class="entry">
+            <a href="#/day/${n}" style="text-decoration:none"><span class="meta">יום ${n}${a.at ? " · " + new Date(a.at).toLocaleDateString("he-IL", { day: "numeric", month: "long" }) : ""}</span>
+            <h3>${esc(c?.title || dayMeta(n).title)}</h3></a>
+            ${step ? `<ul>${step}</ul>` : a.stepDone ? `<p class="small muted">עשיתי את הצעד</p>` : ""}
+            ${ev ? `<ul>${ev}</ul>` : ""}
+          </article>`;
+        }).join("") : `<p class="empty">עוד אין כאן כלום. מה שתענה בימים יופיע כאן.</p>`}
+      </div>
+    </div>`;
+}
+
+// ---------- settings
+function renderSettings() {
+  const full = program?.access === "full";
+  const draft = { ...state.profile };
+  $("#view").innerHTML = `
+    <div class="settings">
+      <div class="topbar"><span class="brand">הגדרות</span></div>
+      <section>
+        <h2>הפרטיות שלך</h2>
+        <p class="muted small">התשובות, ההערות וההתקדמות נשמרים רק בטלפון הזה. אין חשבון, אין שרת שמחזיק אותם, ואין מעקב. אם מוחקים את האפליקציה או מחליפים טלפון, הם נמחקים, ולכן כדאי לשמור גיבוי מדי פעם.</p>
+      </section>
+      <section>
+        <h2>גיבוי</h2>
+        <p class="muted small">קובץ אחד עם כל מה שכתבת. אפשר לשמור אותו איפה שנוח לך, ולשחזר ממנו בטלפון חדש.</p>
+        <div class="row">
+          <button class="btn" id="export" type="button">שמירת גיבוי</button>
+          <label class="btn ghost" for="import-file" style="cursor:pointer">שחזור מגיבוי</label>
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
+        </div>
+      </section>
+      <section>
+        <h2>התוכנית</h2>
+        <p><span class="pill">${full ? "תוכנית מלאה · 90 ימים" : "אתגר חינמי · 3 ימים"}</span></p>
+        ${full ? "" : `<p class="muted small">קיבלת קישור או קוד לתוכנית המלאה? הדבק אותו כאן.</p>
+        <form id="code-form" class="stack" style="gap:10px">
+          <input type="text" id="code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="הקישור או הקוד מהמייל" aria-label="קוד גישה">
+          <button class="btn ghost" type="submit">הפעלה</button>
+        </form>`}
+        <p class="muted small">התחלת ב${state.start ? parseISO(state.start).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" }) : "—"}.</p>
+      </section>
+      <section>
+        <h2>מותאם אליך</h2>
+        <form id="pf" class="stack">
+          ${segField("shabbat", "שומר שבת?", "", draft.shabbat)}
+          ${segField("relationship", "בזוגיות?", "", draft.relationship)}
+          ${segField("kids", "יש לך ילדים?", "", draft.kids)}
+        </form>
+      </section>
+      ${isStandalone() ? "" : `<section><h2>הוספה למסך הבית</h2>${installSteps()}</section>`}
+      <section>
+        <h2>מחיקה</h2>
+        <p class="muted small">מוחק מהטלפון את כל התשובות וההתקדמות. אי אפשר לבטל את זה.</p>
+        <button class="btn ghost" id="wipe" type="button">למחוק הכול</button>
+      </section>
+      <p class="small muted" style="padding-block:12px">שאלות? <span style="direction:ltr;unicode-bidi:isolate">gever@haim-sheli.com</span></p>
+    </div>`;
+
+  const pf = $("#pf");
+  bindSegs(pf, draft);
+  pf.addEventListener("segchange", () => { state.profile = { ...draft }; save(); toast("נשמר"); });
+
+  $("#export").onclick = exportBackup;
+  $("#import-file").onchange = e => importBackup(e.target.files[0]);
+  $("#code-form")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const raw = $("#code").value.trim();
+    const code = extractCode(raw);
+    if (!code) return toast("זה לא נראה כמו קוד גישה. כדאי להעתיק שוב את הקישור מהמייל.");
+    await activate(code);
+  });
+  $("#wipe").onclick = () => {
+    openSheet(`<h2 style="font-size:24px">למחוק את כל מה שכתבת?</h2>
+      <p class="muted">כל התשובות, ההערות וההתקדמות יימחקו מהטלפון. אם אין לך גיבוי, אי אפשר לשחזר אותם.</p>
+      <div class="stack"><button class="btn wide" id="wipe-yes" type="button">כן, למחוק</button>
+      <button class="btn ghost wide" data-close type="button">ביטול</button></div>`);
+    $("#wipe-yes").onclick = () => {
+      try { localStorage.removeItem(KEY); localStorage.removeItem("hs-install-dismissed"); } catch {}
+      const code = state.code;
+      state = blank(); state.code = code; save(); // keeps only the purchase code
+      $("#sheet").innerHTML = "";
+      location.hash = "#/"; route();
+    };
+  };
+}
+
+function extractCode(raw) {
+  const m = /(?:[?&]k=)?(full\.[\w-]{12}\.[\w-]{24})/.exec(raw);
+  return m ? m[1] : null;
+}
+
+async function activate(code) {
+  const prev = state.code;
+  state.code = code; save();
+  try {
+    const data = await fetchProgram();
+    if (data.access === "full") { toast("התוכנית המלאה פתוחה. בהצלחה."); location.hash = "#/"; route(); return; }
+    state.code = prev; save();
+    toast("הקוד לא עבד. כדאי לבדוק שהעתקת את כולו.");
+  } catch {
+    toast("אין חיבור כרגע. ננסה שוב כשיהיה.");
+  }
+}
+
+function exportBackup() {
+  const data = { app: "haim-sheli", version: 1, exported: new Date().toISOString(), data: state };
+  const blob = new Blob([JSON.stringify(data, null, 1)], { type: "application/json" });
+  const name = `haim-sheli-${todayISO()}.json`;
+  const file = new File([blob], name, { type: "application/json" });
+  // on phones the share sheet lets him choose where to keep it (Files, Drive, himself in a chat)
+  if (navigator.canShare?.({ files: [file] })) {
+    navigator.share({ files: [file], title: "גיבוי חיים שלי" }).catch(() => {});
+    return;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+async function importBackup(file) {
+  if (!file) return;
+  try {
+    const parsed = JSON.parse(await file.text());
+    if (parsed?.app !== "haim-sheli" || !parsed.data?.answers) throw new Error("bad file");
+    const incoming = Object.assign(blank(), parsed.data);
+    openSheet(`<h2 style="font-size:24px">לשחזר מהגיבוי?</h2>
+      <p class="muted">הגיבוי מ־${esc(new Date(parsed.exported).toLocaleDateString("he-IL"))} יחליף את מה שיש עכשיו בטלפון.</p>
+      <div class="stack"><button class="btn wide" id="imp-yes" type="button">לשחזר</button>
+      <button class="btn ghost wide" data-close type="button">ביטול</button></div>`);
+    $("#imp-yes").onclick = async () => {
+      state = incoming; save();
+      $("#sheet").innerHTML = "";
+      toast("השחזור הושלם");
+      try { await fetchProgram(); } catch {}
+      location.hash = "#/"; route();
+    };
+  } catch {
+    toast("הקובץ הזה לא נראה כמו גיבוי של חיים שלי.");
+  }
+}
+
+// ---------------------------------------------------------------- start
+async function start() {
+  // a code arriving in the link (?k=...) is kept on the device and removed from the address bar
+  const params = new URLSearchParams(location.search);
+  const k = params.get("k");
+  if (k) {
+    const code = extractCode(k);
+    if (code) { state.code = code; save(); }
+    history.replaceState(null, "", "/app" + location.hash);
+  }
+
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/app-sw.js", { scope: "/app" }).catch(() => {});
+
+  if (program) route(); // show the cached content right away
+  try {
+    const before = program?.access;
+    const data = await fetchProgram();
+    if (k && data.codeRejected) toast("הקוד בקישור לא עבד. אפשר להדביק אותו שוב בהגדרות.");
+    if (k && data.access === "full" && before !== "full") toast("התוכנית המלאה פתוחה.");
+    if (!location.hash.startsWith("#/day/") || !before) route(); // don't redraw under his fingers
+  } catch {
+    if (!program) route(); // offline on first open: route shows the "need network" card
+  }
+}
+start();
+})();
+</script>
+</body>
+</html>

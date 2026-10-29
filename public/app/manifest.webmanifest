@@ -1,0 +1,19 @@
+{
+  "name": "חיים שלי",
+  "short_name": "חיים שלי",
+  "description": "כמה דקות ביום, צעד אחד קטן ושאלה לערב.",
+  "lang": "he",
+  "dir": "rtl",
+  "id": "/app",
+  "start_url": "/app",
+  "scope": "/app",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EEF1EA",
+  "theme_color": "#4E6B3C",
+  "icons": [
+    { "src": "/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
