@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="חיים שלי: תוכנית 90 יום לגברים. שקט ושליטה, ביטחון וכיוון, הגשמה. מתחילים בשלושה ימים בחינם.">
+<title>חיים שלי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&display=swap">
+<style>
+/* Layout: one calm column, RTL; a 90-day track in the hero is the signature; sections separated by space and soft bands, not boxes */
+:root{
+  --bg:#EEF1EA;          /* pale sage stone */
+  --surface:#F7F8F4;
+  --band:#E2E8DC;
+  --ink:#1D2820;         /* forest ink */
+  --muted:#56635A;
+  --line:#C9D2C3;
+  --moss:#4E6B3C;        /* accent: moss green */
+  --moss-ink:#F4F7F0;
+  --sand:#B89A6A;        /* earth secondary */
+  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8;
+  --display:"Frank Ruhl Libre", "David Libre", Georgia, serif;
+  --body:"Assistant", "Heebo", "Segoe UI", Arial, sans-serif;
+  --util:"IBM Plex Sans Hebrew", "Assistant", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
+  --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
+  --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.65;direction:rtl}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.narrow{max-width:680px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h2{font-size:clamp(28px,4.2vw,40px);font-weight:700}
+h3{font-size:21px;font-weight:700}
+p{margin:0}
+a{color:inherit}
+.eyebrow{font-family:var(--util);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--moss)}
+.muted{color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--moss);color:var(--moss-ink);font-family:var(--body);font-weight:700;font-size:19px;text-decoration:none;padding:14px 28px;border-radius:999px;border:0;cursor:pointer;transition:transform .15s ease, filter .15s ease}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--sand);outline-offset:3px}
+.btn.small{font-size:15px;padding:9px 18px}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.brand{font-family:var(--display);font-weight:900;font-size:24px;text-decoration:none}
+
+/* hero */
+.hero{padding-block:64px 40px}
+.hero h1{font-size:clamp(38px,6.4vw,68px);font-weight:900;max-width:16ch}
+.hero .lede{font-size:clamp(19px,2.2vw,22px);max-width:34em;margin-top:22px;color:var(--muted)}
+.hero .cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;margin-top:32px}
+.hero .note{font-family:var(--util);font-size:14px;color:var(--muted)}
+
+.track{margin-top:56px}
+.track-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 20px;margin-bottom:14px}
+.track-head .eyebrow{color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:5px;direction:rtl}
+.day{aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--m1)}
+.day.m2{background:var(--m2)} .day.m3{background:var(--m3)} .day.rest{background:transparent;border:2px solid var(--rest)}
+.day.d1{outline:2px solid var(--sand);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:14px;font-family:var(--util);font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;background:var(--m1)}
+.legend i.m2{background:var(--m2)} .legend i.m3{background:var(--m3)} .legend i.rest{background:transparent;border:2px solid var(--rest)}
+@media (max-width:620px){.days{grid-template-columns:repeat(15,minmax(0,1fr));gap:6px}}
+
+section{padding-block:72px}
+.band{background:var(--band)}
+
+/* recognition */
+.recog p.big{font-family:var(--display);font-size:clamp(24px,3.2vw,32px);font-weight:500;line-height:1.4}
+.recog p+p{margin-top:18px}
+
+/* stages */
+.stages-head{display:grid;gap:12px;max-width:640px}
+.stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:44px}
+.stage{display:grid;align-content:start;gap:14px;border-top:3px solid var(--m1);padding-top:18px;min-width:0}
+.stage.s2{border-color:var(--m2)} .stage.s3{border-color:var(--m3)}
+.stage .range{font-family:var(--util);font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stage ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.stage li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+.stage li b{font-family:var(--util);font-weight:500;font-size:13px;color:var(--muted);min-width:4.2em;font-variant-numeric:tabular-nums}
+.stage li.rest span{color:var(--sand)}
+@media (max-width:820px){.stages{grid-template-columns:1fr;gap:36px}}
+
+/* a day */
+.dayflow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:48px;align-items:start}
+.dayflow .intro{display:grid;gap:16px}
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.timeline li{display:grid;grid-template-columns:86px 1fr;gap:18px;padding-block:18px;border-top:1px solid var(--line)}
+.timeline li:first-child{border-top:0;padding-top:0}
+.timeline .when{font-family:var(--util);font-size:14px;font-weight:600;color:var(--moss);padding-top:3px}
+.timeline h3{font-size:19px;margin-bottom:6px}
+.sample{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:8px}
+.sample .tag{font-family:var(--util);font-size:13px;color:var(--muted);margin-bottom:10px}
+.sample blockquote{margin:0;font-family:var(--display);font-size:20px;line-height:1.55}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:0;list-style:none}
+.choices li{font-size:15px;border:1px solid var(--line);border-radius:999px;padding:5px 14px;background:var(--bg)}
+@media (max-width:820px){.dayflow{grid-template-columns:1fr;gap:28px}}
+@media (max-width:440px){.timeline li{grid-template-columns:1fr;gap:4px}}
+
+/* fit */
+.fit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:40px}
+.fit div{display:grid;gap:8px;align-content:start;min-width:0}
+.fit .q{font-family:var(--display);font-size:22px;font-weight:700}
+@media (max-width:820px){.fit{grid-template-columns:1fr;gap:24px}}
+
+/* privacy */
+.privacy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start}
+.privacy ul{margin:0;padding:0;list-style:none;display:grid;gap:14px}
+.privacy li{padding-inline-start:26px;position:relative}
+.privacy li::before{content:"";position:absolute;inset-inline-start:0;top:.62em;width:10px;height:10px;border-radius:50%;background:var(--moss)}
+@media (max-width:820px){.privacy{grid-template-columns:1fr;gap:24px}}
+
+/* faq */
+.faq{margin-top:28px;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;list-style:none;padding-block:18px;font-weight:700;font-size:19px;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--util);color:var(--moss);font-size:22px;line-height:1}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding-bottom:20px;color:var(--muted)}
+
+/* final */
+.final{text-align:start}
+.final h2{font-size:clamp(32px,5vw,52px);font-weight:900;max-width:18ch}
+.final .cta{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;margin-top:28px}
+footer{padding-block:36px;border-top:1px solid var(--line);font-family:var(--util);font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px}
+.mail{user-select:all;direction:ltr;unicode-bidi:isolate;color:var(--ink)}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top">חיים שלי</a>
+    <a class="btn small join" href="#">להתחיל בחינם</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <div class="hero">
+      <p class="eyebrow">תוכנית 90 יום לגברים</p>
+      <h1>אתה נותן הכול, אז למה זה לא מרגיש מספיק?</h1>
+      <p class="lede">כמה דקות ביום, צעד אחד קטן, ושאלה אחת לערב. תשעים יום שמובילים אותך מעומס ולחץ לשקט, לביטחון ולחיים שמרגישים שלך.</p>
+      <div class="cta">
+        <a class="btn join" href="#">להתחיל את האתגר בחינם</a>
+        <span class="note">3 הימים הראשונים בחינם · מספיק מייל כדי להתחיל</span>
+      </div>
+
+      <div class="track" aria-label="מפת 90 הימים">
+        <div class="track-head">
+          <span class="eyebrow">90 ימים, נקודה לכל יום</span>
+          <span class="eyebrow">יום 1 ← יום 90</span>
+        </div>
+        <div class="days" id="days"></div>
+        <div class="legend">
+          <span><i></i>חודש 1: שקט ושליטה</span>
+          <span><i class="m2"></i>חודש 2: ביטחון וכיוון</span>
+          <span><i class="rest"></i>ימים 59–60: מנוחה</span>
+          <span><i class="m3"></i>חודש 3: הגשמה</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="band recog">
+    <div class="wrap narrow">
+      <p class="big">אתה עובד, דואג, מחזיק את הבית, ובכל זאת משהו בפנים לא שקט.</p>
+      <p class="muted">אולי אתה מתפרץ מהר יותר ממה שהיית רוצה. אולי אתה מרצה את כולם ושוכח את עצמך. ואולי אתה פשוט לא בטוח לאן כל זה הולך. אם זה מוכר לך, אתה במקום הנכון. אין כאן ציונים, ואף אחד לא שופט אותך. מה שצריך זה רק להופיע.</p>
+    </div>
+  </section>
+
+  <section id="program">
+    <div class="wrap">
+      <div class="stages-head">
+        <p class="eyebrow">המסלול</p>
+        <h2>שלושה שלבים, 13 שבועות</h2>
+        <p class="muted">כל שבוע בונה על הקודם. קודם מוצאים שקט, אחר כך בונים ביטחון, ובסוף מביאים את זה לזוגיות, למשפחה ולעבודה.</p>
+      </div>
+      <div class="stages">
+        <div class="stage s1">
+          <span class="range">ימים 1–30</span>
+          <h3>שקט ושליטה</h3>
+          <ul>
+            <li><b>ימים 1–3</b><span>מאיפה זה מגיע ומה קורה בפנים</span></li>
+            <li><b>שבוע 1</b><span>לעצור, לנשום, לזהות טריגרים</span></li>
+            <li><b>שבוע 2</b><span>מחשבות, תגובות והגוף כבסיס</span></li>
+            <li><b>שבוע 3</b><span>שקט מול אנשים ובבית</span></li>
+            <li><b>שבוע 4</b><span>שגרה שמחזיקה גם כשנופלים</span></li>
+          </ul>
+        </div>
+        <div class="stage s2">
+          <span class="range">ימים 31–60</span>
+          <h3>ביטחון וכיוון</h3>
+          <ul>
+            <li><b>שבוע 5</b><span>מי אני בלי התפקידים</span></li>
+            <li><b>שבוע 6</b><span>הקול שלי, לבקש ולהגיד לא</span></li>
+            <li><b>שבוע 7</b><span>לאן אני הולך, ממטרה לצעד</span></li>
+            <li><b>שבוע 8</b><span>המילה שלי שווה משהו</span></li>
+            <li class="rest"><b>ימים 59–60</b><span>מנוחה ועיכול</span></li>
+          </ul>
+        </div>
+        <div class="stage s3">
+          <span class="range">ימים 61–90</span>
+          <h3>הגשמה</h3>
+          <ul>
+            <li><b>שבוע 9</b><span>הגבר בזוגיות</span></li>
+            <li><b>שבוע 10</b><span>תקשורת ותיקון אחרי ריב</span></li>
+            <li><b>שבוע 11</b><span>אבהות, חברויות ושייכות</span></li>
+            <li><b>שבוע 12</b><span>עבודה, כסף ומשמעות</span></li>
+            <li><b>ימים 89–90</b><span>איפה הייתי, איפה אני</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="day">
+    <div class="wrap dayflow">
+      <div class="intro">
+        <p class="eyebrow">ככה נראה יום</p>
+        <h2>כמה דקות בבוקר, תזכורת בצהריים, שאלה בערב</h2>
+        <p class="muted">אין שיעורים ארוכים ואין שיעורי בית. כמעט כל תשובה היא בחירה מתוך כמה אפשרויות, כך שלא צריך לכתוב חיבורים או לחפור בעבר.</p>
+      </div>
+      <div>
+        <ol class="timeline">
+          <li><span class="when">בוקר</span><div><h3>הקראה קצרה</h3><p class="muted">כמה דקות של תוכן להאזנה, עם צלילי טבע עדינים ברקע.</p></div></li>
+          <li><span class="when">בוקר</span><div><h3>הצעד של היום</h3><p class="muted">פעולה אחת קטנה שבוחרים מתוך כמה אפשרויות.</p></div></li>
+          <li><span class="when">צהריים</span><div><h3>משפט אחד שמזכיר</h3><p class="muted">תזכורת קלילה, כדי שהצעד לא ייעלם בתוך היום.</p></div></li>
+          <li><span class="when">ערב</span><div><h3>שאלה לערב</h3><p class="muted">בחירה אחת שמראה לך מה השתנה.</p></div></li>
+        </ol>
+        <div class="sample">
+          <p class="tag">מתוך יום 80, "לתת לאחרים"</p>
+          <blockquote>שייכות לא נבנית רק ממה שאחרים נותנים לך. היא נבנית גם ממה שאתה נותן להם.</blockquote>
+          <ul class="choices" aria-label="אפשרויות הצעד של היום">
+            <li>לעזור למישהו בעבודה או בשכונה</li>
+            <li>להעביר ניסיון לגבר צעיר ממני</li>
+            <li>לתת מזמני למישהו שצריך</li>
+            <li>לפרגן בקול למישהו שלא מצפה לזה</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fit">
+    <div class="wrap">
+      <p class="eyebrow">מותאם אליך</p>
+      <h2>שלוש שאלות בהרשמה, ותוכנית שמתאימה לחיים שלך</h2>
+      <div class="fit">
+        <div><p class="q">שומר שבת?</p><p class="muted">התוכן של שבת יגיע אליך ביום שישי לפני כניסת השבת, ואת שאלת הערב תענה במוצאי שבת.</p></div>
+        <div><p class="q">בזוגיות?</p><p class="muted">אם אתה לא בזוגיות כרגע, שבועות 9–10 יעסקו בגבר שאתה מביא לזוגיות הבאה: מה אתה מחפש, איך אתה נפגש, ואיך מתמודדים עם דחייה.</p></div>
+        <div><p class="q">יש ילדים?</p><p class="muted">אם אין לך ילדים, ימי האבהות יעסקו בדוד, באח ובמנטור שאתה יכול להיות, ובמה שאתה משאיר אחריך.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="privacy">
+    <div class="wrap privacy">
+      <div>
+        <p class="eyebrow">בשקט, בקצב שלך</p>
+        <h2 style="margin-top:12px">זה רק בינך לבין עצמך</h2>
+      </div>
+      <ul>
+        <li>מספיק מייל כדי להתחיל. אפשר לבחור לקבל את התזכורות גם בטלגרם.</li>
+        <li>אין צורך לכתוב שום דבר אישי. רוב התשובות הן בחירה מתוך כמה אפשרויות.</li>
+        <li>אין קבוצה, אין שיחות וידאו, ואף אחד לא מבקש ממך להופיע.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap narrow">
+      <p class="eyebrow">שאלות</p>
+      <h2>מה שגברים שואלים לפני שמתחילים</h2>
+      <div class="faq">
+        <details><summary>כמה זמן זה לוקח ביום?</summary><p>כמה דקות בבוקר להאזנה ולבחירת הצעד, ועוד רגע בערב לשאלה. הצעד עצמו משתלב בתוך היום הרגיל שלך.</p></details>
+        <details><summary>מה כולל האתגר החינמי?</summary><p>את שלושת ימי הפתיחה של התוכנית, בדיוק כמו שהם. בסופם תחליט אם להמשיך לתוכנית המלאה של 90 יום.</p></details>
+        <details><summary>יש מנוי שמתחדש?</summary><p>לא. התוכנית נגמרת ביום ה-90, ואין מנוי המשך.</p></details>
+        <details><summary>מה קורה אם פספסתי יום?</summary><p>שום דבר רע. ממשיכים מהיום הבא. בתוכנית יש גם יום שלם על מה עושים כשנופלים.</p></details>
+        <details><summary>זה טיפול?</summary><p>לא. "חיים שלי" היא תוכנית להתפתחות אישית, והיא לא מחליפה ייעוץ או טיפול מקצועי. אם אתה במצב קשה, כדאי לפנות לאיש מקצוע.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band final">
+    <div class="wrap">
+      <h2>בעוד 90 יום תענה שוב על השאלות של היום הראשון.</h2>
+      <p class="muted" style="margin-top:16px;max-width:36em">ותראה כמה רחוק הגעת. מתחילים בשלושה ימים בחינם.</p>
+      <div class="cta">
+        <a class="btn join" href="#">להתחיל את האתגר בחינם</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>חיים שלי · haim-sheli.com</span>
+    <span>יצירת קשר: <span class="mail">gever@haim-sheli.com</span></span>
+  </div>
+</footer>
+
+<script>
+  // הקישור של כפתורי ההרשמה. להחליף בקישור האמיתי כשיהיה מוכן.
+  const JOIN_URL = "#";
+  document.querySelectorAll("a.join").forEach(a => { a.href = JOIN_URL; });
+
+  const days = document.getElementById("days");
+  for (let d = 1; d <= 90; d++) {
+    const el = document.createElement("span");
+    let cls = "day";
+    if (d >= 31 && d <= 58) cls += " m2";
+    else if (d === 59 || d === 60) cls += " rest";
+    else if (d >= 61) cls += " m3";
+    if (d === 1) cls += " d1";
+    el.className = cls;
+    el.title = "יום " + d;
+    days.appendChild(el);
+  }
+</script>
+
+</body>
+</html>
