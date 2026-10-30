@@ -238,7 +238,8 @@ const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(
 const parseISO = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
 const daysBetween = (a, b) => Math.round((Date.UTC(...ymd(b)) - Date.UTC(...ymd(a))) / 86400000);
 const ymd = s => { const [y, m, d] = s.split("-").map(Number); return [y, m - 1, d]; };
-const dateOfDay = n => { const d = parseISO(state.start); d.setDate(d.getDate() + n - 1); return d; };
+// days 1 and 2 open together on the start day; from day 3 on, one day per calendar day
+const dateOfDay = n => { const d = parseISO(state.start); d.setDate(d.getDate() + Math.max(0, n - 2)); return d; };
 const WEEKDAY = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
 
 const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
@@ -260,8 +261,8 @@ const allowedDays = () => (program?.access === "full" ? 90 : program?.freeDays |
 
 // which day the calendar has reached; Shabbat observers get Saturday's day on Friday
 function reachedDay() {
-  if (!state.start) return 1;
-  let n = daysBetween(state.start, todayISO()) + 1;
+  if (!state.start) return 2;
+  let n = daysBetween(state.start, todayISO()) + 2;
   if (state.profile?.shabbat === "yes" && new Date().getDay() === 5) n += 1;
   return Math.max(1, Math.min(90, n));
 }
@@ -445,7 +446,8 @@ function trackHTML() {
 function renderHome() {
   if (!program) return renderNoContent();
   const reached = reachedDay(), allowed = allowedDays();
-  const n = Math.min(reached, allowed);
+  // on the first day both days are open: show day 1 until it is done
+  const n = reached === 2 && dayStatus(1) !== "done" ? 1 : Math.min(reached, allowed);
   const locked = reached > allowed;
   const m = dayMeta(n), c = dayContent(n);
   const st = dayStatus(n);
@@ -455,11 +457,11 @@ function renderHome() {
 
   $("#view").innerHTML = `
     <div class="stack-lg">
-      <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${reached} מתוך 90</span></div>
+      <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${n} מתוך 90</span></div>
       ${installBanner()}
       ${locked ? paywall() : `
       <a class="today-card" href="#/day/${n}">
-        <span class="eyebrow">${n === reached ? "היום" : "היום שלך"} · יום ${n}${m.weekName ? ` · ${esc(m.weekName)}` : ""}</span>
+        <span class="eyebrow">${n === reached || reached === 2 ? "היום" : "היום שלך"} · יום ${n}${m.weekName ? ` · ${esc(m.weekName)}` : ""}</span>
         <h2>${esc(c?.title || m.title)}</h2>
         <span class="status ${st}"><i></i>${stText}</span>
         <span class="btn" style="justify-self:start">${st === "none" ? "להתחיל" : st === "done" ? "לחזור ליום" : "להמשיך"}</span>
