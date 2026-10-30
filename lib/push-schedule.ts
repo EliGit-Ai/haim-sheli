@@ -8,7 +8,9 @@ export const SLOTS: Slot[] = ["morning", "midday", "evening"];
 
 // אם הריצה המתוזמנת מתעכבת, עדיין שולחים, אבל לא יותר משלוש שעות אחרי השעה שנבחרה
 export const LATE_WINDOW_HOURS = 3;
-export const FREE_DAYS = 3;
+// כמה ימים פתוחים בלי קוד גישה. בזמן הפיילוט פתוח הכול (90).
+// כדי לחזור לאתגר של 3 ימים: להגדיר ב-Vercel את המשתנה FREE_DAYS=3, בלי לשנות קוד.
+export const FREE_DAYS = Math.min(90, Math.max(1, Number(process.env.FREE_DAYS) || 90));
 
 export type Sub = {
   start_date: string; // YYYY-MM-DD, היום שבו התחיל באפליקציה
