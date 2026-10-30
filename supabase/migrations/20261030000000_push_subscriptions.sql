@@ -24,3 +24,5 @@ create table if not exists public.push_subscriptions (
 -- סגור לגמרי מבחוץ: אין מדיניות, ולכן רק מפתח השרת (service role) ניגש לטבלה
 alter table public.push_subscriptions enable row level security;
 revoke all on public.push_subscriptions from anon, authenticated;
+-- כשהאפשרות "Automatically expose new tables" כבויה, גם לשרת אין גישה עד שנותנים אותה במפורש
+grant select, insert, update, delete on public.push_subscriptions to service_role;

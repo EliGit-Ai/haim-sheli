@@ -584,7 +584,7 @@ async function sendSubscription(sub) {
       code: state.code || undefined,
     }),
   });
-  if (!res.ok) throw new Error("subscribe " + res.status);
+  if (!res.ok) { const e = new Error("subscribe " + res.status); e.stage = "server"; e.status = res.status; throw e; }
 }
 
 // must run from a tap: iPhone asks for permission only after a user action
@@ -598,11 +598,14 @@ async function enablePush() {
   try {
     const reg = await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
-    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) });
+    if (!sub) {
+      try { sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) }); }
+      catch { return "device"; }
+    }
     await sendSubscription(sub);
     state.push = { on: true, hours: pushHours(), synced: todayISO() }; save();
     return "on";
-  } catch { return "error"; }
+  } catch (e) { return e?.stage === "server" ? (e.status === 503 ? "server" : "save") : "error"; }
 }
 
 async function disablePush() {
@@ -639,6 +642,8 @@ const PUSH_RESULT = {
   server: "ההתראות עוד לא זמינות. ננסה שוב בקרוב.",
   "needs-install": "באייפון, התראות עובדות רק כשפותחים את האפליקציה ממסך הבית.",
   unsupported: "הדפדפן הזה לא תומך בהתראות.",
+  device: "הטלפון לא הצליח להירשם להתראות. כדאי לסגור את האפליקציה לגמרי, לפתוח שוב מהאייקון ולנסות שוב.",
+  save: "הטלפון אישר, אבל השרת לא הצליח לשמור את ההרשמה. ננסה לתקן ולחזור אליך.",
   error: "משהו השתבש. נסה שוב בעוד רגע.",
 };
 
