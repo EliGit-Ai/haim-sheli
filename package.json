@@ -24,7 +24,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "stripe": "^15.8.0",
-    "tailwind-merge": "^2.3.0"
+    "tailwind-merge": "^2.3.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.0",
@@ -32,6 +33,7 @@
     "@types/node": "^20.12.12",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
+    "@types/web-push": "^3.6.4",
     "postcss": "^8.5.31",
     "supabase": "^1.165.0",
     "tailwindcss": "^4.3.3",

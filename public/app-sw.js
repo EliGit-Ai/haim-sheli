@@ -1,7 +1,7 @@
 // Service worker של האפליקציה: שומר את המעטפת (דף, גופנים, אייקונים) כדי שהאפליקציה תיפתח גם בלי רשת.
 // התוכן עצמו נשמר על ידי האפליקציה בזיכרון המקומי של המכשיר. התשובות לא עוברות כאן בכלל.
 
-const SHELL = "haim-sheli-shell-v1";
+const SHELL = "haim-sheli-shell-v2";
 const FILES = [
   "/app",
   "/app/manifest.webmanifest",
@@ -54,4 +54,31 @@ self.addEventListener("fetch", event => {
 
   // fonts and icons: cache first
   event.respondWith(caches.match(req).then(hit => hit || fetch(req)));
+});
+
+// התראות: מציגים את מה שהשרת שלח, ולחיצה פותחת את היום באפליקציה
+self.addEventListener("push", event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { data = { title: "חיים שלי", body: event.data?.text() || "" }; }
+  event.waitUntil(self.registration.showNotification(data.title || "חיים שלי", {
+    body: data.body || "",
+    tag: data.tag,
+    icon: "/app/icon-192.png",
+    badge: "/app/icon-192.png",
+    lang: "he",
+    dir: "rtl",
+    data: { url: data.url || "/app" },
+  }));
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/app", self.location.origin).href;
+  event.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const w of wins) {
+      if (new URL(w.url).pathname.startsWith("/app")) { await w.focus(); return w.navigate(url).catch(() => {}); }
+    }
+    return self.clients.openWindow(url);
+  })());
 });
