@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import program from "@/content/program.json";
 import { verifyCode } from "@/lib/access-code.mjs";
+import { FREE_DAYS } from "@/lib/push-schedule";
 
 // התוכן של האפליקציה (/app).
-// בלי קוד: שלושת ימי האתגר החינמי. עם קוד גישה תקין: כל 90 הימים והגרסאות החלופיות.
+// בלי קוד: ימי האתגר החינמי (FREE_DAYS, בזמן הפיילוט כל 90). עם קוד גישה תקין: כל 90 הימים והגרסאות החלופיות.
 // השרת לא מקבל ולא שומר שום תשובה של המשתמש. הבקשה היחידה היא "תן לי את התוכן".
 // נדרש משתנה סביבה ב-Vercel: ACCESS_SECRET (מחרוזת אקראית ארוכה, לפחות 32 תווים).
 
 export const dynamic = "force-dynamic";
 
-const FREE_DAYS = 3;
 
 type Day = (typeof program.days)[number];
 
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const auth = req.headers.get("authorization") || "";
   const code = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const tier = code ? verifyCode(process.env.ACCESS_SECRET, code) : null;
-  const full = tier === "full";
+  const full = tier === "full" || FREE_DAYS >= 90;
   const allowed = (n: number) => full || n <= FREE_DAYS;
 
   const body = {

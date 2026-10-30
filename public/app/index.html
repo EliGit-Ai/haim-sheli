@@ -935,7 +935,7 @@ function renderSettings() {
       </section>
       <section>
         <h2>התוכנית</h2>
-        <p><span class="pill">${full ? "תוכנית מלאה · 90 ימים" : "אתגר חינמי · 3 ימים"}</span></p>
+        <p><span class="pill">${full ? "תוכנית מלאה · 90 ימים" : `אתגר חינמי · ${program?.freeDays || 3} ימים`}</span></p>
         ${full ? "" : `<p class="muted small">קיבלת קישור או קוד לתוכנית המלאה? הדבק אותו כאן.</p>
         <form id="code-form" class="stack" style="gap:10px">
           <input type="text" id="code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="הקישור או הקוד מהמייל" aria-label="קוד גישה">
