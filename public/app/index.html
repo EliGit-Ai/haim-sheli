@@ -96,7 +96,8 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .status.done i{background:var(--moss)}
 .status.started i{background:var(--sand)}
 .track{display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:7px}
-.dot{aspect-ratio:1;border-radius:50%;border:0;padding:0;background:var(--faint);cursor:default}
+.dot{aspect-ratio:1;border-radius:50%;border:0;padding:0;background:var(--faint);cursor:default;display:grid;place-items:center;color:var(--bg)}
+.dot svg{width:62%;height:62%}
 .dot.open{background:transparent;border:2px solid var(--m1);cursor:pointer}
 .dot.m2.open{border-color:var(--m2)} .dot.m3.open{border-color:var(--m3)} .dot.rest.open{border-color:var(--rest)}
 .dot.done{background:var(--m1);border:0;cursor:pointer}
@@ -106,6 +107,8 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--m1)}
+.legend i.v{width:14px;height:14px;display:inline-grid;place-items:center;color:var(--bg)}
+.legend i.v svg{width:70%;height:70%}
 .legend i.o{background:transparent;border:2px solid var(--m1)}
 .legend i.f{background:var(--faint)}
 
@@ -439,7 +442,7 @@ function trackHTML() {
     else if (n > allowed && n <= reached) cls.push("paid");
     if (n === Math.min(reached, 90)) cls.push("today");
     const can = n <= open;
-    html += `<button type="button" class="${cls.join(" ").replace(/\s+/g, " ")}" ${can ? `data-day="${n}"` : "disabled"} aria-label="יום ${n}${can ? "" : " (עוד לא נפתח)"}"></button>`;
+    html += `<button type="button" class="${cls.join(" ").replace(/\s+/g, " ")}" ${can ? `data-day="${n}"` : "disabled"} aria-label="יום ${n}${st === "done" && can ? " (הושלם)" : can ? "" : " (עוד לא נפתח)"}">${st === "done" && can ? ICON.check : ""}</button>`;
   }
   return `<div class="track" id="track">${html}</div>`;
 }
@@ -472,7 +475,7 @@ function renderHome() {
       <div class="stack">
         <div class="row" style="justify-content:space-between"><h3 style="font-size:20px">המסלול</h3><span class="small muted">${countDone() === 1 ? "יום אחד הושלם" : `${countDone()} ימים הושלמו`}</span></div>
         ${trackHTML()}
-        <div class="legend"><span><i></i>הושלם</span><span><i class="o"></i>פתוח</span><span><i class="f"></i>עוד לא נפתח</span></div>
+        <div class="legend"><span><i class="v">${ICON.check}</i>הושלם</span><span><i class="o"></i>פתוח</span><span><i class="f"></i>עוד לא נפתח</span></div>
         ${reached < 90 && !locked ? `<p class="small muted">היום הבא נפתח ביום ${WEEKDAY[nextDate.getDay()]}.</p>` : ""}
       </div>
     </div>`;
