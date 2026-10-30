@@ -20,5 +20,7 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           SITE_URL: ${{ secrets.SITE_URL }}
         run: |
-          curl --fail-with-body -sS -X POST "$SITE_URL/api/push/send" \
-            -H "authorization: Bearer $CRON_SECRET"
+          out=$(curl --fail-with-body -sS -X POST "$SITE_URL/api/push/send" \
+            -H "authorization: Bearer $CRON_SECRET")
+          echo "$out"
+          echo "::notice title=Push reminders::$out"
