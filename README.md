@@ -22,6 +22,18 @@ ACCESS_SECRET=... npm run mint-access -- 20  # 20 קישורים
 
 הקישור נראה כך: `https://haim-sheli.com/app?k=full....`. הקוד לא מכיל מייל או שם.
 
+### התראות
+
+האפליקציה שולחת עד שלוש התראות ביום (בוקר: היום החדש, צהריים: התזכורת, ערב: שאלת הערב), בשעות שהגבר בוחר.
+בשרת נשמרים רק כתובת ההתראה של המכשיר, תאריך ההתחלה, אזור הזמן, השעות ושלוש תשובות הפרופיל. בלי מייל, בלי שם ובלי תשובות.
+
+- הטבלה: `supabase/migrations/20261030000000_push_subscriptions.sql`
+- השליחה: `/api/push/send`, נקרא כל שעה מ-`.github/workflows/push-reminders.yml`
+- הכללים (איזה יום, מתי, שבת): `lib/push-schedule.ts`
+
+משתני סביבה ב-Vercel: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `CRON_SECRET`.
+סודות ב-GitHub Actions: `CRON_SECRET` (אותו ערך) ו-`SITE_URL`.
+
 ### עדכון התוכן
 
 התוכן נמצא ב-`content/program.json`, ונבנה מייצוא Markdown של המסמך "חיים שלי – מבנה התוכנית":

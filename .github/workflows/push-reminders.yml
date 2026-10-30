@@ -1,0 +1,24 @@
+# שולח את ההתראות של האפליקציה. רץ כל שעה וקורא ל-/api/push/send,
+# שבודק לכל טלפון מה הגיע זמנו לפי השעה המקומית שלו.
+# סודות נדרשים ב-GitHub (Settings → Secrets and variables → Actions):
+#   CRON_SECRET  - אותו ערך כמו ב-Vercel
+#   SITE_URL     - כתובת האתר, למשל https://haim-sheli.com
+name: Push reminders
+
+on:
+  schedule:
+    - cron: "2 * * * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Send due notifications
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          curl --fail-with-body -sS -X POST "$SITE_URL/api/push/send" \
+            -H "authorization: Bearer $CRON_SECRET"

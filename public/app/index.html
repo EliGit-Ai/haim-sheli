@@ -161,6 +161,7 @@ legend{padding:0;font-weight:700}
 .seg{display:flex;gap:10px}
 .seg button{flex:1;border:1px solid var(--line);border-radius:999px;padding:10px 12px;background:var(--surface);font-weight:700;cursor:pointer;min-height:46px}
 .seg button[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
+select{font:inherit;font-size:16px;color:var(--ink);border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:8px 12px;min-width:7.5em}
 input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;font-size:16px;direction:ltr;text-align:right}
 .settings section{display:grid;gap:12px;padding-block:22px;border-top:1px solid var(--line)}
 .settings section:first-of-type{border-top:0;padding-top:4px}
@@ -459,6 +460,7 @@ function renderHome() {
     <div class="stack-lg">
       <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${n} מתוך 90</span></div>
       ${installBanner()}
+      ${pushBanner()}
       ${locked ? paywall() : `
       <a class="today-card" href="#/day/${n}">
         <span class="eyebrow">${n === reached || reached === 2 ? "היום" : "היום שלך"} · יום ${n}${m.weekName ? ` · ${esc(m.weekName)}` : ""}</span>
@@ -476,6 +478,9 @@ function renderHome() {
     </div>`;
   bindTrack();
   bindInstallBanner();
+  bindPushBanner();
+  // the banner appears once we know the server has push turned on
+  if (pushKey === undefined && !state.push?.on && pushSupport() === "ok") getPushKey().then(k => { if (k && location.hash.replace(/^#\/?/, "") === "") renderHome(); });
 }
 
 function countDone() { let k = 0; for (let n = 1; n <= 90; n++) if (dayStatus(n) === "done") k++; return k; }
@@ -535,6 +540,161 @@ function openSheet(inner) {
   const s = $("#sheet");
   s.innerHTML = `<div class="sheet-wrap" data-close><div class="sheet" role="dialog" aria-modal="true">${inner}</div></div>`;
   s.querySelector(".sheet-wrap").addEventListener("click", e => { if (e.target.hasAttribute("data-close")) s.innerHTML = ""; });
+}
+
+// ---------- notifications
+// The server keeps only what it needs to know which day to send and when: the phone's push address,
+// the start date, the time zone, the chosen hours and the three profile answers. No answers, no email.
+const DEFAULT_HOURS = { morning: 8, midday: 13, evening: 21 };
+const SLOT_NAMES = { morning: "בוקר: היום החדש", midday: "צהריים: תזכורת לצעד", evening: "ערב: שאלה לערב" };
+const pushHours = () => ({ ...DEFAULT_HOURS, ...(state.push?.hours || {}) });
+let pushKey; // undefined = not checked yet, null = the server has no push yet
+
+function pushSupport() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+    return isIOS() && !isStandalone() ? "needs-install" : "unsupported";
+  }
+  if (isIOS() && !isStandalone()) return "needs-install";
+  if (Notification.permission === "denied") return "denied";
+  return "ok";
+}
+
+async function getPushKey() {
+  if (pushKey !== undefined) return pushKey;
+  try {
+    const r = await fetch("/api/push/key", { cache: "no-store" });
+    const d = await r.json();
+    pushKey = d.enabled ? d.key : null;
+  } catch { return null; }
+  return pushKey;
+}
+
+const b64ToBytes = s => { const p = "=".repeat((4 - (s.length % 4)) % 4); const raw = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); };
+
+async function sendSubscription(sub) {
+  const res = await fetch("/api/push/subscribe", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      subscription: sub.toJSON(),
+      start: state.start,
+      tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Jerusalem",
+      profile: state.profile,
+      hours: pushHours(),
+      code: state.code || undefined,
+    }),
+  });
+  if (!res.ok) throw new Error("subscribe " + res.status);
+}
+
+// must run from a tap: iPhone asks for permission only after a user action
+async function enablePush() {
+  const support = pushSupport();
+  if (support !== "ok") return support;
+  const key = await getPushKey();
+  if (!key) return "server";
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") return perm === "denied" ? "denied" : "dismissed";
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) });
+    await sendSubscription(sub);
+    state.push = { on: true, hours: pushHours(), synced: todayISO() }; save();
+    return "on";
+  } catch { return "error"; }
+}
+
+async function disablePush() {
+  state.push = { ...(state.push || {}), on: false }; save();
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      await fetch("/api/push/subscribe", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {});
+      await sub.unsubscribe().catch(() => {});
+    }
+  } catch {}
+}
+
+// keeps the server's copy in step after a change (hours, profile, code) and once a day
+async function syncPush(force) {
+  if (!state.push?.on || pushSupport() !== "ok" || Notification.permission !== "granted") return;
+  if (!force && state.push.synced === todayISO()) return;
+  try {
+    const key = await getPushKey();
+    if (!key) return;
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) });
+    await sendSubscription(sub);
+    state.push.synced = todayISO(); save();
+  } catch {}
+}
+
+const PUSH_RESULT = {
+  on: "ההתראות פועלות",
+  denied: "ההתראות חסומות. אפשר לאשר אותן בהגדרות הטלפון, תחת \"חיים שלי\".",
+  dismissed: "לא אישרת התראות. אפשר לנסות שוב מתי שתרצה.",
+  server: "ההתראות עוד לא זמינות. ננסה שוב בקרוב.",
+  "needs-install": "באייפון, התראות עובדות רק כשפותחים את האפליקציה ממסך הבית.",
+  unsupported: "הדפדפן הזה לא תומך בהתראות.",
+  error: "משהו השתבש. נסה שוב בעוד רגע.",
+};
+
+function pushBanner() {
+  if (state.push?.on || state.push?.dismissed || pushSupport() !== "ok" || pushKey === null) return "";
+  return `<div class="notice" id="push-banner">
+    <h3>לקבל תזכורת קטנה?</h3>
+    <p class="small muted">בבוקר כשהיום נפתח, בצהריים לצעד, ובערב לשאלה. אפשר לשנות שעות או לכבות בהגדרות.</p>
+    <div class="row"><button class="btn" id="push-go" type="button">להפעיל התראות</button>
+    <button class="btn quiet" id="push-no" type="button">לא עכשיו</button></div>
+  </div>`;
+}
+function bindPushBanner() {
+  $("#push-no")?.addEventListener("click", () => { state.push = { ...(state.push || {}), dismissed: true }; save(); $("#push-banner").remove(); });
+  $("#push-go")?.addEventListener("click", async e => {
+    e.target.disabled = true;
+    const r = await enablePush();
+    toast(PUSH_RESULT[r] || PUSH_RESULT.error);
+    if (r === "on" || r === "denied") $("#push-banner")?.remove(); else e.target.disabled = false;
+  });
+}
+
+function pushSettingsHTML() {
+  const support = pushSupport();
+  const on = Boolean(state.push?.on) && support === "ok";
+  const h = pushHours();
+  const opts = sel => `<option value="">בלי</option>` + Array.from({ length: 24 }, (_, i) => `<option value="${i}" ${sel === i ? "selected" : ""}>${pad(i)}:00</option>`).join("");
+  let status = "";
+  if (support === "needs-install") status = `<p class="muted small">${PUSH_RESULT["needs-install"]}</p>`;
+  else if (support === "unsupported") status = `<p class="muted small">${PUSH_RESULT.unsupported}</p>`;
+  else if (support === "denied") status = `<p class="muted small">${PUSH_RESULT.denied}</p>`;
+  return `<section>
+    <h2>התראות</h2>
+    <p class="muted small">בשביל ההתראות נשמרים בשרת רק תאריך ההתחלה, השעות שבחרת ושלוש תשובות הפרופיל, כדי לדעת איזה יום לשלוח ומתי. התשובות שלך נשארות רק בטלפון.</p>
+    ${status}
+    ${support === "ok" ? `
+      <div class="stack" style="gap:12px">
+        ${["morning", "midday", "evening"].map(s => `<label class="row" style="justify-content:space-between" for="ph-${s}"><span>${SLOT_NAMES[s]}</span>
+          <select id="ph-${s}" data-slot="${s}">${opts(h[s])}</select></label>`).join("")}
+      </div>
+      <div class="row"><button class="btn ${on ? "ghost" : ""}" id="push-toggle" type="button">${on ? "לכבות התראות" : "להפעיל התראות"}</button></div>` : ""}
+  </section>`;
+}
+function bindPushSettings() {
+  document.querySelectorAll("select[data-slot]").forEach(sel => sel.addEventListener("change", () => {
+    const hours = pushHours();
+    hours[sel.dataset.slot] = sel.value === "" ? null : Number(sel.value);
+    state.push = { ...(state.push || {}), hours }; save();
+    if (state.push.on) syncPush(true).then(() => toast("נשמר"));
+  }));
+  $("#push-toggle")?.addEventListener("click", async e => {
+    e.target.disabled = true;
+    if (state.push?.on) { await disablePush(); toast("ההתראות כבויות"); }
+    else toast(PUSH_RESULT[await enablePush()] || PUSH_RESULT.error);
+    renderSettings();
+  });
 }
 
 // ---------- a day
@@ -791,6 +951,7 @@ function renderSettings() {
           ${segField("kids", "יש לך ילדים?", "", draft.kids)}
         </form>
       </section>
+      ${pushSettingsHTML()}
       ${isStandalone() ? "" : `<section><h2>הוספה למסך הבית</h2>${installSteps()}</section>`}
       <section>
         <h2>מחיקה</h2>
@@ -802,7 +963,8 @@ function renderSettings() {
 
   const pf = $("#pf");
   bindSegs(pf, draft);
-  pf.addEventListener("segchange", () => { state.profile = { ...draft }; save(); toast("נשמר"); });
+  pf.addEventListener("segchange", () => { state.profile = { ...draft }; save(); toast("נשמר"); syncPush(true); });
+  bindPushSettings();
 
   $("#export").onclick = exportBackup;
   $("#import-file").onchange = e => importBackup(e.target.files[0]);
@@ -818,7 +980,8 @@ function renderSettings() {
       <p class="muted">כל התשובות, ההערות וההתקדמות יימחקו מהטלפון. אם אין לך גיבוי, אי אפשר לשחזר אותם.</p>
       <div class="stack"><button class="btn wide" id="wipe-yes" type="button">כן, למחוק</button>
       <button class="btn ghost wide" data-close type="button">ביטול</button></div>`);
-    $("#wipe-yes").onclick = () => {
+    $("#wipe-yes").onclick = async () => {
+      if (state.push?.on) await disablePush();
       try { localStorage.removeItem(KEY); localStorage.removeItem("hs-install-dismissed"); } catch {}
       const code = state.code;
       state = blank(); state.code = code; save(); // keeps only the purchase code
@@ -838,7 +1001,7 @@ async function activate(code) {
   state.code = code; save();
   try {
     const data = await fetchProgram();
-    if (data.access === "full") { toast("התוכנית המלאה פתוחה. בהצלחה."); location.hash = "#/"; route(); return; }
+    if (data.access === "full") { toast("התוכנית המלאה פתוחה. בהצלחה."); syncPush(true); location.hash = "#/"; route(); return; }
     state.code = prev; save();
     toast("הקוד לא עבד. כדאי לבדוק שהעתקת את כולו.");
   } catch {
@@ -904,6 +1067,7 @@ async function start() {
     if (k && data.codeRejected) toast("הקוד בקישור לא עבד. אפשר להדביק אותו שוב בהגדרות.");
     if (k && data.access === "full" && before !== "full") toast("התוכנית המלאה פתוחה.");
     if (!location.hash.startsWith("#/day/") || !before) route(); // don't redraw under his fingers
+    syncPush(false);
   } catch {
     if (!program) route(); // offline on first open: route shows the "need network" card
   }
