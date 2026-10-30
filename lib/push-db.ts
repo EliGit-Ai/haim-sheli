@@ -1,6 +1,6 @@
 // גישה לטבלת push_subscriptions ב-Supabase, דרך ה-REST API עם מפתח השרת (service role).
 // הטבלה סגורה לגמרי מבחוץ (RLS בלי מדיניות), ורק השרת ניגש אליה.
-// משתני סביבה: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// משתני סביבה: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (מפתח Secret החדש sb_secret_..., או service_role הישן)
 
 import type { Sub } from "./push-schedule";
 
@@ -22,7 +22,8 @@ async function call(path: string, init: RequestInit & { prefer?: string } = {}) 
     ...init,
     headers: {
       apikey: c.key,
-      authorization: `Bearer ${c.key}`,
+      // a legacy service_role key is a JWT and also goes in Authorization; a new secret key (sb_secret_...) goes only in apikey
+      ...(c.key.startsWith("eyJ") ? { authorization: `Bearer ${c.key}` } : {}),
       "content-type": "application/json",
       ...(init.prefer ? { prefer: init.prefer } : {}),
     },
