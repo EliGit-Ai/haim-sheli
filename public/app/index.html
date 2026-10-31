@@ -141,8 +141,13 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .part-title .when{font-size:14px;font-weight:700;color:var(--muted)}
 .block{display:grid;gap:10px}
 .prompt{font-weight:700}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
+/* answer choices: one row that slides sideways, edge to edge, with a soft fade where more choices wait */
+.chips{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;margin-inline:-16px;padding:2px 16px 6px;scroll-padding-inline:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chips.more-end{-webkit-mask-image:linear-gradient(to right, transparent 0, #000 44px);mask-image:linear-gradient(to right, transparent 0, #000 44px)}
+.chips.more-start{-webkit-mask-image:linear-gradient(to left, transparent 0, #000 44px);mask-image:linear-gradient(to left, transparent 0, #000 44px)}
+.chips.more-start.more-end{-webkit-mask-image:linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);mask-image:linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%)}
+.chip{flex:none;white-space:nowrap;scroll-snap-align:start;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
 .chip[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
 .scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;direction:rtl}
 .scale button{aspect-ratio:1;min-height:30px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:16px;padding:0;font-variant-numeric:tabular-nums}
@@ -766,6 +771,7 @@ function renderDay(n) {
     </div>`;
   bindBack();
   bindDay(n, c);
+  initSliders();
   if (c.audio && c.timing) bindListen(c);
   musicFor(1); // the same soundscape on every day
 }
@@ -951,6 +957,21 @@ function bindListen(c) {
   });
 }
 
+// marks each choice row with where more choices are hidden (RTL: the row starts at the right)
+function initSliders() {
+  document.querySelectorAll(".chips:not([data-slider])").forEach(row => {
+    row.dataset.slider = "1";
+    const update = () => {
+      const max = row.scrollWidth - row.clientWidth;
+      const x = Math.abs(row.scrollLeft);
+      row.classList.toggle("more-end", max > 4 && x < max - 4);
+      row.classList.toggle("more-start", x > 4);
+    };
+    row.addEventListener("scroll", update, { passive: true });
+    update();
+  });
+}
+
 function backBar() {
   return `<div class="topbar"><button class="back" id="back" type="button">${ICON.back}חזרה</button><span class="brand" style="font-size:18px">חיים שלי</span></div>`;
 }
@@ -1080,7 +1101,12 @@ function afterAnswer(n, c, part, i, group) {
   const block = group.closest(".block");
   const tmp = document.createElement("div");
   tmp.innerHTML = blockHTML(n, part, c[part].blocks[i], i, ans(n)[part][i]);
-  block.replaceWith(tmp.firstElementChild);
+  const x = block.querySelector(".chips")?.scrollLeft || 0; // keep the slider where he left it
+  const fresh = tmp.firstElementChild;
+  block.replaceWith(fresh);
+  const row = fresh.querySelector(".chips");
+  if (row) row.scrollLeft = x;
+  initSliders();
   if (!wasDone && dayStatus(n) === "done") toast(n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
 }
 
