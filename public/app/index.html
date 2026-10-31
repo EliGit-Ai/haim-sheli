@@ -780,6 +780,10 @@ async function syncPush(force) {
 // sends one notification now; if this phone is missing on the server or its registration expired, registers it again and retries
 async function testPush() {
   try {
+    if (!state.push?.on) { // notifications are off: the test turns them on first
+      const r = await enablePush();
+      if (r !== "on") return PUSH_RESULT[r] || PUSH_RESULT.error;
+    }
     if (Notification.permission !== "granted") return "ההתראות חסומות בהגדרות של הטלפון. צריך לאשר אותן ל\"חיים שלי\" ואז לנסות שוב.";
     const reg = await navigator.serviceWorker.ready;
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -852,7 +856,7 @@ function pushSettingsHTML() {
           <select id="ph-${s}" data-slot="${s}">${opts(h[s])}</select></label>`).join("")}
       </div>
       <div class="row"><button class="btn ${on ? "ghost" : ""}" id="push-toggle" type="button">${on ? "לכבות התראות" : "להפעיל התראות"}</button>
-        ${on ? `<button class="btn quiet" id="push-test" type="button">לשלוח התראת בדיקה</button>` : ""}</div>
+        <button class="btn quiet" id="push-test" type="button">לשלוח התראת בדיקה</button></div>
       <p class="small muted" id="push-test-msg" role="status"></p>` : ""}
   </section>`;
 }
@@ -866,8 +870,9 @@ function bindPushSettings() {
   $("#push-test")?.addEventListener("click", async e => {
     e.target.disabled = true;
     $("#push-test-msg").textContent = "שולח...";
-    $("#push-test-msg").textContent = await testPush();
-    e.target.disabled = false;
+    const msg = await testPush();
+    renderSettings(); // the on/off button may have changed
+    const el = $("#push-test-msg"); if (el) { el.textContent = msg; el.scrollIntoView({ block: "center" }); }
   });
   $("#push-toggle")?.addEventListener("click", async e => {
     e.target.disabled = true;
