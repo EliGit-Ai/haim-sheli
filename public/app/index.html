@@ -120,6 +120,21 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:900}
 .narration{display:grid;gap:14px;font-family:var(--display);font-weight:700;font-size:20px;line-height:1.6}
+.narration .w{display:inline-block;border-radius:6px;padding-inline:2px;margin-inline:-1px;transform-origin:center 60%;transition:color .25s ease, transform .18s ease, background-color .25s ease}
+.narration.playing .w{color:var(--muted)}
+.narration.playing .w.read{color:var(--ink)}
+.narration .w.now{color:var(--moss);transform:scale(1.1);background:var(--faint)}
+.listen{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.listen .row{display:flex;align-items:center;gap:12px}
+.listen .play{width:48px;height:48px;flex:none;border-radius:50%;border:0;background:var(--moss);color:var(--moss-ink);display:grid;place-items:center;cursor:pointer}
+.listen .play svg{width:20px;height:20px}
+.listen .bar{flex:1;min-width:0;display:grid;gap:3px}
+.listen .track{height:6px;border-radius:3px;background:var(--faint);overflow:hidden;cursor:pointer}
+.listen .fill{height:100%;width:0;background:var(--moss)}
+.listen .time{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between}
+.listen .music{font:inherit;font-size:14px;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;justify-self:start}
+.listen .music[aria-pressed="true"]{color:var(--moss);font-weight:700}
+@media (prefers-reduced-motion: reduce){.narration .w{transition:none}.narration .w.now{transform:none}}
 .part{display:grid;gap:18px}
 .part-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:2px solid var(--m1);padding-top:14px}
 .part-title h2{font-size:24px}
@@ -332,7 +347,7 @@ function show(name, arg) {
   routes[name](arg);
   window.scrollTo(0, 0);
 }
-window.addEventListener("hashchange", route);
+window.addEventListener("hashchange", () => { stopListening(); route(); });
 
 // ---------------------------------------------------------------- screens
 function renderInstallFirst() {
@@ -736,8 +751,8 @@ function renderDay(n) {
         <span class="eyebrow">יום ${n}${m.weekName || c.weekName ? ` · ${esc(c.weekName || m.weekName)}` : ""}</span>
         <h1>${esc(c.title)}</h1>
       </div>
-      ${c.audio ? `<audio controls preload="none" src="${esc(c.audio)}"></audio>` : ""}
-      <div class="narration">${c.narration.map(p => `<p>${esc(p)}</p>`).join("")}</div>
+      ${c.audio && c.timing ? listenHTML() : c.audio ? `<audio controls preload="none" src="${esc(c.audio)}"></audio>` : ""}
+      ${narrationHTML(c)}
       ${parts.join("")}
       <p class="saved">${ICON.check.replace("<svg", '<svg class="ico"')} נשמר רק בטלפון שלך</p>
       <div class="daynav">
@@ -747,6 +762,144 @@ function renderDay(n) {
     </div>`;
   bindBack();
   bindDay(n, c);
+  if (c.audio && c.timing) bindListen(c, m.month || (n <= 30 ? 1 : n <= 60 ? 2 : 3));
+}
+
+// ---------- listening: narration over the month's background music, with the spoken word highlighted
+const PLAY_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 5v14L6 12z"/></svg>';
+const PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const BG_LEVEL = 0.2;
+let listen = null; // the player of the day on screen
+
+function narrationHTML(c) {
+  // every word becomes a span that knows where it sits in the spoken text (paragraphs joined by "\n")
+  let pos = 0;
+  const paras = c.narration.map(p => {
+    const html = p.split(/(\s+)/).map(tok => {
+      const start = pos; pos += tok.length;
+      return /^\s+$/.test(tok) || !tok ? esc(tok) : `<span class="w" data-o="${start}" data-e="${start + tok.length}">${esc(tok)}</span>`;
+    }).join("");
+    pos += 1; // the "\n" between paragraphs
+    return `<p>${html}</p>`;
+  });
+  return `<div class="narration" id="narration">${paras.join("")}</div>`;
+}
+
+function listenHTML() {
+  return `<div class="listen" id="listen">
+    <div class="row">
+      <button class="play" id="l-play" type="button" aria-label="להאזין">${PLAY_ICON}</button>
+      <div class="bar">
+        <div class="track" id="l-track"><div class="fill" id="l-fill"></div></div>
+        <div class="time"><span id="l-cur">0:00</span><span id="l-dur"></span></div>
+      </div>
+    </div>
+    <button class="music" id="l-music" type="button" aria-pressed="${state.music !== false}">מוזיקת רקע: ${state.music !== false ? "פועלת" : "כבויה"}</button>
+  </div>`;
+}
+
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+function stopListening() {
+  if (!listen) return;
+  listen.voice.pause(); listen.bg.pause();
+  listen.voice.removeAttribute("src"); listen.voice.load();
+  cancelAnimationFrame(listen.raf);
+  listen = null;
+}
+
+function bindListen(c, month) {
+  stopListening();
+  const spans = [...document.querySelectorAll("#narration .w")];
+  // for each timed word, the span that holds it
+  const words = c.timing.words.map(([t, d, o]) => ({ t, d, i: spans.findIndex(s => o >= +s.dataset.o && o < +s.dataset.e) })).filter(w => w.i >= 0);
+  const voice = new Audio(c.audio); voice.preload = "metadata";
+  const bg = new Audio(`/app/audio/bg-${month}.mp3`); bg.loop = true; bg.preload = "none";
+  const L = listen = { voice, bg, raf: 0, current: -1, ctx: null, gain: null };
+  const narr = $("#narration"), playBtn = $("#l-play");
+  $("#l-dur").textContent = mmss(c.timing.end || 0);
+  voice.addEventListener("loadedmetadata", () => { $("#l-dur").textContent = mmss(voice.duration); });
+
+  const musicOn = () => state.music !== false;
+  function bgVolume() { if (L.gain) L.gain.gain.value = musicOn() ? BG_LEVEL : 0; else bg.volume = musicOn() ? BG_LEVEL : 0; }
+  function ensureCtx() {
+    if (L.ctx) return;
+    try { // through Web Audio so the music volume also works on iPhone
+      L.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      L.gain = L.ctx.createGain();
+      L.ctx.createMediaElementSource(bg).connect(L.gain).connect(L.ctx.destination);
+    } catch {}
+    bgVolume();
+  }
+  function indexAt(t) {
+    let lo = 0, hi = words.length - 1, ans = -1;
+    while (lo <= hi) { const k = (lo + hi) >> 1; if (words[k].t <= t + 0.05) { ans = k; lo = k + 1; } else hi = k - 1; }
+    if (ans >= 0 && t > words[ans].t + words[ans].d + 0.6) return -1; // pause between paragraphs
+    return ans;
+  }
+  function mark(k) {
+    const i = k >= 0 ? words[k].i : -1;
+    if (i === L.current) return;
+    const upTo = i >= 0 ? i : L.current;
+    spans.forEach((s, j) => { s.classList.toggle("read", j < upTo || (i < 0 && j <= upTo)); s.classList.toggle("now", j === i); });
+    if (i >= 0) {
+      const r = spans[i].getBoundingClientRect();
+      if (r.top < 80 || r.bottom > innerHeight - 120) spans[i].scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      L.current = i;
+    }
+  }
+  function tick() {
+    if (listen !== L) return;
+    const t = voice.currentTime;
+    mark(indexAt(t));
+    $("#l-cur").textContent = mmss(t);
+    if (voice.duration) $("#l-fill").style.width = `${(t / voice.duration) * 100}%`;
+    if (!voice.paused) L.raf = requestAnimationFrame(tick);
+  }
+  function setUI(on) {
+    playBtn.innerHTML = on ? PAUSE_ICON : PLAY_ICON;
+    playBtn.setAttribute("aria-label", on ? "השהיה" : "להאזין");
+    narr.classList.toggle("playing", on || voice.currentTime > 0);
+  }
+
+  playBtn.addEventListener("click", async () => {
+    ensureCtx();
+    if (L.ctx?.state === "suspended") await L.ctx.resume().catch(() => {});
+    if (voice.paused) {
+      if (voice.ended) voice.currentTime = 0;
+      try { await voice.play(); } catch { toast("לא הצלחנו לנגן. כדאי לבדוק את החיבור לרשת."); return; }
+      if (musicOn()) bg.play().catch(() => {});
+    } else { voice.pause(); bg.pause(); }
+  });
+  voice.addEventListener("play", () => { setUI(true); tick(); });
+  voice.addEventListener("pause", () => setUI(false));
+  voice.addEventListener("ended", () => {
+    setUI(false); mark(-1);
+    // let the music fade out gently after the voice ends
+    if (L.gain && L.ctx) { const g = L.gain.gain; g.setValueAtTime(g.value, L.ctx.currentTime); g.linearRampToValueAtTime(0, L.ctx.currentTime + 4); setTimeout(() => { bg.pause(); bgVolume(); }, 4200); }
+    else bg.pause();
+  });
+
+  $("#l-music").addEventListener("click", e => {
+    state.music = !musicOn(); save();
+    e.currentTarget.setAttribute("aria-pressed", String(musicOn()));
+    e.currentTarget.textContent = `מוזיקת רקע: ${musicOn() ? "פועלת" : "כבויה"}`;
+    bgVolume();
+    if (musicOn() && !voice.paused) { ensureCtx(); bg.play().catch(() => {}); }
+    if (!musicOn()) bg.pause();
+  });
+  narr.addEventListener("click", e => {
+    const s = e.target.closest(".w"); if (!s || !voice.duration) return;
+    const i = spans.indexOf(s);
+    const w = words.find(x => x.i >= i);
+    if (w) { voice.currentTime = Math.max(0, w.t - 0.05); L.current = -2; tick(); }
+  });
+  $("#l-track").addEventListener("click", e => {
+    if (!voice.duration) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    voice.currentTime = ((r.right - e.clientX) / r.width) * voice.duration; // fills from the right
+    L.current = -2; tick();
+  });
 }
 
 function backBar() {
