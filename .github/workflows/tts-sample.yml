@@ -18,7 +18,7 @@ jobs:
       - run: |
           set -o pipefail
           mkdir -p tts-out
-          (python -m pip show edge-tts | head -2; python scripts/tts-sample.py 2 && python scripts/tts-sample.py 3) 2>&1 | tee tts-out/log.txt
+          (python -m pip show edge-tts; python scripts/tts-sample.py 2 && python scripts/tts-sample.py 3) 2>&1 | tee tts-out/log.txt
       - if: always()
         run: |
           git config user.name "tts-bot"
