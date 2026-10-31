@@ -116,6 +116,26 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 
 .notice{display:grid;gap:10px;border-radius:16px;padding:16px 18px;background:var(--band)}
 .notice h3{font-size:19px}
+/* the agreement: commitment screen before day 1, and the messages along the way */
+.pact{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;display:grid;gap:14px;overflow:hidden}
+.pact::before,.milestone::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:linear-gradient(to left, transparent, var(--bronze-hi) 25%, var(--bronze) 50%, var(--bronze-hi) 75%, transparent)}
+.pact .sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pact .sides div{display:grid;gap:6px;align-content:start;min-width:0}
+.pact .sides h3{font-size:17px}
+.pact .sides p{font-size:15px;color:var(--muted);line-height:1.5}
+.pact .sides .yours h3{color:var(--bronze-ink)}
+.pledge{border:1.5px solid var(--bronze);border-radius:20px;padding:20px;display:grid;gap:16px;background:color-mix(in srgb, var(--bronze) 7%, var(--surface))}
+.pledge blockquote{margin:0;font-family:var(--display);font-size:clamp(22px,6vw,26px);line-height:1.35}
+.pledge .btn{background:linear-gradient(160deg, var(--bronze-hi), var(--bronze) 45%, var(--bronze-lo));color:#FFF8EF;text-shadow:0 1px 0 rgba(0,0,0,.18);transition:transform .2s ease}
+.pledge .btn:active{transform:scale(.98)}
+.pledge .btn.sealed{pointer-events:none}
+.pledge .btn svg{width:22px;height:22px}
+.seal{animation:seal .6s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes seal{from{transform:scale(.4) rotate(-30deg);opacity:0}to{transform:none;opacity:1}}
+.milestone{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;display:grid;gap:6px}
+.milestone .eyebrow{color:var(--bronze-ink)}
+.milestone h3{font-size:22px}
+.milestone .x{justify-self:start;margin-top:4px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 
 /* day */
@@ -349,7 +369,7 @@ function answerByKey(n, key) {
 }
 
 // ---------------------------------------------------------------- router
-const routes = { home: renderHome, day: renderDay, journal: renderJournal, settings: renderSettings, welcome: renderWelcome, install: renderInstallFirst };
+const routes = { home: renderHome, day: renderDay, journal: renderJournal, settings: renderSettings, welcome: renderWelcome, install: renderInstallFirst, commit: renderCommit };
 
 function route() {
   const hash = location.hash.replace(/^#\/?/, "");
@@ -359,6 +379,7 @@ function route() {
     if (isIOS() && !isStandalone() && sessionStorage.getItem("hs-skip-install") !== "1") return show("install");
     return show("welcome");
   }
+  if (!state.committed) return show("commit");
   if (name === "day" && arg) return show("day", Number(arg));
   if (name === "journal") return show("journal");
   if (name === "settings") return show("settings");
@@ -477,6 +498,73 @@ function renderWelcome() {
   });
 }
 
+// before day 1: our part, his part, and one tap on "אני מתחייב". Saved only on this phone.
+function renderCommit() {
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="topbar"><span class="brand">חיים שלי</span></div>
+      <div class="stack">
+        <p class="eyebrow" style="color:var(--bronze-ink)">לפני שמתחילים</p>
+        <h1 style="font-size:clamp(32px,9vw,42px)">אנחנו עשינו את החלק שלנו.</h1>
+        <p class="muted">90 ימים, כל אחד נכתב בכוונה. החלק שלך קצר יותר: כמה דקות ביום. אבל אותו אף אחד לא יכול לעשות במקומך.</p>
+      </div>
+      <div class="pact">
+        <div class="sides">
+          <div><h3>החלק שלנו</h3><p>90 ימים כתובים ומוקלטים, ותזכורות בשעות שתבחר.</p></div>
+          <div class="yours"><h3>החלק שלך</h3><p>כמה דקות ביום, וצעד אחד קטן.</p></div>
+        </div>
+        <p style="font-weight:500">יהיו ימים שלא תרצה לפתוח. זה בסדר. מה שחשוב זה שתחזור.</p>
+      </div>
+      <div class="pledge">
+        <blockquote>אני נותן לעצמי 90 ימים. כמה דקות ביום. וגם כשאפספס, אחזור.</blockquote>
+        <button class="btn wide" id="pledge" type="button">אני מתחייב</button>
+      </div>
+    </div>`;
+  $("#pledge").addEventListener("click", e => {
+    const b = e.currentTarget;
+    state.committed = todayISO(); save();
+    b.classList.add("sealed");
+    b.innerHTML = `<span class="seal">${ICON.check}</span>התחייבת`;
+    navigator.vibrate?.(30);
+    setTimeout(() => { location.hash = countDone() ? "#/" : "#/day/1"; route(); }, calm.matches ? 300 : 1100);
+  });
+}
+
+// the message of the day on the way (from /api/program), or a word when he comes back after a few days away
+function milestoneHTML(reached) {
+  const today = todayISO();
+  if (state.back?.date === today && !state.back.closed) return `
+    <div class="milestone" id="milestone" data-kind="back">
+      <span class="eyebrow">ברוך שובך</span>
+      <h3>חזרת. זה מה שחשוב.</h3>
+      <p class="small muted">יהיו ימים שלא תרצה לפתוח, ואמרנו שזה בסדר. לא צריך להשלים הכול. ממשיכים מהיום.</p>
+      <button class="btn quiet x" type="button">ממשיכים</button>
+    </div>`;
+  const m = program?.milestones?.find(x => x.day === Math.min(reached, 90));
+  if (!m || state.milestones?.includes(m.day)) return "";
+  return `
+    <div class="milestone" id="milestone" data-kind="day" data-day="${m.day}">
+      <span class="eyebrow">יום ${m.day} · ההסכם שלנו</span>
+      <h3>${esc(m.title)}</h3>
+      <p class="small muted">${esc(m.text)}</p>
+      <button class="btn quiet x" type="button">תודה</button>
+    </div>`;
+}
+function bindMilestone() {
+  const el = $("#milestone"); if (!el) return;
+  el.querySelector(".x").addEventListener("click", () => {
+    if (el.dataset.kind === "back") state.back.closed = true;
+    else state.milestones = [...(state.milestones || []), Number(el.dataset.day)];
+    save(); el.remove();
+  });
+}
+// remembers the last day he opened the app, to welcome him back after three days or more
+function noteVisit() {
+  const today = todayISO(), last = state.seen;
+  if (last && last !== today && daysBetween(last, today) >= 3 && countDone() > 0) state.back = { date: today };
+  if (last !== today) { state.seen = today; save(); }
+}
+
 function trackHTML() {
   const open = openThrough(), reached = reachedDay(), allowed = allowedDays();
   let html = "";
@@ -495,6 +583,7 @@ function trackHTML() {
 
 function renderHome() {
   if (!program) return renderNoContent();
+  noteVisit();
   const reached = reachedDay(), allowed = allowedDays();
   // on the first day both days are open: show day 1 until it is done
   const n = reached === 2 && dayStatus(1) !== "done" ? 1 : Math.min(reached, allowed);
@@ -509,6 +598,7 @@ function renderHome() {
     <div class="stack-lg">
       <div class="band" id="band"><canvas id="band-c" role="img" aria-label="שדה קנים שגדל עם כל יום שהשלמת. אפשר לגעת בקנים."></canvas><span class="cap" id="band-cap"></span></div>
       <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${n} מתוך 90</span></div>
+      ${locked ? "" : milestoneHTML(reached)}
       ${installBanner()}
       ${pushBanner()}
       ${locked ? paywall() : `
@@ -529,6 +619,7 @@ function renderHome() {
   bindTrack();
   bindInstallBanner();
   bindPushBanner();
+  bindMilestone();
   startBand("reeds");
   // the banner appears once we know the server has push turned on
   if (pushKey === undefined && !state.push?.on && pushSupport() === "ok") getPushKey().then(k => { if (k && location.hash.replace(/^#\/?/, "") === "") renderHome(); });
@@ -1389,7 +1480,7 @@ function renderSettings() {
           <input type="text" id="code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="הקישור או הקוד מהמייל" aria-label="קוד גישה">
           <button class="btn ghost" type="submit">הפעלה</button>
         </form>`}
-        <p class="muted small">התחלת ב${state.start ? parseISO(state.start).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" }) : "—"}.</p>
+        <p class="muted small">התחלת ב${state.start ? parseISO(state.start).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" }) : "—"}.${state.committed ? ` התחייבת לעצמך ל-90 ימים ב${parseISO(state.committed).toLocaleDateString("he-IL", { day: "numeric", month: "long" })}.` : ""}</p>
       </section>
       <section>
         <h2>מותאם אליך</h2>
