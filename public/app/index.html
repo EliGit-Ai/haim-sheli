@@ -144,7 +144,10 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 /* living band at the top: reeds on the home screen, a breathing circle inside a day */
 .band{position:relative;height:118px;margin:-20px -16px 0;background:radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bronze) 16%, transparent), transparent 75%),linear-gradient(to bottom, var(--sky), var(--bg))}
 .band::after{content:"";position:absolute;inset-inline:0;bottom:0;height:2px;background:linear-gradient(to left, transparent, var(--bronze-hi) 30%, var(--bronze) 50%, var(--bronze-hi) 70%, transparent);opacity:.7;pointer-events:none}
-.band.breath{height:104px}
+.band.breath{height:176px}
+.band.breath .cap{inset-inline-start:auto;inset-inline-end:16px;top:14px}
+.band .back{position:absolute;top:6px;inset-inline-start:10px;z-index:1;padding:6px 8px;border-radius:999px}
+.band .back:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
 .band canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:pointer}
 .band .cap{position:absolute;top:10px;inset-inline-start:16px;font-size:13px;color:var(--muted);pointer-events:none}
 .band .go{position:absolute;bottom:10px;inset-inline-end:16px;font:inherit;font-size:13px;font-weight:700;color:var(--bronze-ink);background:color-mix(in srgb, var(--surface) 85%, transparent);border:1px solid color-mix(in srgb, var(--bronze) 55%, transparent);border-radius:999px;padding:5px 12px;cursor:pointer}
@@ -912,8 +915,7 @@ function renderDay(n) {
 
   $("#view").innerHTML = `
     <div class="stack-lg">
-      <div class="band breath" id="band"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button></div>
-      ${backBar()}
+      <div class="band breath" id="band"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button><button class="back" id="back" type="button">${ICON.back}חזרה</button></div>
       <div class="day-head">
         <span class="eyebrow">יום ${n}${m.weekName || c.weekName ? ` · ${esc(c.weekName || m.weekName)}` : ""}</span>
         <h1>${esc(c.title)}</h1>
@@ -1027,10 +1029,10 @@ function drawBreath(B, dt) {
   const p = B.t % (BREATH_IN + BREATH_OUT);
   const inhale = p < BREATH_IN;
   const k = inhale ? 0.5 - 0.5 * Math.cos(Math.PI * p / BREATH_IN) : 0.5 + 0.5 * Math.cos(Math.PI * (p - BREATH_IN) / BREATH_OUT);
-  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.26, cx = w / 2, cy = h / 2 + 6, moss = cssVar("--bronze"), hi = cssVar("--bronze-hi"), lo = cssVar("--bronze-lo");
+  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.27, cx = w / 2, cy = h / 2 + 4, moss = cssVar("--bronze"), hi = cssVar("--bronze-hi"), lo = cssVar("--bronze-lo");
   for (let ring = 3; ring >= 1; ring--) {
     ctx.globalAlpha = 0.08 * ring; ctx.fillStyle = moss;
-    ctx.beginPath(); ctx.arc(cx, cy, r + ring * 6 * (still ? 0.7 : k), 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, r + ring * 9 * (still ? 0.7 : k), 0, Math.PI * 2); ctx.fill();
   }
   const g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r);
   g.addColorStop(0, hi); g.addColorStop(0.55, moss); g.addColorStop(1, lo);
