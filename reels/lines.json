@@ -1,0 +1,40 @@
+{
+  "voices": {
+    "narrator": { "voice": "it-IT-GiuseppeMultilingualNeural", "rate": "-8%" },
+    "man": { "voice": "he-IL-AvriNeural", "rate": "-4%" },
+    "woman": { "voice": "he-IL-HilaNeural", "rate": "-2%" }
+  },
+  "lines": [
+    { "id": "s_w1", "who": "woman", "text": "איזה יום. הבוס שוב הוריד עליי מול כולם." },
+    { "id": "s_m1", "who": "man", "text": "אז מחר תגידי לו שזה לא מקובל. ותבקשי פגישה. ותתעדי הכול במייל." },
+    { "id": "s_w2", "who": "woman", "text": "באמת? תודה. עזוב." },
+    { "id": "s_n1", "who": "narrator", "text": "רגע. העצה הייתה טובה." },
+    { "id": "s_n2", "who": "narrator", "text": "אבל היא לא ביקשה עצה." },
+    { "id": "s_n3", "who": "narrator", "text": "עוד פעם." },
+    { "id": "s_m2", "who": "man", "text": "זה נשמע ממש קשה. ספרי לי עוד." },
+    { "id": "s_w3", "who": "woman", "text": "תודה. פשוט הייתי צריכה שתקשיב." },
+    { "id": "s_n4", "who": "narrator", "text": "לפעמים הפתרון הכי טוב, הוא להקשיב." },
+
+    { "id": "end", "who": "narrator", "text": "זה יום אחד מתוך תשעים. שלושת הימים הראשונים, בחינם." },
+
+    { "id": "h_1", "who": "narrator", "text": "הערב שלך נקבע, לפני שאתה נכנס הביתה." },
+    { "id": "h_2", "who": "narrator", "text": "נכנס עם הלחץ של היום?" },
+    { "id": "h_3", "who": "narrator", "text": "הוא מתפזר על כולם." },
+    { "id": "h_4", "who": "narrator", "text": "שלוש נשימות ברכב." },
+    { "id": "h_5", "who": "narrator", "text": "משפט ראשון חם." },
+    { "id": "h_6", "who": "narrator", "text": "ורק אז, הדלת." },
+
+    { "id": "b_1", "who": "narrator", "text": "יש לך עשר שניות? תנסה את זה עכשיו." },
+    { "id": "b_2", "who": "narrator", "text": "כשאתה לחוץ, הנשימה נהיית קצרה." },
+    { "id": "b_3", "who": "narrator", "text": "והגוף מרגיש שיש סכנה." },
+    { "id": "b_4", "who": "narrator", "text": "שאיפה, דרך האף." },
+    { "id": "b_5", "who": "narrator", "text": "ונשיפה, לאט." },
+    { "id": "b_6", "who": "narrator", "text": "זה לא קסם. אבל זה רגע של שליטה, בדיוק כשצריך." },
+
+    { "id": "a_1", "who": "narrator", "text": "נתת לה פתרון מעולה. והיא התעצבנה." },
+    { "id": "a_2", "who": "narrator", "text": "זה לא שהעצה לא טובה." },
+    { "id": "a_3", "who": "narrator", "text": "זה שהיא לא ביקשה עצה." },
+    { "id": "a_4", "who": "narrator", "text": "בפעם הבאה, רק משפט אחד:" },
+    { "id": "a_5", "who": "narrator", "text": "זה נשמע ממש קשה. ספרי לי עוד." }
+  ]
+}
