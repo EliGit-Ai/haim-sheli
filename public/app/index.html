@@ -28,8 +28,8 @@
 
 :root{
   --bg:#EEF1EA; --surface:#F7F8F4; --band:#E2E8DC; --ink:#1D2820; --muted:#56635A; --line:#C9D2C3;
-  --moss:#4E6B3C; --moss-ink:#F4F7F0; --sand:#B89A6A;
-  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0; --sky:#E4EBDD; --head:#9C7B4F;
+  --moss:#4E6B3C; --moss-ink:#F4F7F0; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
+  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0; --sky:#E4EBDD; --head:var(--bronze);
   --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
   --body:"Heebo", "Segoe UI", Arial, sans-serif;
   --safe-b:env(safe-area-inset-bottom, 0px);
@@ -37,12 +37,12 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
-  --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
-  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:#B8976A; color-scheme:dark}}
+  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:var(--bronze); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
-  --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
-  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:#B8976A; color-scheme:dark}
+  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:var(--bronze); color-scheme:dark}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
@@ -56,7 +56,7 @@ a{color:inherit}
 [hidden]{display:none!important}
 .muted{color:var(--muted)}
 .small{font-size:15px}
-.eyebrow{font-size:14px;font-weight:700;letter-spacing:.03em;color:var(--moss)}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.03em;color:var(--bronze-ink)}
 :focus-visible{outline:3px solid var(--sand);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
@@ -122,11 +122,12 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
 /* living band at the top: reeds on the home screen, a breathing circle inside a day */
-.band{position:relative;height:118px;margin:-20px -16px 0;background:linear-gradient(to bottom, var(--sky), var(--bg))}
+.band{position:relative;height:118px;margin:-20px -16px 0;background:radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bronze) 16%, transparent), transparent 75%),linear-gradient(to bottom, var(--sky), var(--bg))}
+.band::after{content:"";position:absolute;inset-inline:0;bottom:0;height:2px;background:linear-gradient(to left, transparent, var(--bronze-hi) 30%, var(--bronze) 50%, var(--bronze-hi) 70%, transparent);opacity:.7;pointer-events:none}
 .band.breath{height:104px}
 .band canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:pointer}
 .band .cap{position:absolute;top:10px;inset-inline-start:16px;font-size:13px;color:var(--muted);pointer-events:none}
-.band .go{position:absolute;bottom:10px;inset-inline-end:16px;font:inherit;font-size:13px;font-weight:700;color:var(--moss);background:color-mix(in srgb, var(--surface) 80%, transparent);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.band .go{position:absolute;bottom:10px;inset-inline-end:16px;font:inherit;font-size:13px;font-weight:700;color:var(--bronze-ink);background:color-mix(in srgb, var(--surface) 85%, transparent);border:1px solid color-mix(in srgb, var(--bronze) 55%, transparent);border-radius:999px;padding:5px 12px;cursor:pointer}
 .band .go:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
 .narration{display:grid;gap:14px;font-family:var(--body);font-weight:500;font-size:20px;line-height:1.65}
 .narration .w{display:inline-block;border-radius:6px;padding-inline:2px;margin-inline:-1px;transform-origin:center 60%;transition:color .25s ease, transform .18s ease, background-color .25s ease}
@@ -810,7 +811,7 @@ function makeReedField(count) {
   const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
   return Array.from({ length: count }, (_, i) => ({
     x: (i + 0.5 + (rnd() - 0.5) * 0.8) / count, h: 0.32 + rnd() * 0.45, lean: (rnd() - 0.5) * 0.12,
-    phase: rnd() * 6.28, tone: 1 + Math.floor(rnd() * 3), head: rnd() < 0.35, width: 1.4 + rnd() * 1.6,
+    phase: rnd() * 6.28, tone: 1 + Math.floor(rnd() * 3), head: rnd() < 0.5, width: 1.4 + rnd() * 1.6,
     order: i, rank: rnd(), a: 0, v: 0, grow: 0, target: 0,
   }));
 }
@@ -861,7 +862,7 @@ function bandFrame(now) {
 function drawField(B) {
   const { ctx, w, h } = B, still = calm.matches;
   ctx.clearRect(0, 0, w, h);
-  const col = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--m3") }, head = cssVar("--head");
+  const col = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--m3") }, head = cssVar("--bronze"), bronzeHi = cssVar("--bronze-hi"), bronzeLo = cssVar("--bronze-lo");
   for (const rd of [...B.reeds].sort((a, b) => a.tone - b.tone)) {
     rd.grow += (rd.target - rd.grow) * (still ? 1 : 0.05);
     if (rd.grow < 0.01) continue;
@@ -880,7 +881,8 @@ function drawField(B) {
     }
     if (rd.head && len > 36) {
       ctx.save(); ctx.translate(tipX, tipY); ctx.rotate(rd.a);
-      ctx.fillStyle = head; ctx.beginPath(); ctx.ellipse(0, 5, 2.6, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      const g = ctx.createLinearGradient(-3, 0, 3, 0); g.addColorStop(0, bronzeLo); g.addColorStop(0.45, head); g.addColorStop(0.7, bronzeHi); g.addColorStop(1, head);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 5, 2.8, 8.5, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     }
   }
 }
@@ -892,12 +894,14 @@ function drawBreath(B, dt) {
   const p = B.t % (BREATH_IN + BREATH_OUT);
   const inhale = p < BREATH_IN;
   const k = inhale ? 0.5 - 0.5 * Math.cos(Math.PI * p / BREATH_IN) : 0.5 + 0.5 * Math.cos(Math.PI * (p - BREATH_IN) / BREATH_OUT);
-  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.26, cx = w / 2, cy = h / 2 + 6, moss = cssVar("--moss");
+  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.26, cx = w / 2, cy = h / 2 + 6, moss = cssVar("--bronze"), hi = cssVar("--bronze-hi"), lo = cssVar("--bronze-lo");
   for (let ring = 3; ring >= 1; ring--) {
     ctx.globalAlpha = 0.08 * ring; ctx.fillStyle = moss;
     ctx.beginPath(); ctx.arc(cx, cy, r + ring * 6 * (still ? 0.7 : k), 0, Math.PI * 2); ctx.fill();
   }
-  ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+  const g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r);
+  g.addColorStop(0, hi); g.addColorStop(0.55, moss); g.addColorStop(1, lo);
+  ctx.globalAlpha = 0.95; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   if (B.guide > 0) {
     B.guide -= dt;
     if (B.guide <= 0) { B.guide = 0; const go = $("#band-go"); if (go) go.textContent = "לנשום דקה"; toast("דקה של נשימה. כל הכבוד."); }
