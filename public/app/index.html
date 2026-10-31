@@ -767,7 +767,7 @@ function renderDay(n) {
   bindBack();
   bindDay(n, c);
   if (c.audio && c.timing) bindListen(c);
-  musicFor(m.month || (n <= 30 ? 1 : n <= 60 ? 2 : 3));
+  musicFor(1); // the same soundscape on every day
 }
 
 // ---------- listening: narration over the month's background music, with the spoken word highlighted
@@ -777,6 +777,8 @@ const PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="tr
 // It starts on the first tap (phones allow sound only after one), keeps playing while he moves
 // between days, crossfades when the month changes, dips under the narration, and fades out when
 // he leaves the days (home, journal, settings) or the app goes to the background.
+// one jungle soundscape for every day, kept low: it is a background, not a soundtrack
+const MUSIC_SRC = "/app/audio/bg-jungle.mp3";
 const MUSIC_LEVEL = 0.3, MUSIC_UNDER_VOICE = 0.18;
 const music = { el: null, ctx: null, gain: null, month: 0, want: 0, ducked: false, fadeTimer: 0 };
 const musicOn = () => state.music !== false;
@@ -794,7 +796,7 @@ function rampTo(level, secs) {
   } else music.el.volume = level;
 }
 function loadTrack(month) {
-  const el = new Audio(`/app/audio/bg-${month}.mp3`);
+  const el = new Audio(MUSIC_SRC);
   el.loop = true; el.preload = "auto";
   let gain = null;
   if (music.ctx) {
