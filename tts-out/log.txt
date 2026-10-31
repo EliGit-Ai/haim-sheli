@@ -1,3 +1,12 @@
 Name: edge-tts
 Version: 7.3.1
-ERROR: Pipe to stdout was broken
+Summary: Microsoft Edge's TTS
+Home-page: https://github.com/rany2/edge-tts
+Author: rany
+Author-email: ranygh@riseup.net
+License: 
+Location: /opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages
+Requires: aiohttp, certifi, tabulate, typing-extensions
+Required-by: 
+2 76 words
+3 75 words
