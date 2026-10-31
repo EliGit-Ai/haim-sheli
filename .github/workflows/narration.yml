@@ -1,0 +1,29 @@
+# מייצר מחדש את ההקראה (קול + זמן לכל מילה) ושומר אותה בחזרה בענף.
+# רץ ידנית (Actions → Build narration → Run workflow), או בכל דחיפה לענף narration שמשנה את התוכן או את הסקריפט.
+# ימים שהטקסט שלהם לא השתנה לא נוצרים מחדש.
+name: Build narration
+on:
+  workflow_dispatch:
+  push:
+    branches: [narration]
+    paths: [content/program.json, scripts/build-narration.py, .github/workflows/narration.yml]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install edge-tts==7.3.1
+      - run: python scripts/build-narration.py 2>&1 | tee narration-log.txt
+      - if: always()
+        run: |
+          git config user.name "narration-bot"
+          git config user.email "narration-bot@users.noreply.github.com"
+          git add public/app/audio/n content/narration.json narration-log.txt
+          git commit -m "Build narration audio" || exit 0
+          git pull --rebase
+          git push
