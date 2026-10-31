@@ -122,11 +122,14 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
 /* living band at the top: reeds on the home screen, a breathing circle inside a day */
-.band{position:relative;height:118px;margin:-20px -16px 0;background:linear-gradient(to bottom, var(--sky), var(--bg))}
-.band.breath{height:104px}
+.band{--dusk-sky:#0E2A33;--dusk-mid:#173E48;--dusk-glow:#F2B36B;--dusk-text:#E9DFC9;--dusk-reed1:#1C4752;--dusk-reed2:#123540;--dusk-reed3:#0A2129;
+  position:relative;height:150px;margin:-20px -16px 0;overflow:hidden;border-radius:0 0 26px 26px;
+  background:radial-gradient(60% 85% at 50% 108%, color-mix(in srgb, var(--dusk-glow) 70%, transparent), transparent 70%),
+             linear-gradient(to bottom, var(--dusk-sky), var(--dusk-mid))}
+.band.breath{height:120px}
 .band canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:pointer}
-.band .cap{position:absolute;top:10px;inset-inline-start:16px;font-size:13px;color:var(--muted);pointer-events:none}
-.band .go{position:absolute;bottom:10px;inset-inline-end:16px;font:inherit;font-size:13px;font-weight:700;color:var(--moss);background:color-mix(in srgb, var(--surface) 80%, transparent);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.band .cap{position:absolute;top:12px;inset-inline-start:18px;font-size:13px;color:var(--dusk-text);opacity:.85;pointer-events:none}
+.band .go{position:absolute;bottom:12px;inset-inline-end:16px;font:inherit;font-size:13px;font-weight:700;color:#1B140A;background:var(--dusk-glow);border:0;border-radius:999px;padding:6px 14px;cursor:pointer}
 .band .go:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
 .narration{display:grid;gap:14px;font-family:var(--body);font-weight:500;font-size:20px;line-height:1.65}
 .narration .w{display:inline-block;border-radius:6px;padding-inline:2px;margin-inline:-1px;transform-origin:center 60%;transition:color .25s ease, transform .18s ease, background-color .25s ease}
@@ -809,7 +812,7 @@ function makeReedField(count) {
   let r = 7;
   const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
   return Array.from({ length: count }, (_, i) => ({
-    x: (i + 0.5 + (rnd() - 0.5) * 0.8) / count, h: 0.32 + rnd() * 0.45, lean: (rnd() - 0.5) * 0.12,
+    x: (i + 0.5 + (rnd() - 0.5) * 0.8) / count, h: 0.45 + rnd() * 0.5, lean: (rnd() - 0.5) * 0.12,
     phase: rnd() * 6.28, tone: 1 + Math.floor(rnd() * 3), head: rnd() < 0.35, width: 1.4 + rnd() * 1.6,
     order: i, rank: rnd(), a: 0, v: 0, grow: 0, target: 0,
   }));
@@ -861,7 +864,8 @@ function bandFrame(now) {
 function drawField(B) {
   const { ctx, w, h } = B, still = calm.matches;
   ctx.clearRect(0, 0, w, h);
-  const col = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--m3") }, head = cssVar("--head");
+  const bs = getComputedStyle(B.canvas.parentElement);
+  const col = { 1: bs.getPropertyValue("--dusk-reed1"), 2: bs.getPropertyValue("--dusk-reed2"), 3: bs.getPropertyValue("--dusk-reed3") }, head = bs.getPropertyValue("--dusk-reed3");
   for (const rd of [...B.reeds].sort((a, b) => a.tone - b.tone)) {
     rd.grow += (rd.target - rd.grow) * (still ? 1 : 0.05);
     if (rd.grow < 0.01) continue;
@@ -892,12 +896,12 @@ function drawBreath(B, dt) {
   const p = B.t % (BREATH_IN + BREATH_OUT);
   const inhale = p < BREATH_IN;
   const k = inhale ? 0.5 - 0.5 * Math.cos(Math.PI * p / BREATH_IN) : 0.5 + 0.5 * Math.cos(Math.PI * (p - BREATH_IN) / BREATH_OUT);
-  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.26, cx = w / 2, cy = h / 2 + 6, moss = cssVar("--moss");
+  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.24, cx = w / 2, cy = h / 2 + 4, moss = getComputedStyle(B.canvas.parentElement).getPropertyValue("--dusk-glow");
   for (let ring = 3; ring >= 1; ring--) {
-    ctx.globalAlpha = 0.08 * ring; ctx.fillStyle = moss;
+    ctx.globalAlpha = 0.06 * ring + 0.06 * k; ctx.fillStyle = moss;
     ctx.beginPath(); ctx.arc(cx, cy, r + ring * 6 * (still ? 0.7 : k), 0, Math.PI * 2); ctx.fill();
   }
-  ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+  ctx.globalAlpha = 0.6 + 0.35 * k; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
   if (B.guide > 0) {
     B.guide -= dt;
     if (B.guide <= 0) { B.guide = 0; const go = $("#band-go"); if (go) go.textContent = "לנשום דקה"; toast("דקה של נשימה. כל הכבוד."); }
