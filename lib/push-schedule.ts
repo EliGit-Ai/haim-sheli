@@ -3,6 +3,8 @@
 //   ימים 1 ו-2 נפתחים ביום ההתחלה, ומיום 3 נפתח יום אחד בכל יום קלנדרי.
 //   שומר שבת מקבל את היום של שבת כבר ביום שישי, ולא מקבל התראות בשבת.
 
+import { milestoneFor } from "./milestones";
+
 export type Slot = "morning" | "midday" | "evening";
 export const SLOTS: Slot[] = ["morning", "midday", "evening"];
 
@@ -99,7 +101,10 @@ export function due(sub: Sub, program: Program, now: Date): Message[] {
         ? { slot, day: n, title: "ימים 1–2 מחכים לך", body: "שני הימים הראשונים כבר פתוחים. כמה דקות, ומתחילים.", url }
         : withShabbatDay
           ? { slot, day: n, title: `ימים ${n}–${n + 1} נפתחו`, body: `${day.title}. והיום של שבת כבר מחכה לך.`, url }
-          : { slot, day: n, title: `יום ${n} נפתח`, body: day.title, url });
+          : milestoneFor(n)
+            // a day on the way: the message of the agreement instead of the day's title
+            ? { slot, day: n, title: `יום ${n} · ${milestoneFor(n)!.title}`, body: milestoneFor(n)!.text, url }
+            : { slot, day: n, title: `יום ${n} נפתח`, body: day.title, url });
     } else if (slot === "midday") {
       if (!day.midday) continue; // ימי מנוחה בלי תזכורת
       out.push({ slot, day: n, title: "חיים שלי", body: clip(day.midday), url });
