@@ -29,7 +29,7 @@
 :root{
   --bg:#EEF1EA; --surface:#F7F8F4; --band:#E2E8DC; --ink:#1D2820; --muted:#56635A; --line:#C9D2C3;
   --moss:#4E6B3C; --moss-ink:#F4F7F0; --sand:#B89A6A;
-  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0;
+  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0; --sky:#E4EBDD; --head:#9C7B4F;
   --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
   --body:"Heebo", "Segoe UI", Arial, sans-serif;
   --safe-b:env(safe-area-inset-bottom, 0px);
@@ -38,11 +38,11 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
   --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
-  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; color-scheme:dark}}
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:#B8976A; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
   --moss:#9BBE84; --moss-ink:#142012; --sand:#CDB384;
-  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; color-scheme:dark}
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:#B8976A; color-scheme:dark}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
@@ -121,6 +121,13 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 /* day */
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
+/* living band at the top: reeds on the home screen, a breathing circle inside a day */
+.band{position:relative;height:118px;margin:-20px -16px 0;background:linear-gradient(to bottom, var(--sky), var(--bg))}
+.band.breath{height:104px}
+.band canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y;cursor:pointer}
+.band .cap{position:absolute;top:10px;inset-inline-start:16px;font-size:13px;color:var(--muted);pointer-events:none}
+.band .go{position:absolute;bottom:10px;inset-inline-end:16px;font:inherit;font-size:13px;font-weight:700;color:var(--moss);background:color-mix(in srgb, var(--surface) 80%, transparent);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.band .go:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
 .narration{display:grid;gap:14px;font-family:var(--body);font-weight:500;font-size:20px;line-height:1.65}
 .narration .w{display:inline-block;border-radius:6px;padding-inline:2px;margin-inline:-1px;transform-origin:center 60%;transition:color .25s ease, transform .18s ease, background-color .25s ease}
 .narration.playing .w{color:var(--muted)}
@@ -499,6 +506,7 @@ function renderHome() {
 
   $("#view").innerHTML = `
     <div class="stack-lg">
+      <div class="band" id="band"><canvas id="band-c" role="img" aria-label="שדה קנים שגדל עם כל יום שהשלמת. אפשר לגעת בקנים."></canvas><span class="cap" id="band-cap"></span></div>
       <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${n} מתוך 90</span></div>
       ${installBanner()}
       ${pushBanner()}
@@ -520,6 +528,7 @@ function renderHome() {
   bindTrack();
   bindInstallBanner();
   bindPushBanner();
+  startBand("reeds");
   // the banner appears once we know the server has push turned on
   if (pushKey === undefined && !state.push?.on && pushSupport() === "ok") getPushKey().then(k => { if (k && location.hash.replace(/^#\/?/, "") === "") renderHome(); });
 }
@@ -769,6 +778,7 @@ function renderDay(n) {
 
   $("#view").innerHTML = `
     <div class="stack-lg">
+      <div class="band breath" id="band"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button></div>
       ${backBar()}
       <div class="day-head">
         <span class="eyebrow">יום ${n}${m.weekName || c.weekName ? ` · ${esc(c.weekName || m.weekName)}` : ""}</span>
@@ -786,7 +796,114 @@ function renderDay(n) {
   bindBack();
   bindDay(n, c);
   if (c.audio && c.timing) bindListen(c);
+  startBand("breath");
   musicFor(1); // the same soundscape on every day
+}
+
+// ---------- the living band at the top (one animation loop; it stops when the band leaves the screen)
+const calm = matchMedia("(prefers-reduced-motion: reduce)");
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let band = null;
+
+function makeReedField(count) {
+  let r = 7;
+  const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+  return Array.from({ length: count }, (_, i) => ({
+    x: (i + 0.5 + (rnd() - 0.5) * 0.8) / count, h: 0.32 + rnd() * 0.45, lean: (rnd() - 0.5) * 0.12,
+    phase: rnd() * 6.28, tone: 1 + Math.floor(rnd() * 3), head: rnd() < 0.35, width: 1.4 + rnd() * 1.6,
+    order: i, rank: rnd(), a: 0, v: 0, grow: 0, target: 0,
+  }));
+}
+
+function startBand(kind) {
+  const canvas = $("#band-c"); if (!canvas) return;
+  if (band) cancelAnimationFrame(band.raf);
+  const ctx = canvas.getContext("2d");
+  const B = band = { kind, canvas, ctx, w: 0, h: 0, raf: 0, t: 0, last: performance.now(), pointer: null, down: false, guide: 0 };
+  const size = () => {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    B.w = canvas.clientWidth; B.h = canvas.clientHeight;
+    canvas.width = B.w * dpr; canvas.height = B.h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  size();
+  const at = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  canvas.addEventListener("pointerdown", e => { B.pointer = at(e); B.down = true; });
+  canvas.addEventListener("pointermove", e => { B.pointer = at(e); });
+  const leave = () => { B.down = false; B.pointer = null; };
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => canvas.addEventListener(ev, leave));
+
+  if (kind === "reeds") {
+    // more reeds, and taller, with every day he completes
+    B.reeds = makeReedField(60);
+    const done = countDone();
+    const shown = Math.round(8 + (B.reeds.length - 8) * Math.min(1, done / 75));
+    [...B.reeds].sort((a, b) => a.rank - b.rank).forEach((rd, k) => { rd.target = k < shown ? 0.5 + 0.5 * Math.min(1, done / 80) : 0; });
+    $("#band-cap").textContent = done ? `${done === 1 ? "יום אחד" : `${done} ימים`} בשדה שלך` : "השדה שלך מחכה ליום הראשון";
+  } else {
+    $("#band-go")?.addEventListener("click", e => {
+      B.guide = B.guide > 0 ? 0 : 60;
+      e.currentTarget.textContent = B.guide ? "לעצור" : "לנשום דקה";
+    });
+  }
+  B.raf = requestAnimationFrame(bandFrame);
+}
+
+function bandFrame(now) {
+  const B = band;
+  if (!B || !B.canvas.isConnected) { band = null; return; } // he left the screen
+  if (document.hidden) { B.last = now; B.raf = requestAnimationFrame(bandFrame); return; }
+  const dt = Math.min(0.05, (now - B.last) / 1000); B.last = now; B.t += dt;
+  if (B.canvas.clientWidth !== B.w) startBand(B.kind); // rotated or resized
+  if (B.kind === "reeds") drawField(B); else drawBreath(B, dt);
+  B.raf = requestAnimationFrame(bandFrame);
+}
+
+function drawField(B) {
+  const { ctx, w, h } = B, still = calm.matches;
+  ctx.clearRect(0, 0, w, h);
+  const col = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--m3") }, head = cssVar("--head");
+  for (const rd of [...B.reeds].sort((a, b) => a.tone - b.tone)) {
+    rd.grow += (rd.target - rd.grow) * (still ? 1 : 0.05);
+    if (rd.grow < 0.01) continue;
+    const baseX = rd.x * w, len = rd.h * h * 0.95 * rd.grow;
+    const wind = still ? 0 : Math.sin(B.t * 0.55 + rd.phase + rd.x * 3) * 0.1 + Math.sin(B.t * 1.7 + rd.phase * 2) * 0.025;
+    let push = 0;
+    if (B.pointer) { const dx = baseX - B.pointer.x, near = Math.max(0, 1 - Math.abs(dx) / 70); push = Math.sign(dx || 1) * near * (B.down ? 0.85 : 0.45); }
+    rd.v += (rd.lean + wind + push - rd.a) * 0.08; rd.v *= 0.84; rd.a += rd.v; // a spring: bends, then comes back
+    const tipX = baseX + Math.sin(rd.a) * len, tipY = h - Math.cos(rd.a) * len;
+    ctx.strokeStyle = col[rd.tone]; ctx.lineCap = "round"; ctx.lineWidth = rd.width;
+    ctx.beginPath(); ctx.moveTo(baseX, h + 2); ctx.quadraticCurveTo(baseX + Math.sin(rd.a * 0.45) * len * 0.55, h - len * 0.55, tipX, tipY); ctx.stroke();
+    if (rd.order % 3 === 0 && len > 30) {
+      const side = rd.order % 2 ? 1 : -1, lx = baseX + Math.sin(rd.a * 0.3) * len * 0.2, ly = h - len * 0.2;
+      ctx.lineWidth = rd.width * 0.8;
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.quadraticCurveTo(lx + side * 6 + rd.a * 20, ly - len * 0.3, lx + side * 16 + rd.a * 40, ly - len * 0.45); ctx.stroke();
+    }
+    if (rd.head && len > 36) {
+      ctx.save(); ctx.translate(tipX, tipY); ctx.rotate(rd.a);
+      ctx.fillStyle = head; ctx.beginPath(); ctx.ellipse(0, 5, 2.6, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+  }
+}
+
+const BREATH_IN = 4, BREATH_OUT = 6;
+function drawBreath(B, dt) {
+  const { ctx, w, h } = B, still = calm.matches;
+  ctx.clearRect(0, 0, w, h);
+  const p = B.t % (BREATH_IN + BREATH_OUT);
+  const inhale = p < BREATH_IN;
+  const k = inhale ? 0.5 - 0.5 * Math.cos(Math.PI * p / BREATH_IN) : 0.5 + 0.5 * Math.cos(Math.PI * (p - BREATH_IN) / BREATH_OUT);
+  const r = (still ? 0.7 : 0.4 + 0.6 * k) * h * 0.26, cx = w / 2, cy = h / 2 + 6, moss = cssVar("--moss");
+  for (let ring = 3; ring >= 1; ring--) {
+    ctx.globalAlpha = 0.08 * ring; ctx.fillStyle = moss;
+    ctx.beginPath(); ctx.arc(cx, cy, r + ring * 6 * (still ? 0.7 : k), 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+  if (B.guide > 0) {
+    B.guide -= dt;
+    if (B.guide <= 0) { B.guide = 0; const go = $("#band-go"); if (go) go.textContent = "לנשום דקה"; toast("דקה של נשימה. כל הכבוד."); }
+  }
+  const cap = $("#band-cap");
+  if (cap) cap.textContent = B.guide > 0 ? `${inhale ? "שאיפה" : "נשיפה"} · עוד ${Math.ceil(B.guide)} שניות` : (inhale ? "שאיפה" : "נשיפה");
 }
 
 // ---------- listening: narration over the month's background music, with the spoken word highlighted
