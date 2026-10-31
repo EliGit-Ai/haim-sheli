@@ -118,3 +118,23 @@ export function due(sub: Sub, program: Program, now: Date): Message[] {
   }
   return out;
 }
+
+// למה לא נשלח עכשיו כלום למנוי הזה. בלי פרטים אישיים: רק סיבה קצרה, כדי שאפשר לראות אותה ביומן של המשימה המתוזמנת.
+export function why(sub: Sub, program: Program, now: Date): string {
+  const { date, hour, weekday } = localNow(now, sub.tz);
+  if (daysBetween(sub.start_date, date) < 0) return "not-started";
+  if (sub.shabbat && weekday === 6) return "shabbat";
+  const n = daysBetween(sub.start_date, date) + 2;
+  if (n > 90) return "finished";
+  if (n > (sub.full_access ? 90 : FREE_DAYS)) return "free-days-over";
+  if (!contentFor(program, sub, n)) return "no-content";
+  const slots = SLOTS.map(slot => {
+    const h = sub[`${slot}_hour`];
+    if (h === null || h === undefined) return `${slot}:off`;
+    if (sub[`last_${slot}`] === date) return `${slot}:sent-today`;
+    if (hour < h) return `${slot}:later`;
+    if (hour >= h + LATE_WINDOW_HOURS) return `${slot}:missed`;
+    return `${slot}:due`;
+  });
+  return `h${hour} ` + slots.join(",");
+}
