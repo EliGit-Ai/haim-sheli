@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import program from "@/content/program.json";
 import { verifyCode } from "@/lib/access-code.mjs";
 import { FREE_DAYS } from "@/lib/push-schedule";
+import narration from "@/content/narration.json";
 
 // התוכן של האפליקציה (/app).
 // בלי קוד: ימי האתגר החינמי (FREE_DAYS, בזמן הפיילוט כל 90). עם קוד גישה תקין: כל 90 הימים והגרסאות החלופיות.
@@ -12,6 +13,15 @@ export const dynamic = "force-dynamic";
 
 
 type Day = (typeof program.days)[number];
+type Timed = { end: number; words: number[][] };
+const voiced = narration.items as Record<string, Timed | undefined>;
+
+// adds the narration audio and the time of every word, when they exist for this day
+function withAudio<T extends { day: number }>(d: T, prefix: "d" | "nr" | "nk") {
+  const key = `${prefix}${d.day}`;
+  const v = voiced[key];
+  return v ? { ...d, audio: `/app/audio/n/${key}.mp3`, timing: v } : d;
+}
 
 const meta = (d: Day) => ({
   day: d.day,
@@ -36,10 +46,10 @@ export async function GET(req: Request) {
     freeDays: FREE_DAYS,
     months: program.months,
     map: program.days.map(meta),
-    days: program.days.filter(d => allowed(d.day)),
+    days: program.days.filter(d => allowed(d.day)).map(d => withAudio(d, "d")),
     alternates: {
-      noRelationship: program.alternates.noRelationship.filter(d => allowed(d.day)),
-      noKids: program.alternates.noKids.filter(d => allowed(d.day)),
+      noRelationship: program.alternates.noRelationship.filter(d => allowed(d.day)).map(d => withAudio(d, "nr")),
+      noKids: program.alternates.noKids.filter(d => allowed(d.day)).map(d => withAudio(d, "nk")),
     },
   };
 
