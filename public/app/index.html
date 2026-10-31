@@ -28,7 +28,7 @@
 
 :root{
   --bg:#EEF1EA; --surface:#F7F8F4; --band:#E2E8DC; --ink:#1D2820; --muted:#56635A; --line:#C9D2C3;
-  --moss:#4E6B3C; --moss-ink:#F4F7F0; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
+  --cel-a:#2F4F2A; --cel-b:#3E6234; --moss:#4E6B3C; --moss-ink:#F4F7F0; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
   --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0; --sky:#E4EBDD; --head:var(--bronze);
   --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
   --body:"Heebo", "Segoe UI", Arial, sans-serif;
@@ -37,11 +37,11 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
-  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --cel-a:#1C2E1A; --cel-b:#2A4224; --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
   --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:var(--bronze); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
-  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --cel-a:#1C2E1A; --cel-b:#2A4224; --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
   --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:var(--bronze); color-scheme:dark}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -248,6 +248,21 @@ input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;back
 .steps li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:var(--moss);color:var(--moss-ink);display:grid;place-items:center;font-weight:700}
 .ico{display:inline-block;vertical-align:-4px;width:20px;height:20px}
 
+.cel{position:fixed;inset:0;z-index:40;display:grid;place-items:center;text-align:center;overflow:hidden;color:#F4F1E8;
+  background:radial-gradient(circle at 50% 38%, var(--cel-b), var(--cel-a) 70%);padding:env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px));animation:cel-in .35s ease both}
+.cel.out{animation:cel-out .3s ease both}
+.cel canvas{position:absolute;inset:0;width:100%;height:100%}
+.cel .in{position:relative;display:grid;gap:6px;justify-items:center;margin-top:6vh;max-width:22em}
+.cel .num{font-family:var(--display);font-size:clamp(110px,34vw,150px);line-height:1;color:#EBC38F;text-shadow:0 4px 0 rgba(110,69,32,.7)}
+.cel .lbl{font-family:var(--display);font-size:30px}
+.cel .msg{font-size:19px;line-height:1.5;opacity:.92;margin-top:6px}
+.cel .ok{margin-top:26px;font:inherit;font-weight:700;font-size:18px;color:#FFF8EF;background:linear-gradient(160deg, var(--bronze-hi), var(--bronze) 45%, var(--bronze-lo));border:0;border-radius:999px;padding:13px 44px;cursor:pointer}
+.cel .ok:focus-visible{outline:3px solid #F4F1E8;outline-offset:3px}
+.cel .pop{animation:pop .7s cubic-bezier(.2,.9,.3,1.35) both}
+.cel .d1{animation-delay:.15s}.cel .d2{animation-delay:.3s}.cel .d3{animation-delay:.45s}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes cel-in{from{opacity:0}to{opacity:1}}
+@keyframes cel-out{to{opacity:0}}
 .toast{position:fixed;inset-inline:16px;bottom:calc(84px + var(--safe-b));z-index:30;max-width:520px;margin:0 auto;background:var(--ink);color:var(--bg);
   border-radius:14px;padding:12px 16px;font-size:16px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 .loading{display:grid;place-items:center;min-height:60dvh;color:var(--muted)}
@@ -298,6 +313,51 @@ const ICON = {
 };
 
 let toastTimer;
+// a day was just completed: on a day on the way (3, 7, 14...) the first time, the sun-ray celebration; otherwise a toast
+function dayDone(n, text) {
+  const m = program?.milestones?.find(x => x.day === n);
+  if (!m || state.celebrated?.includes(n)) return toast(text);
+  state.celebrated = [...(state.celebrated || []), n];
+  state.milestones = [...new Set([...(state.milestones || []), n])]; // the home card for this day has said its piece
+  save();
+  celebrate(n, m);
+}
+function celebrate(n, m) {
+  document.querySelector(".cel")?.remove();
+  const el = document.createElement("div");
+  el.className = "cel"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", `יום ${n} הושלם`);
+  el.innerHTML = `<canvas aria-hidden="true"></canvas><div class="in">
+    <span class="num pop">${n}</span><span class="lbl pop d1">ימים</span>
+    <p class="msg pop d2">${esc(m.text)}</p>
+    <button class="ok pop d3" type="button">ממשיכים</button></div>`;
+  document.body.appendChild(el);
+  navigator.vibrate?.([20, 60, 20]);
+  const c = el.querySelector("canvas"), ctx = c.getContext("2d"), t0 = performance.now(), hi = cssVar("--bronze-hi");
+  let raf = 0;
+  const draw = t => {
+    if (!el.isConnected) return;
+    const d = devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+    if (c.width !== Math.round(w * d)) { c.width = Math.round(w * d); c.height = Math.round(h * d); }
+    ctx.setTransform(d, 0, 0, d, 0, 0); ctx.clearRect(0, 0, w, h);
+    const e = Math.max(0, Math.min(1, (t - t0) / 900)), grow = calm.matches ? 1 : 1 - Math.pow(1 - e, 3);
+    const cx = w / 2, cy = h * 0.36, len = 1 + Math.hypot(w, h) * grow, rot = calm.matches ? 0 : t / 14000, rays = 18;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, len); g.addColorStop(0, hi); g.addColorStop(1, "transparent");
+    ctx.globalAlpha = 0.16; ctx.fillStyle = g;
+    for (let i = 0; i < rays; i++) { const a = rot + i * Math.PI * 2 / rays, s = Math.PI / rays * 0.5; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, len, a - s, a + s); ctx.closePath(); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 1 + 160 * grow);
+    glow.addColorStop(0, "rgba(242,190,120,.35)"); glow.addColorStop(1, "transparent");
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
+    raf = requestAnimationFrame(draw);
+  };
+  raf = requestAnimationFrame(draw);
+  const close = () => { cancelAnimationFrame(raf); el.classList.add("out"); setTimeout(() => el.remove(), 300); removeEventListener("keydown", onKey); };
+  const onKey = e => { if (e.key === "Escape") close(); };
+  addEventListener("keydown", onKey);
+  addEventListener("hashchange", close, { once: true });
+  const ok = el.querySelector(".ok"); ok.addEventListener("click", close); setTimeout(() => ok.focus({ preventScroll: true }), 500);
+}
+
 function toast(text) {
   const t = $("#toast");
   t.textContent = text; t.hidden = false;
@@ -1369,7 +1429,7 @@ function bindDay(n, c) {
     } else if (done) {
       const a = ans(n); a.stepDone = !a.stepDone; touch(n);
       done.setAttribute("aria-pressed", String(a.stepDone));
-      if (a.stepDone && dayStatus(n) === "done") toast(n === 90 ? "סיימת את 90 הימים." : `יום ${n} הושלם`);
+      if (a.stepDone && dayStatus(n) === "done") dayDone(n, n === 90 ? "סיימת את 90 הימים." : `יום ${n} הושלם`);
     } else if (noteBtn) {
       noteBtn.hidden = true;
       const t = root.querySelector(`textarea[data-note="${noteBtn.dataset.noteToggle}"]`);
@@ -1395,7 +1455,7 @@ function bindDay(n, c) {
       group.querySelectorAll(".feel-chip").forEach(ch => { const v = Number(ch.dataset.v); if (v > 0) lv[ch.dataset.k] = v; });
       if (Object.keys(lv).length) a.evening[i] = { ...lv, max: FEEL_MAX }; else delete a.evening[i];
       touch(n);
-      if (!wasDone && dayStatus(n) === "done") toast(`יום ${n} הושלם`);
+      if (!wasDone && dayStatus(n) === "done") dayDone(n, `יום ${n} הושלם`);
     };
     // left end of the line = 0, right end = 3, whatever the page direction
     const valueAt = (chip, x) => {
@@ -1463,7 +1523,7 @@ function afterAnswer(n, c, part, i, group) {
   const tmp = document.createElement("div");
   tmp.innerHTML = blockHTML(n, part, c[part].blocks[i], i, ans(n)[part][i]);
   block.replaceWith(tmp.firstElementChild);
-  if (!wasDone && dayStatus(n) === "done") toast(n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
+  if (!wasDone && dayStatus(n) === "done") dayDone(n, n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
 }
 
 // ---------- journal
@@ -1663,6 +1723,10 @@ async function start() {
     if (k && data.access === "full" && before !== "full") toast("התוכנית המלאה פתוחה.");
     if (!location.hash.startsWith("#/day/") || !before) route(); // don't redraw under his fingers
     syncPush(false);
+    // preview only: /app?cel=7 shows the celebration of a day on the way, without saving anything
+    const peek = Number(new URLSearchParams(location.search).get("cel"));
+    const pm = program?.milestones?.find(x => x.day === peek);
+    if (pm) { history.replaceState(null, "", "/app" + location.hash); celebrate(peek, pm); }
   } catch {
     if (!program) route(); // offline on first open: route shows the "need network" card
   }
