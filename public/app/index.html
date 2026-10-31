@@ -143,21 +143,23 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .prompt{font-weight:700}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
-/* evening feelings: every option is a chip that fills from left to right as he drags across it, 0-5 */
-.feel{display:flex;flex-direction:column;gap:10px;align-items:stretch}
-.feel-chip{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:10px 18px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;transition:border-color .2s ease}
+/* evening feelings: two tiles per row; dragging across a tile from left to right raises five growing bars, 0-5 */
+.feel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.feel-chip{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-height:108px;padding:14px 14px 13px;border:1px solid var(--line);border-radius:20px;background:var(--surface);cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;transition:border-color .2s ease, background-color .2s ease, box-shadow .2s ease}
+.feel-chip:last-child:nth-child(odd){grid-column:1 / -1}
 .feel-chip:active{cursor:grabbing}
-.feel-chip.on{border-color:var(--moss)}
+.feel-chip.on{border-color:var(--moss);background:color-mix(in srgb, var(--moss) calc(var(--p, 0) * 3.5%), var(--surface));box-shadow:0 2px 10px color-mix(in srgb, var(--moss) 14%, transparent)}
 .feel-chip:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
-.feel-fill{position:absolute;inset:0 auto 0 0;width:calc(var(--p, 0) * 20%);background:color-mix(in srgb, var(--moss) 24%, var(--surface));transition:width .18s ease}
-.feel-name,.feel-dots{position:relative}
-.feel-name{font-size:17px;line-height:1.35}
+.feel-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.feel-name{font-size:16px;line-height:1.3;min-width:0}
 .feel-chip.on .feel-name{font-weight:700}
-.feel-dots{display:flex;gap:5px;direction:ltr;flex:none}
-.feel-dots i{width:8px;height:8px;border-radius:50%;background:var(--faint);transition:background-color .15s ease}
-.feel-dots i.f{background:var(--moss)}
-.feel-hint{display:flex;justify-content:space-between;direction:ltr;font-size:13px;color:var(--muted);padding-inline:18px}
-@media (prefers-reduced-motion: reduce){.feel-fill,.feel-dots i{transition:none}}
+.feel-word{flex:none;font-size:12px;font-weight:700;color:var(--moss);padding-top:2px;white-space:nowrap}
+.feel-bars{display:flex;align-items:flex-end;gap:5px;height:28px;direction:ltr}
+.feel-bars i{flex:1;border-radius:5px;background:var(--faint);transition:background-color .15s ease, transform .15s ease}
+.feel-bars i:nth-child(1){height:28%}.feel-bars i:nth-child(2){height:46%}.feel-bars i:nth-child(3){height:64%}.feel-bars i:nth-child(4){height:82%}.feel-bars i:nth-child(5){height:100%}
+.feel-bars i.f{background:var(--moss)}
+.feel-hint{display:flex;justify-content:space-between;direction:ltr;font-size:13px;color:var(--muted);padding-inline:6px;margin-top:-2px}
+@media (prefers-reduced-motion: reduce){.feel-chip,.feel-bars i{transition:none}}
 .chip[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
 .scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;direction:rtl}
 .scale button{aspect-ratio:1;min-height:30px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:16px;padding:0;font-variant-numeric:tabular-nums}
@@ -1043,7 +1045,7 @@ function levels(v) {
   return big ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, Math.max(1, Math.ceil(x / 2))])) : v;
 }
 const FEEL_WORDS = ["בכלל לא", "קצת", "במידה מסוימת", "די הרבה", "הרבה", "מאוד"];
-const dotsHTML = v => Array.from({ length: FEEL_MAX }, (_, j) => `<i${j < v ? ' class="f"' : ""}></i>`).join("");
+const barsHTML = v => Array.from({ length: FEEL_MAX }, (_, j) => `<i${j < v ? ' class="f"' : ""}></i>`).join("");
 function feelHTML(b, i, value, id) {
   const lv = levels(value);
   return `<div class="block" role="group" aria-labelledby="${id}">
@@ -1054,13 +1056,12 @@ function feelHTML(b, i, value, id) {
         const v = Math.min(FEEL_MAX, lv[k] || 0);
         return `<div class="feel-chip${v ? " on" : ""}" role="slider" tabindex="0" data-k="${k}" data-v="${v}" style="--p:${v}"
           aria-label="${esc(o)}" aria-valuemin="0" aria-valuemax="${FEEL_MAX}" aria-valuenow="${v}" aria-valuetext="${FEEL_WORDS[v]}">
-          <span class="feel-fill" aria-hidden="true"></span>
-          <span class="feel-name">${esc(o)}</span>
-          <span class="feel-dots" aria-hidden="true">${dotsHTML(v)}</span>
+          <span class="feel-top"><span class="feel-name">${esc(o)}</span><span class="feel-word" aria-hidden="true">${v ? FEEL_WORDS[v] : ""}</span></span>
+          <span class="feel-bars" aria-hidden="true">${barsHTML(v)}</span>
         </div>`;
       }).join("")}
-      <div class="feel-hint" aria-hidden="true"><span>← בכלל לא</span><span>מאוד →</span></div>
     </div>
+    <div class="feel-hint" aria-hidden="true"><span>← בכלל לא</span><span>מאוד →</span></div>
   </div>`;
 }
 
@@ -1115,7 +1116,8 @@ function bindDay(n, c) {
       chip.classList.toggle("on", v > 0);
       chip.setAttribute("aria-valuenow", v);
       chip.setAttribute("aria-valuetext", FEEL_WORDS[v]);
-      chip.querySelector(".feel-dots").innerHTML = dotsHTML(v);
+      chip.querySelector(".feel-bars").innerHTML = barsHTML(v);
+      chip.querySelector(".feel-word").textContent = v ? FEEL_WORDS[v] : "";
     };
     const save = () => {
       const wasDone = dayStatus(n) === "done";
