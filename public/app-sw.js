@@ -1,20 +1,21 @@
 // Service worker של האפליקציה: שומר את המעטפת (דף, גופנים, אייקונים) כדי שהאפליקציה תיפתח גם בלי רשת.
 // התוכן עצמו נשמר על ידי האפליקציה בזיכרון המקומי של המכשיר. התשובות לא עוברות כאן בכלל.
 
-const SHELL = "haim-sheli-shell-v2";
+const SHELL = "haim-sheli-shell-v3";
 const FILES = [
   "/app",
   "/app/manifest.webmanifest",
   "/app/icon-192.png",
   "/app/icon-512.png",
   "/app/apple-touch-icon.png",
-  "/app/fonts/frank-ruhl-libre-hebrew-700-normal.woff2",
-  "/app/fonts/frank-ruhl-libre-hebrew-900-normal.woff2",
-  "/app/fonts/frank-ruhl-libre-latin-700-normal.woff2",
-  "/app/fonts/assistant-hebrew-400-normal.woff2",
-  "/app/fonts/assistant-hebrew-700-normal.woff2",
-  "/app/fonts/assistant-latin-400-normal.woff2",
-  "/app/fonts/assistant-latin-700-normal.woff2",
+  "/app/fonts/secular-one-hebrew-400-normal.woff2",
+  "/app/fonts/secular-one-latin-400-normal.woff2",
+  "/app/fonts/heebo-hebrew-400-normal.woff2",
+  "/app/fonts/heebo-latin-400-normal.woff2",
+  "/app/fonts/heebo-hebrew-500-normal.woff2",
+  "/app/fonts/heebo-latin-500-normal.woff2",
+  "/app/fonts/heebo-hebrew-700-normal.woff2",
+  "/app/fonts/heebo-latin-700-normal.woff2",
 ];
 
 self.addEventListener("install", event => {
