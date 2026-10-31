@@ -106,6 +106,27 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .dot.m2.done{background:var(--m2)} .dot.m3.done{background:var(--m3)} .dot.rest.done{background:var(--rest)}
 .dot.today{outline:2px solid var(--sand);outline-offset:2px}
 .dot.paid{background:transparent;border:2px dashed var(--faint)}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.week .wd{font:inherit;display:grid;justify-items:center;gap:5px;border:0;background:none;padding:0;color:var(--ink);cursor:pointer}
+.week .wd[disabled]{cursor:default}
+.week .dn{font-size:12px;color:var(--muted)}
+.week .c{width:100%;max-width:44px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;background:var(--faint);color:var(--muted)}
+.week .c svg{width:46%;height:46%}
+.week .done .c{background:var(--moss);color:var(--moss-ink)}
+.week .open .c{background:var(--surface);color:var(--bronze-ink);box-shadow:inset 0 0 0 2.5px var(--bronze)}
+.week .mile .c{background:radial-gradient(circle at 35% 30%, var(--bronze-hi), var(--bronze) 60%, var(--bronze-lo));color:#FFF8EF}
+.week .behind .c{background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line)}
+.week .none .c{background:transparent}
+.week .wd:focus-visible{outline:3px solid var(--sand);outline-offset:2px;border-radius:10px}
+.all90{display:grid;gap:6px}
+.all90 .bar{display:flex;gap:3px;height:8px}
+.all90 .bar span{position:relative;flex:1;border-radius:4px;background:var(--faint);overflow:hidden}
+.all90 .bar span i{position:absolute;inset-block:0;inset-inline-start:0;background:var(--mc)}
+.all90 .bar span b{position:absolute;top:0;bottom:0;width:2px;background:var(--bronze)}
+.all90 .t{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+details.map summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--moss);list-style:none;padding-block:4px}
+details.map summary::-webkit-details-marker{display:none}
+details.map[open] summary{margin-bottom:10px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--m1)}
@@ -679,6 +700,39 @@ function noteVisit() {
   if (last !== today) { state.seen = today; save(); }
 }
 
+// this week, Sunday to Saturday, big; under it all 90 days as one thin bar split into the three months
+function weekHTML() {
+  const DN = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
+  const today = todayISO(), dow = parseISO(today).getDay(), reached = reachedDay(), allowed = allowedDays(), open = openThrough();
+  const start = state.start || today;
+  let doneWeek = 0;
+  const cells = Array.from({ length: 7 }, (_, j) => {
+    const d = parseISO(today); d.setDate(d.getDate() - dow + j);
+    const iso = d.toLocaleDateString("en-CA");
+    const n = daysBetween(start, iso) + 2; // the day that opens on this date (days 1 and 2 share the first date)
+    if (n < 2 || n > 90) return `<button type="button" class="wd none" disabled aria-hidden="true"><span class="dn">${DN[j]}</span><span class="c"></span></button>`;
+    const first = n === 2, st = first ? (dayStatus(1) === "done" && dayStatus(2) === "done" ? "done" : "none") : dayStatus(n);
+    const can = n <= open, isToday = iso === today;
+    const done = can && st === "done", mile = done && program?.milestones?.some(m => m.day === n);
+    if (done) doneWeek += first ? 2 : 1;
+    const cls = !can ? "" : done ? "done" : isToday ? "open" : "behind";
+    const label = first ? "1–2" : String(n);
+    return `<button type="button" class="wd ${cls} ${mile ? "mile" : ""}" ${can ? `data-day="${first && dayStatus(1) !== "done" ? 1 : n}"` : "disabled"}
+      aria-label="${WEEKDAY[j]}, יום ${label}${done ? " (הושלם)" : can ? "" : " (עוד לא נפתח)"}">
+      <span class="dn">${DN[j]}</span><span class="c">${done && !mile ? ICON.check : label}</span></button>`;
+  }).join("");
+  const t = Math.min(reached, 90), mi = t <= 30 ? 0 : t <= 60 ? 1 : 2;
+  const names = program?.months?.map(m => m.name) || ["", "", ""];
+  const bar = [0, 1, 2].map(k => {
+    let cnt = 0; for (let n = k * 30 + 1; n <= k * 30 + 30; n++) if (dayStatus(n) === "done") cnt++;
+    const tm = t - k * 30;
+    return `<span style="--mc:var(--m${k + 1})"><i style="width:${cnt / 30 * 100}%"></i>${tm >= 1 && tm <= 30 ? `<b style="inset-inline-start:calc(${(tm - .5) / 30 * 100}% - 1px)"></b>` : ""}</span>`;
+  }).join("");
+  return { doneWeek, html: `<div class="week" id="week">${cells}</div>
+    <div class="all90" aria-label="יום ${t} מתוך 90"><div class="bar">${bar}</div>
+      <div class="t"><span>יום ${t} מתוך 90</span><span>${esc(names[mi] || "")}</span></div></div>` };
+}
+
 function trackHTML() {
   const open = openThrough(), reached = reachedDay(), allowed = allowedDays();
   let html = "";
@@ -707,6 +761,7 @@ function renderHome() {
   const stText = { none: "עוד לא התחלת", started: "בתהליך", done: "הושלם" }[st];
   const nextDate = dateOfDay(reached + 1);
   const finished = reached >= 90 && dayStatus(90) === "done";
+  const wk = weekHTML();
 
   $("#view").innerHTML = `
     <div class="stack-lg">
@@ -724,10 +779,13 @@ function renderHome() {
       </a>`}
       ${finished ? `<div class="notice"><h3>סיימת את 90 הימים.</h3><p class="small muted">כל מה שכתבת נשאר ביומן שלך. אפשר לחזור לכל יום, מתי שתרצה.</p></div>` : ""}
       <div class="stack">
-        <div class="row" style="justify-content:space-between"><h3 style="font-size:20px">המסלול</h3><span class="small muted">${countDone() === 1 ? "יום אחד הושלם" : `${countDone()} ימים הושלמו`}</span></div>
-        ${trackHTML()}
-        <div class="legend"><span><i class="v">${ICON.check}</i>הושלם</span><span><i class="o"></i>פתוח</span><span><i class="f"></i>עוד לא נפתח</span></div>
+        <div class="row" style="justify-content:space-between"><h3 style="font-size:20px">השבוע שלי</h3><span class="small muted">${wk.doneWeek === 1 ? "יום אחד הושלם השבוע" : `${wk.doneWeek} ימים הושלמו השבוע`}</span></div>
+        ${wk.html}
         ${reached < 90 && !locked ? `<p class="small muted">היום הבא נפתח ביום ${WEEKDAY[nextDate.getDay()]}.</p>` : ""}
+        <details class="map"><summary>כל 90 הימים</summary>
+          ${trackHTML()}
+          <div class="legend" style="margin-top:12px"><span><i class="v">${ICON.check}</i>הושלם</span><span><i class="o"></i>פתוח</span><span><i class="f"></i>עוד לא נפתח</span></div>
+        </details>
       </div>
     </div>`;
   bindTrack();
@@ -742,10 +800,10 @@ function renderHome() {
 function countDone() { let k = 0; for (let n = 1; n <= 90; n++) if (dayStatus(n) === "done") k++; return k; }
 
 function bindTrack() {
-  $("#track")?.addEventListener("click", e => {
+  ["#week", "#track"].forEach(sel => $(sel)?.addEventListener("click", e => {
     const b = e.target.closest("[data-day]");
     if (b) location.hash = `#/day/${b.dataset.day}`;
-  });
+  }));
 }
 
 function paywall() {
