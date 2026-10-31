@@ -169,6 +169,24 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .listen .music[aria-pressed="true"]{color:var(--moss);font-weight:700}
 @media (prefers-reduced-motion: reduce){.narration .w{transition:none}.narration .w.now{transform:none}}
 .part{display:grid;gap:18px}
+/* the mirror: eight small habits, marked on day 1 and again on days 30, 60 and 90 to show the change */
+.mirror{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;display:grid;gap:12px}
+.mirror::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:linear-gradient(to left, transparent, var(--bronze-hi) 25%, var(--bronze) 50%, var(--bronze-hi) 75%, transparent)}
+.mirror .eyebrow{color:var(--bronze-ink)}
+.mirror h2{font-size:24px}
+.mirror .lead{font-size:15px;color:var(--muted)}
+.mirror .sum{font-size:15px;background:var(--band);border-radius:12px;padding:10px 12px}
+.mirror .sum b{color:var(--bronze-ink)}
+.mirror ol{list-style:none;margin:0;padding:0;display:grid}
+.mirror li{display:grid;gap:8px;padding-block:12px;border-top:1px solid var(--line)}
+.mirror li:first-child{border-top:0;padding-top:4px}
+.mirror .habit{font-weight:700;font-size:16px}
+.mirror .was{font-size:13px;color:var(--muted)}
+.mirror .was.up{color:var(--moss);font-weight:700}
+.mirror .pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.mirror .pick button{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:999px;padding:7px 4px;background:var(--bg);color:var(--ink);cursor:pointer;white-space:nowrap}
+.mirror .pick button[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss);font-weight:700}
+.mirror .pick button:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
 .part-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-top:2px solid var(--m1);padding-top:14px}
 .part-title h2{font-size:24px}
 .part-title .when{font-size:14px;font-weight:700;color:var(--muted)}
@@ -979,6 +997,58 @@ function bindPushSettings() {
 }
 
 // ---------- a day
+// ---------- the mirror (only on this phone): marked on day 1, then again on 30, 60, 90
+const MIRROR_DAYS = [1, 30, 60, 90];
+const MIRROR = [
+  "קם בשעה שתכננתי",
+  "לא פותח את הטלפון בדקות הראשונות של הבוקר",
+  "מזיז את הגוף",
+  "קורא או לומד, במקום לגלול",
+  "עושה קודם את הדבר הקשה",
+  "מדבר ישר כשמשהו מפריע לי",
+  "לא ממהר להחליט רק כדי שיירגע",
+  "מקיים הבטחות קטנות לעצמי",
+];
+const MIRROR_LEVELS = ["לא עדיין", "לפעמים", "בדרך כלל"];
+const mirrorAt = n => state.mirror?.[n] || {};
+const usually = m => Object.values(m).filter(v => v === 2).length;
+function mirrorBefore(n) { // the last earlier check that has answers
+  return MIRROR_DAYS.filter(d => d < n && Object.keys(mirrorAt(d)).length).pop();
+}
+function mirrorHTML(n) {
+  if (!MIRROR_DAYS.includes(n)) return "";
+  const now = mirrorAt(n), prev = mirrorBefore(n), was = prev ? mirrorAt(prev) : null;
+  const first = n === 1;
+  const done = Object.keys(now).length === MIRROR.length;
+  const sum = was && done ? `<p class="sum">ביום ${prev} סימנת "בדרך כלל" ב-<b>${usually(was)}</b> מתוך ${MIRROR.length}. היום ב-<b>${usually(now)}</b>.${usually(now) > usually(was) ? " זה השינוי שלך." : ""}</p>` : "";
+  return `<section class="mirror" id="mirror" aria-labelledby="mirror-h">
+    <span class="eyebrow">${first ? "נקודת הפתיחה" : `${n} ימים אחרי`}</span>
+    <h2 id="mirror-h">המראה שלך</h2>
+    <p class="lead">${first ? "שמונה הרגלים קטנים. תסמן איפה אתה היום, בלי ציונים ובלי לשפוט. נחזור לזה ביום 30, 60 ו-90, ותראה מה זז." : "אותם שמונה הרגלים. תסמן איפה אתה היום, ומתחת לכל אחד תראה מה סימנת קודם."}</p>
+    ${sum}
+    <ol>${MIRROR.map((h, k) => {
+      const v = now[k], pv = was?.[k];
+      return `<li><span class="habit">${esc(h)}</span>
+        ${pv != null ? `<span class="was ${v != null && v > pv ? "up" : ""}">ביום ${prev}: ${MIRROR_LEVELS[pv]}${v != null && v > pv ? " ↑" : ""}</span>` : ""}
+        <span class="pick" role="group" aria-label="${esc(h)}">${MIRROR_LEVELS.map((l, j) => `<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v === j}">${l}</button>`).join("")}</span></li>`;
+    }).join("")}</ol>
+  </section>`;
+}
+function bindMirror(n) {
+  $("#mirror")?.addEventListener("click", e => {
+    const b = e.target.closest("[data-k]"); if (!b) return;
+    state.mirror = state.mirror || {};
+    const m = state.mirror[n] = state.mirror[n] || {};
+    const k = Number(b.dataset.k), v = Number(b.dataset.v), before = Object.keys(m).length;
+    if (m[k] === v) delete m[k]; else m[k] = v;
+    save();
+    const y = window.scrollY;
+    $("#mirror").outerHTML = mirrorHTML(n); bindMirror(n);
+    window.scrollTo(0, y);
+    if (before === MIRROR.length - 1 && Object.keys(m).length === MIRROR.length) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : n === 90 ? "נשמר. זו המראה של הסוף." : `נשמר. נחזור לזה ביום ${n + 30}.`);
+  });
+}
+
 function renderDay(n) {
   if (!program) return renderNoContent();
   if (!(n >= 1 && n <= 90)) { location.hash = "#/"; return; }
@@ -1012,6 +1082,7 @@ function renderDay(n) {
       ${c.audio && c.timing ? listenHTML() : c.audio ? `<audio controls preload="none" src="${esc(c.audio)}"></audio>` : ""}
       ${narrationHTML(c)}
       ${parts.join("")}
+      ${mirrorHTML(n)}
       <p class="saved">${ICON.check.replace("<svg", '<svg class="ico"')} נשמר רק בטלפון שלך</p>
       <div class="daynav">
         ${n > 1 ? `<a class="btn ghost" href="#/day/${n - 1}">יום ${n - 1}</a>` : "<span></span>"}
@@ -1020,6 +1091,7 @@ function renderDay(n) {
     </div>`;
   bindBack();
   bindDay(n, c);
+  bindMirror(n);
   if (c.audio && c.timing) bindListen(c);
   startBand("breath");
   musicFor(1); // the same soundscape on every day
@@ -1577,6 +1649,15 @@ function summary(n, part, content, a) {
   return out.join("");
 }
 
+function mirrorJournal() {
+  const checks = MIRROR_DAYS.filter(d => Object.keys(mirrorAt(d)).length === MIRROR.length);
+  if (!checks.length) return "";
+  return `<a class="mirror" href="#/day/${checks[checks.length - 1]}" style="text-decoration:none;color:inherit">
+    <span class="eyebrow">המראה שלך</span>
+    <p class="small">"בדרך כלל" מתוך ${MIRROR.length} הרגלים: ${checks.map(d => `יום ${d}: <b>${usually(mirrorAt(d))}</b>`).join(" · ")}</p>
+  </a>`;
+}
+
 function renderJournal() {
   const days = Object.keys(state.answers).map(Number).filter(n => {
     const a = state.answers[n];
@@ -1586,6 +1667,7 @@ function renderJournal() {
     <div class="stack-lg">
       <div class="topbar"><span class="brand">היומן שלי</span></div>
       <p class="small muted">כל מה שענית, יום אחרי יום. זה נמצא רק בטלפון הזה.</p>
+      ${mirrorJournal()}
       <div>
         ${days.length ? days.map(n => {
           const c = dayContent(n), a = state.answers[n];
