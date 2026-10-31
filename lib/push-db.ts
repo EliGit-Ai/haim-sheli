@@ -63,3 +63,9 @@ export async function listAll(): Promise<Row[]> {
 export async function markSent(id: string, fields: Partial<Pick<Row, "last_morning" | "last_midday" | "last_evening">>) {
   await call(`?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(fields), prefer: "return=minimal" });
 }
+
+export async function getByEndpoint(endpoint: string): Promise<Row | null> {
+  const res = await call(`?select=*&endpoint=eq.${encodeURIComponent(endpoint)}&limit=1`);
+  const rows = (await res.json()) as Row[];
+  return rows[0] || null;
+}
