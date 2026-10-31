@@ -347,7 +347,11 @@ function show(name, arg) {
   routes[name](arg);
   window.scrollTo(0, 0);
 }
-window.addEventListener("hashchange", () => { stopListening(); route(); });
+window.addEventListener("hashchange", () => {
+  stopListening();
+  if (!location.hash.startsWith("#/day/")) { music.want = 0; musicSync(); } // home, journal, settings: quiet
+  route();
+});
 
 // ---------------------------------------------------------------- screens
 function renderInstallFirst() {
@@ -762,13 +766,78 @@ function renderDay(n) {
     </div>`;
   bindBack();
   bindDay(n, c);
-  if (c.audio && c.timing) bindListen(c, m.month || (n <= 30 ? 1 : n <= 60 ? 2 : 3));
+  if (c.audio && c.timing) bindListen(c);
+  musicFor(m.month || (n <= 30 ? 1 : n <= 60 ? 2 : 3));
 }
 
 // ---------- listening: narration over the month's background music, with the spoken word highlighted
 const PLAY_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 5v14L6 12z"/></svg>';
 const PAUSE_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
-const BG_LEVEL = 0.2;
+// ---------- background music: plays through all the day screens, one track per month
+// It starts on the first tap (phones allow sound only after one), keeps playing while he moves
+// between days, crossfades when the month changes, dips under the narration, and fades out when
+// he leaves the days (home, journal, settings) or the app goes to the background.
+const MUSIC_LEVEL = 0.3, MUSIC_UNDER_VOICE = 0.18;
+const music = { el: null, ctx: null, gain: null, month: 0, want: 0, ducked: false, fadeTimer: 0 };
+const musicOn = () => state.music !== false;
+
+function musicGraph() {
+  if (music.ctx) return;
+  try { music.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { music.ctx = null; }
+}
+function musicTarget() { return musicOn() && music.want ? (music.ducked ? MUSIC_UNDER_VOICE : MUSIC_LEVEL) : 0; }
+function rampTo(level, secs) {
+  if (!music.el) return;
+  if (music.gain && music.ctx) {
+    const g = music.gain.gain, now = music.ctx.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(level, now + secs);
+  } else music.el.volume = level;
+}
+function loadTrack(month) {
+  const el = new Audio(`/app/audio/bg-${month}.mp3`);
+  el.loop = true; el.preload = "auto";
+  let gain = null;
+  if (music.ctx) {
+    try { gain = music.ctx.createGain(); gain.gain.value = 0; music.ctx.createMediaElementSource(el).connect(gain).connect(music.ctx.destination); } catch { gain = null; }
+  }
+  if (!gain) el.volume = 0;
+  return { el, gain };
+}
+async function musicSync() {
+  clearTimeout(music.fadeTimer);
+  const wanted = musicOn() ? music.want : 0;
+  if (!wanted) { // fade out and stop
+    rampTo(0, 1.5);
+    const el = music.el;
+    music.fadeTimer = setTimeout(() => { el?.pause(); }, 1600);
+    return;
+  }
+  musicGraph();
+  if (music.ctx?.state === "suspended") await music.ctx.resume().catch(() => {});
+  if (music.month !== wanted || !music.el) { // a new month: crossfade to its track
+    const old = music.el, oldGain = music.gain, oldCtx = music.ctx;
+    const t = loadTrack(wanted);
+    music.el = t.el; music.gain = t.gain; music.month = wanted;
+    if (old) {
+      if (oldGain && oldCtx) { const g = oldGain.gain, now = oldCtx.currentTime; g.cancelScheduledValues(now); g.setValueAtTime(g.value, now); g.linearRampToValueAtTime(0, now + 2); }
+      else old.volume = 0;
+      setTimeout(() => old.pause(), 2100);
+    }
+  }
+  try { await music.el.play(); } catch { return; } // blocked until he taps: the next tap retries
+  rampTo(musicTarget(), 2);
+}
+function musicFor(month) { music.want = month; musicSync(); }
+function musicDuck(on) { music.ducked = on; rampTo(musicTarget(), 0.6); }
+
+// phones start sound only from a tap: any tap retries if music should be playing but is silent
+document.addEventListener("pointerdown", () => {
+  if (musicOn() && music.want && (!music.el || music.el.paused || music.ctx?.state === "suspended")) musicSync();
+}, { capture: true });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { music.el?.pause(); if (listen) listen.voice.pause(); }
+  else if (music.want) musicSync();
+});
 let listen = null; // the player of the day on screen
 
 function narrationHTML(c) {
@@ -802,35 +871,23 @@ const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2
 
 function stopListening() {
   if (!listen) return;
-  listen.voice.pause(); listen.bg.pause();
+  listen.voice.pause(); musicDuck(false);
   listen.voice.removeAttribute("src"); listen.voice.load();
   cancelAnimationFrame(listen.raf);
   listen = null;
 }
 
-function bindListen(c, month) {
+function bindListen(c) {
   stopListening();
   const spans = [...document.querySelectorAll("#narration .w")];
   // for each timed word, the span that holds it
   const words = c.timing.words.map(([t, d, o]) => ({ t, d, i: spans.findIndex(s => o >= +s.dataset.o && o < +s.dataset.e) })).filter(w => w.i >= 0);
   const voice = new Audio(c.audio); voice.preload = "metadata";
-  const bg = new Audio(`/app/audio/bg-${month}.mp3`); bg.loop = true; bg.preload = "none";
-  const L = listen = { voice, bg, raf: 0, current: -1, ctx: null, gain: null };
+  const L = listen = { voice, raf: 0, current: -1 };
   const narr = $("#narration"), playBtn = $("#l-play");
   $("#l-dur").textContent = mmss(c.timing.end || 0);
   voice.addEventListener("loadedmetadata", () => { $("#l-dur").textContent = mmss(voice.duration); });
 
-  const musicOn = () => state.music !== false;
-  function bgVolume() { if (L.gain) L.gain.gain.value = musicOn() ? BG_LEVEL : 0; else bg.volume = musicOn() ? BG_LEVEL : 0; }
-  function ensureCtx() {
-    if (L.ctx) return;
-    try { // through Web Audio so the music volume also works on iPhone
-      L.ctx = new (window.AudioContext || window.webkitAudioContext)();
-      L.gain = L.ctx.createGain();
-      L.ctx.createMediaElementSource(bg).connect(L.gain).connect(L.ctx.destination);
-    } catch {}
-    bgVolume();
-  }
   function indexAt(t) {
     let lo = 0, hi = words.length - 1, ans = -1;
     while (lo <= hi) { const k = (lo + hi) >> 1; if (words[k].t <= t + 0.05) { ans = k; lo = k + 1; } else hi = k - 1; }
@@ -863,30 +920,20 @@ function bindListen(c, month) {
   }
 
   playBtn.addEventListener("click", async () => {
-    ensureCtx();
-    if (L.ctx?.state === "suspended") await L.ctx.resume().catch(() => {});
     if (voice.paused) {
       if (voice.ended) voice.currentTime = 0;
       try { await voice.play(); } catch { toast("לא הצלחנו לנגן. כדאי לבדוק את החיבור לרשת."); return; }
-      if (musicOn()) bg.play().catch(() => {});
-    } else { voice.pause(); bg.pause(); }
+    } else voice.pause();
   });
-  voice.addEventListener("play", () => { setUI(true); tick(); });
-  voice.addEventListener("pause", () => setUI(false));
-  voice.addEventListener("ended", () => {
-    setUI(false); mark(-1);
-    // let the music fade out gently after the voice ends
-    if (L.gain && L.ctx) { const g = L.gain.gain; g.setValueAtTime(g.value, L.ctx.currentTime); g.linearRampToValueAtTime(0, L.ctx.currentTime + 4); setTimeout(() => { bg.pause(); bgVolume(); }, 4200); }
-    else bg.pause();
-  });
+  voice.addEventListener("play", () => { setUI(true); musicDuck(true); tick(); });
+  voice.addEventListener("pause", () => { setUI(false); musicDuck(false); });
+  voice.addEventListener("ended", () => { setUI(false); mark(-1); musicDuck(false); }); // the music keeps going
 
   $("#l-music").addEventListener("click", e => {
     state.music = !musicOn(); save();
     e.currentTarget.setAttribute("aria-pressed", String(musicOn()));
     e.currentTarget.textContent = `מוזיקת רקע: ${musicOn() ? "פועלת" : "כבויה"}`;
-    bgVolume();
-    if (musicOn() && !voice.paused) { ensureCtx(); bg.play().catch(() => {}); }
-    if (!musicOn()) bg.pause();
+    musicSync();
   });
   narr.addEventListener("click", e => {
     const s = e.target.closest(".w"); if (!s || !voice.duration) return;
