@@ -1,0 +1,24 @@
+# בדיקת הקראה חד-פעמית: רץ כשדוחפים לענף tts-sample, ושומר את הקבצים בחזרה בענף.
+name: TTS sample
+on:
+  push:
+    branches: [tts-sample]
+    paths: [scripts/tts-sample.py, .github/workflows/tts-sample.yml]
+permissions:
+  contents: write
+jobs:
+  tts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install edge-tts==7.2.3
+      - run: python scripts/tts-sample.py 2 && python scripts/tts-sample.py 3
+      - run: |
+          git config user.name "tts-bot"
+          git config user.email "tts-bot@users.noreply.github.com"
+          git add tts-out
+          git commit -m "TTS sample output"
+          git push
