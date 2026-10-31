@@ -1254,6 +1254,14 @@ function partHTML(n, part, content, a, onShabbat) {
   </section>`;
 }
 
+// the options he sees, as original indices (answers are saved by index):
+// "order" sets the display order, "needs" hides an option about a partner or kids when he has none
+function shownOptions(b) {
+  const order = Array.isArray(b.order) && b.order.length === b.options.length ? b.order : b.options.map((_, k) => k);
+  const has = { relationship: state.profile?.relationship !== "no", kids: state.profile?.kids !== "no" };
+  return order.filter(k => { const need = b.needs?.[k]; return !need || has[need]; });
+}
+
 function blockHTML(n, part, b, i, value) {
   const id = `${part}-${i}`;
   if (b.type === "text") return `<p class="block">${esc(b.text)}</p>`;
@@ -1264,7 +1272,7 @@ function blockHTML(n, part, b, i, value) {
       ${b.prompt ? `<p class="prompt" id="${id}">${esc(b.prompt)}</p>` : ""}
       ${b.multi ? `<p class="small muted">אפשר לבחור יותר מאחת</p>` : ""}
       <div class="chips" data-choice="${i}" data-multi="${b.multi ? 1 : 0}">
-        ${b.options.map((o, k) => `<button type="button" class="chip" data-k="${k}" aria-pressed="${picked.includes(k)}">${esc(o)}</button>`).join("")}
+        ${shownOptions(b).map(k => `<button type="button" class="chip" data-k="${k}" aria-pressed="${picked.includes(k)}">${esc(b.options[k])}</button>`).join("")}
       </div>
       ${compareChoice(n, b, picked)}
     </div>`;
@@ -1311,7 +1319,7 @@ function feelHTML(b, i, value, id) {
     ${b.prompt ? `<p class="prompt" id="${id}">${esc(b.prompt)}</p>` : ""}
     <p class="small muted">אפשר להרגיש כמה דברים יחד. תגרור את הידית של כל אחד משמאל לימין, לפי כמה הוא נכון לך היום.</p>
     <div class="feel" data-feel="${i}">
-      ${b.options.map((o, k) => {
+      ${shownOptions(b).map(k => { const o = b.options[k];
         const v = Math.min(FEEL_MAX, lv[k] || 0);
         return `<div class="feel-chip${v ? " on" : ""}" role="slider" tabindex="0" data-k="${k}" data-v="${v}" style="--p:${v}"
           aria-label="${esc(o)}" aria-valuemin="0" aria-valuemax="${FEEL_MAX}" aria-valuenow="${v}" aria-valuetext="${FEEL_WORDS[v]}">

@@ -154,6 +154,8 @@
        "מהעבודה",
        "מעצמי"
       ],
+      "order": [3, 2, 0, 1],
+      "needs": { "0": "relationship", "1": "kids" },
       "multi": false
      }
     ]
