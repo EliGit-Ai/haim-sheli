@@ -777,6 +777,35 @@ async function syncPush(force) {
   } catch {}
 }
 
+// sends one notification now; if this phone is missing on the server or its registration expired, registers it again and retries
+async function testPush() {
+  try {
+    if (!state.push?.on) { // notifications are off: the test turns them on first
+      const r = await enablePush();
+      if (r !== "on") return PUSH_RESULT[r] || PUSH_RESULT.error;
+    }
+    if (Notification.permission !== "granted") return "ההתראות חסומות בהגדרות של הטלפון. צריך לאשר אותן ל\"חיים שלי\" ואז לנסות שוב.";
+    const reg = await navigator.serviceWorker.ready;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub || attempt) { // register again: a fresh address for this phone
+        if (sub && attempt) await sub.unsubscribe().catch(() => {});
+        const key = await getPushKey();
+        if (!key) return "השרת לא זמין כרגע. נסה שוב בעוד רגע.";
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) });
+      }
+      await sendSubscription(sub);
+      state.push.synced = todayISO(); save();
+      const res = await fetch("/api/push/test", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ endpoint: sub.endpoint }) });
+      const { status, code } = await res.json().catch(() => ({ status: "error" }));
+      if (status === "sent") return "נשלחה. אם לא הופיעה תוך דקה, בדוק בהגדרות הטלפון שההתראות של \"חיים שלי\" מותרות, ושמצב ריכוז או \"נא לא להפריע\" כבוי.";
+      if (status === "not-registered" || status === "expired") continue; // register again and retry once
+      return `השליחה נכשלה (${code || status}). נסה שוב בעוד רגע.`;
+    }
+    return "לא הצלחנו לרשום את הטלפון מחדש. כבה והפעל שוב את ההתראות.";
+  } catch { return "משהו השתבש בבדיקה. כבה והפעל שוב את ההתראות."; }
+}
+
 const PUSH_RESULT = {
   on: "ההתראות פועלות",
   denied: "ההתראות חסומות. אפשר לאשר אותן בהגדרות הטלפון, תחת \"חיים שלי\".",
@@ -826,7 +855,9 @@ function pushSettingsHTML() {
         ${["morning", "midday", "evening"].map(s => `<label class="row" style="justify-content:space-between" for="ph-${s}"><span>${SLOT_NAMES[s]}</span>
           <select id="ph-${s}" data-slot="${s}">${opts(h[s])}</select></label>`).join("")}
       </div>
-      <div class="row"><button class="btn ${on ? "ghost" : ""}" id="push-toggle" type="button">${on ? "לכבות התראות" : "להפעיל התראות"}</button></div>` : ""}
+      <div class="row"><button class="btn ${on ? "ghost" : ""}" id="push-toggle" type="button">${on ? "לכבות התראות" : "להפעיל התראות"}</button>
+        <button class="btn quiet" id="push-test" type="button">לשלוח התראת בדיקה</button></div>
+      <p class="small muted" id="push-test-msg" role="status"></p>` : ""}
   </section>`;
 }
 function bindPushSettings() {
@@ -836,6 +867,13 @@ function bindPushSettings() {
     state.push = { ...(state.push || {}), hours }; save();
     if (state.push.on) syncPush(true).then(() => toast("נשמר"));
   }));
+  $("#push-test")?.addEventListener("click", async e => {
+    e.target.disabled = true;
+    $("#push-test-msg").textContent = "שולח...";
+    const msg = await testPush();
+    renderSettings(); // the on/off button may have changed
+    const el = $("#push-test-msg"); if (el) { el.textContent = msg; el.scrollIntoView({ block: "center" }); }
+  });
   $("#push-toggle")?.addEventListener("click", async e => {
     e.target.disabled = true;
     if (state.push?.on) { await disablePush(); toast("ההתראות כבויות"); }
