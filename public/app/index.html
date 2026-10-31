@@ -141,13 +141,23 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .part-title .when{font-size:14px;font-weight:700;color:var(--muted)}
 .block{display:grid;gap:10px}
 .prompt{font-weight:700}
-/* answer choices: one row that slides sideways, edge to edge, with a soft fade where more choices wait */
-.chips{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;margin-inline:-16px;padding:2px 16px 6px;scroll-padding-inline:16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.chips::-webkit-scrollbar{display:none}
-.chips.more-end{-webkit-mask-image:linear-gradient(to right, transparent 0, #000 44px);mask-image:linear-gradient(to right, transparent 0, #000 44px)}
-.chips.more-start{-webkit-mask-image:linear-gradient(to left, transparent 0, #000 44px);mask-image:linear-gradient(to left, transparent 0, #000 44px)}
-.chips.more-start.more-end{-webkit-mask-image:linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%);mask-image:linear-gradient(to right, transparent 0, #000 44px, #000 calc(100% - 44px), transparent 100%)}
-.chip{flex:none;white-space:nowrap;scroll-snap-align:start;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
+/* evening feelings: every option has its own strength slider, 0 = not at all */
+.feel{display:grid;gap:10px}
+.feel-row{display:grid;grid-template-columns:minmax(0,1fr) 2.2em;align-items:center;gap:4px 12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 14px 12px}
+.feel-row.on{border-color:var(--moss)}
+.feel-name{font-size:17px;line-height:1.35}
+.feel-val{font-size:15px;font-weight:700;color:var(--moss);text-align:center;font-variant-numeric:tabular-nums}
+.feel-row:not(.on) .feel-val{color:var(--muted);font-weight:400}
+.feel-row input{grid-column:1 / -1;width:100%;margin:6px 0 0;height:32px;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
+.feel-row input::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(to left, var(--moss) 0 var(--p,0%), var(--faint) var(--p,0%) 100%)}
+.feel-row input::-moz-range-track{height:8px;border-radius:4px;background:var(--faint)}
+.feel-row input::-moz-range-progress{height:8px;border-radius:4px;background:var(--moss)}
+.feel-row input::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-10px;border-radius:50%;background:var(--surface);border:3px solid var(--moss);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.feel-row input::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--surface);border:3px solid var(--moss)}
+.feel-row input:focus-visible{outline:3px solid var(--sand);outline-offset:2px;border-radius:8px}
+.feel-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding-inline:4px}
 .chip[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
 .scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;direction:rtl}
 .scale button{aspect-ratio:1;min-height:30px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:16px;padding:0;font-variant-numeric:tabular-nums}
@@ -771,7 +781,6 @@ function renderDay(n) {
     </div>`;
   bindBack();
   bindDay(n, c);
-  initSliders();
   if (c.audio && c.timing) bindListen(c);
   musicFor(1); // the same soundscape on every day
 }
@@ -957,21 +966,6 @@ function bindListen(c) {
   });
 }
 
-// marks each choice row with where more choices are hidden (RTL: the row starts at the right)
-function initSliders() {
-  document.querySelectorAll(".chips:not([data-slider])").forEach(row => {
-    row.dataset.slider = "1";
-    const update = () => {
-      const max = row.scrollWidth - row.clientWidth;
-      const x = Math.abs(row.scrollLeft);
-      row.classList.toggle("more-end", max > 4 && x < max - 4);
-      row.classList.toggle("more-start", x > 4);
-    };
-    row.addEventListener("scroll", update, { passive: true });
-    update();
-  });
-}
-
 function backBar() {
   return `<div class="topbar"><button class="back" id="back" type="button">${ICON.back}חזרה</button><span class="brand" style="font-size:18px">חיים שלי</span></div>`;
 }
@@ -1003,6 +997,7 @@ function partHTML(n, part, content, a, onShabbat) {
 function blockHTML(n, part, b, i, value) {
   const id = `${part}-${i}`;
   if (b.type === "text") return `<p class="block">${esc(b.text)}</p>`;
+  if (b.type === "choice" && part === "evening") return feelHTML(b, i, value, id);
   if (b.type === "choice") {
     const picked = Array.isArray(value) ? value : value != null ? [value] : [];
     return `<div class="block" role="group" aria-labelledby="${id}">
@@ -1036,6 +1031,32 @@ function compareRating(n, b, value) {
   const word = diff > 0 ? `עלייה של ${diff}` : diff < 0 ? `ירידה של ${-diff}` : "אותו מקום";
   return `<p class="compare">ביום 1 ענית <b>${first}</b>. היום <b>${value}</b> · ${word}</p>`;
 }
+// evening answers are stored as { option index: strength 1-10 }; older answers were one pick or a list
+function levels(v) {
+  if (v == null) return {};
+  if (typeof v === "number") return { [v]: 5 };
+  if (Array.isArray(v)) return Object.fromEntries(v.map(k => [k, 5]));
+  return v;
+}
+function feelHTML(b, i, value, id) {
+  const lv = levels(value);
+  return `<div class="block" role="group" aria-labelledby="${id}">
+    ${b.prompt ? `<p class="prompt" id="${id}">${esc(b.prompt)}</p>` : ""}
+    <p class="small muted">אפשר להרגיש כמה דברים יחד. תמשוך כל אחד לפי כמה הוא נכון לך היום.</p>
+    <div class="feel" data-feel="${i}">
+      ${b.options.map((o, k) => {
+        const v = lv[k] || 0;
+        return `<label class="feel-row${v ? " on" : ""}">
+          <span class="feel-name">${esc(o)}</span>
+          <span class="feel-val" aria-hidden="true">${v || "—"}</span>
+          <input type="range" min="0" max="10" step="1" value="${v}" data-k="${k}" style="--p:${v * 10}%" aria-label="${esc(o)}" aria-valuetext="${v ? `${v} מתוך 10` : "בכלל לא"}">
+        </label>`;
+      }).join("")}
+      <div class="feel-ends" aria-hidden="true"><span>בכלל לא</span><span>מאוד</span></div>
+    </div>
+  </div>`;
+}
+
 function compareChoice(n, b, picked) {
   if (n === 1 || b.key !== "fulfilled" || !picked.length) return "";
   const first = answerByKey(1, "fulfilled");
@@ -1078,6 +1099,27 @@ function bindDay(n, c) {
       t.hidden = false; t.focus();
     }
   });
+  // evening strength sliders: saved as he drags, without redrawing under his finger
+  root.querySelectorAll("[data-feel]").forEach(group => {
+    const i = Number(group.dataset.feel);
+    group.addEventListener("input", e => {
+      const r = e.target.closest('input[type="range"]'); if (!r) return;
+      const v = Number(r.value), row = r.closest(".feel-row");
+      r.style.setProperty("--p", `${v * 10}%`);
+      r.setAttribute("aria-valuetext", v ? `${v} מתוך 10` : "בכלל לא");
+      row.querySelector(".feel-val").textContent = v || "—";
+      row.classList.toggle("on", v > 0);
+    });
+    group.addEventListener("change", () => {
+      const wasDone = dayStatus(n) === "done";
+      const a = ans(n); a.evening = a.evening || {};
+      const lv = {};
+      group.querySelectorAll('input[type="range"]').forEach(r => { if (Number(r.value) > 0) lv[r.dataset.k] = Number(r.value); });
+      if (Object.keys(lv).length) a.evening[i] = lv; else delete a.evening[i];
+      touch(n);
+      if (!wasDone && dayStatus(n) === "done") toast(`יום ${n} הושלם`);
+    });
+  });
   root.querySelectorAll("textarea[data-note]").forEach(t => {
     let timer;
     const store = () => { ans(n)[t.dataset.note] = t.value.trim() ? t.value : ""; touch(n); };
@@ -1101,12 +1143,7 @@ function afterAnswer(n, c, part, i, group) {
   const block = group.closest(".block");
   const tmp = document.createElement("div");
   tmp.innerHTML = blockHTML(n, part, c[part].blocks[i], i, ans(n)[part][i]);
-  const x = block.querySelector(".chips")?.scrollLeft || 0; // keep the slider where he left it
-  const fresh = tmp.firstElementChild;
-  block.replaceWith(fresh);
-  const row = fresh.querySelector(".chips");
-  if (row) row.scrollLeft = x;
-  initSliders();
+  block.replaceWith(tmp.firstElementChild);
   if (!wasDone && dayStatus(n) === "done") toast(n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
 }
 
@@ -1118,7 +1155,10 @@ function summary(n, part, content, a) {
     if (v == null) return;
     const label = b.prompt ? b.prompt.replace(/[:?]$/, "") : part === "step" ? "בחרתי" : "בערב";
     if (b.type === "rating") out.push(`<li>${esc(label)}: <b>${v}</b></li>`);
-    if (b.type === "choice") out.push(`<li>${esc(label)}: <b>${(Array.isArray(v) ? v : [v]).map(k => esc(b.options[k])).join(", ")}</b></li>`);
+    if (b.type === "choice" && part === "evening") {
+      const lv = Object.entries(levels(v)).sort((x, y) => y[1] - x[1]);
+      if (lv.length) out.push(`<li>${esc(label)}: <b>${lv.map(([k, l]) => `${esc(b.options[k])} ${l}/10`).join(", ")}</b></li>`);
+    } else if (b.type === "choice") out.push(`<li>${esc(label)}: <b>${(Array.isArray(v) ? v : [v]).map(k => esc(b.options[k])).join(", ")}</b></li>`);
   });
   const note = a[part + "Note"];
   if (note) out.push(`<li>${esc(note)}</li>`);
