@@ -7,7 +7,7 @@
 <title>חיים שלי</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Assistant:wght@400;600;700&family=IBM+Plex+Sans+Hebrew:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Heebo:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: one calm column, RTL; a 90-day track in the hero is the signature; sections separated by space and soft bands, not boxes */
 :root{
@@ -21,9 +21,9 @@
   --moss-ink:#F4F7F0;
   --sand:#B89A6A;        /* earth secondary */
   --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8;
-  --display:"Frank Ruhl Libre", "David Libre", Georgia, serif;
-  --body:"Assistant", "Heebo", "Segoe UI", Arial, sans-serif;
-  --util:"IBM Plex Sans Hebrew", "Assistant", Arial, sans-serif;
+  --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
+  --body:"Heebo", "Segoe UI", Arial, sans-serif;
+  --util:"Heebo", "Segoe UI", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
@@ -40,9 +40,10 @@ html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.65;direction:rtl}
 .wrap{max-width:1040px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
 .narrow{max-width:680px}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
-h2{font-size:clamp(28px,4.2vw,40px);font-weight:700}
-h3{font-size:21px;font-weight:700}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.15}
+html{font-synthesis:none}
+h2{font-size:clamp(28px,4.2vw,40px);font-weight:400}
+h3{font-size:21px;font-weight:400}
 p{margin:0}
 a{color:inherit}
 .eyebrow{font-family:var(--util);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--moss)}
@@ -57,11 +58,11 @@ a{color:inherit}
 header{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
 header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
-.brand{font-family:var(--display);font-weight:900;font-size:24px;text-decoration:none}
+.brand{font-family:var(--display);font-weight:400;font-size:24px;text-decoration:none}
 
 /* hero */
 .hero{padding-block:64px 40px}
-.hero h1{font-size:clamp(38px,6.4vw,68px);font-weight:900;max-width:16ch}
+.hero h1{font-size:clamp(38px,6.4vw,68px);font-weight:400;max-width:16ch}
 .hero .lede{font-size:clamp(19px,2.2vw,22px);max-width:34em;margin-top:22px;color:var(--muted)}
 .hero .cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;margin-top:32px}
 .hero .note{font-family:var(--util);font-size:14px;color:var(--muted)}
@@ -83,7 +84,7 @@ section{padding-block:72px}
 .band{background:var(--band)}
 
 /* recognition */
-.recog p.big{font-family:var(--display);font-size:clamp(24px,3.2vw,32px);font-weight:500;line-height:1.4}
+.recog p.big{font-family:var(--body);font-size:clamp(24px,3.2vw,32px);font-weight:500;line-height:1.45}
 .recog p+p{margin-top:18px}
 
 /* stages */
@@ -108,7 +109,7 @@ section{padding-block:72px}
 .timeline h3{font-size:19px;margin-bottom:6px}
 .sample{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:8px}
 .sample .tag{font-family:var(--util);font-size:13px;color:var(--muted);margin-bottom:10px}
-.sample blockquote{margin:0;font-family:var(--display);font-size:20px;line-height:1.55}
+.sample blockquote{margin:0;font-family:var(--body);font-weight:500;font-size:20px;line-height:1.6}
 .choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:0;list-style:none}
 .choices li{font-size:15px;border:1px solid var(--line);border-radius:999px;padding:5px 14px;background:var(--bg)}
 @media (max-width:820px){.dayflow{grid-template-columns:1fr;gap:28px}}
@@ -117,7 +118,7 @@ section{padding-block:72px}
 /* fit */
 .fit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:40px}
 .fit div{display:grid;gap:8px;align-content:start;min-width:0}
-.fit .q{font-family:var(--display);font-size:22px;font-weight:700}
+.fit .q{font-family:var(--display);font-size:22px;font-weight:400}
 @media (max-width:820px){.fit{grid-template-columns:1fr;gap:24px}}
 
 /* privacy */
@@ -138,7 +139,7 @@ section{padding-block:72px}
 
 /* final */
 .final{text-align:start}
-.final h2{font-size:clamp(32px,5vw,52px);font-weight:900;max-width:18ch}
+.final h2{font-size:clamp(32px,5vw,52px);font-weight:400;max-width:18ch}
 .final .cta{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;margin-top:28px}
 /* signup */
 .signup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;align-items:start;margin-top:8px}

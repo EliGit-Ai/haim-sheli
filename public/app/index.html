@@ -15,22 +15,23 @@
 <link rel="icon" type="image/png" href="/app/favicon-64.png">
 <title>חיים שלי</title>
 <style>
+@font-face{font-family:"Secular One";font-weight:400;font-display:swap;src:url(/app/fonts/secular-one-hebrew-400-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Secular One";font-weight:400;font-display:swap;src:url(/app/fonts/secular-one-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Heebo";font-weight:400;font-display:swap;src:url(/app/fonts/heebo-hebrew-400-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Heebo";font-weight:400;font-display:swap;src:url(/app/fonts/heebo-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Heebo";font-weight:500;font-display:swap;src:url(/app/fonts/heebo-hebrew-500-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Heebo";font-weight:500;font-display:swap;src:url(/app/fonts/heebo-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Heebo";font-weight:700;font-display:swap;src:url(/app/fonts/heebo-hebrew-700-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Heebo";font-weight:700;font-display:swap;src:url(/app/fonts/heebo-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 /* Everything here is local: fonts are self-hosted, no analytics, no third-party requests.
    The man's answers live only in this device's storage (localStorage). */
-@font-face{font-family:"Frank Ruhl Libre";font-weight:700;font-display:swap;src:url(/app/fonts/frank-ruhl-libre-hebrew-700-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:"Frank Ruhl Libre";font-weight:900;font-display:swap;src:url(/app/fonts/frank-ruhl-libre-hebrew-900-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:"Frank Ruhl Libre";font-weight:700 900;font-display:swap;src:url(/app/fonts/frank-ruhl-libre-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Assistant";font-weight:400;font-display:swap;src:url(/app/fonts/assistant-hebrew-400-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:"Assistant";font-weight:600 700;font-display:swap;src:url(/app/fonts/assistant-hebrew-700-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-@font-face{font-family:"Assistant";font-weight:400;font-display:swap;src:url(/app/fonts/assistant-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Assistant";font-weight:600 700;font-display:swap;src:url(/app/fonts/assistant-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 
 :root{
   --bg:#EEF1EA; --surface:#F7F8F4; --band:#E2E8DC; --ink:#1D2820; --muted:#56635A; --line:#C9D2C3;
   --moss:#4E6B3C; --moss-ink:#F4F7F0; --sand:#B89A6A;
   --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0;
-  --display:"Frank Ruhl Libre", "David Libre", Georgia, serif;
-  --body:"Assistant", "Heebo", "Segoe UI", Arial, sans-serif;
+  --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
+  --body:"Heebo", "Segoe UI", Arial, sans-serif;
   --safe-b:env(safe-area-inset-bottom, 0px);
   color-scheme:light;
 }
@@ -48,7 +49,8 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.65;direction:rtl;min-height:100dvh;
   padding-top:env(safe-area-inset-top, 0px)}
 button,input,textarea{font:inherit;color:inherit}
-h1,h2,h3{font-family:var(--display);margin:0;line-height:1.2;text-wrap:balance}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.2;text-wrap:balance}
+html{font-synthesis:none}
 p{margin:0}
 a{color:inherit}
 [hidden]{display:none!important}
@@ -75,7 +77,7 @@ main.no-nav{padding-bottom:calc(32px + var(--safe-b))}
 
 /* top bar */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;min-height:40px}
-.brand{font-family:var(--display);font-weight:900;font-size:22px}
+.brand{font-family:var(--display);font-weight:400;font-size:22px}
 .back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:8px 0;cursor:pointer;color:var(--muted);font-size:16px}
 .back svg{width:18px;height:18px}
 
@@ -88,7 +90,7 @@ nav.tabs a svg{width:22px;height:22px}
 nav.tabs a[aria-current="page"]{color:var(--moss)}
 
 /* home */
-.hello h1{font-size:clamp(30px,8vw,40px);font-weight:900}
+.hello h1{font-size:clamp(30px,8vw,40px);font-weight:400}
 .today-card{display:grid;gap:12px;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px}
 .today-card h2{font-size:28px}
 .status{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--muted)}
@@ -118,8 +120,8 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 
 /* day */
 .day-head{display:grid;gap:8px}
-.day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:900}
-.narration{display:grid;gap:14px;font-family:var(--display);font-weight:700;font-size:20px;line-height:1.6}
+.day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
+.narration{display:grid;gap:14px;font-family:var(--body);font-weight:500;font-size:20px;line-height:1.65}
 .narration .w{display:inline-block;border-radius:6px;padding-inline:2px;margin-inline:-1px;transform-origin:center 60%;transition:color .25s ease, transform .18s ease, background-color .25s ease}
 .narration.playing .w{color:var(--muted)}
 .narration.playing .w.read{color:var(--ink)}
@@ -378,7 +380,7 @@ function renderInstallFirst() {
       <div class="topbar"><span class="brand">חיים שלי</span></div>
       <div class="stack">
         <p class="eyebrow">לפני שמתחילים</p>
-        <h1 style="font-size:34px;font-weight:900">מוסיפים את "חיים שלי" למסך הבית</h1>
+        <h1 style="font-size:34px">מוסיפים את "חיים שלי" למסך הבית</h1>
         <p class="muted">ככה האפליקציה נפתחת כמו כל אפליקציה אחרת, והתשובות שלך נשמרות בה בבטחה, רק בטלפון שלך.</p>
       </div>
       ${installSteps()}
@@ -437,7 +439,7 @@ function renderWelcome() {
       <div class="topbar"><span class="brand">חיים שלי</span></div>
       <div class="stack">
         <p class="eyebrow">ברוך הבא</p>
-        <h1 style="font-size:clamp(32px,9vw,42px);font-weight:900">אתה נותן הכול, אז למה זה לא מרגיש מספיק?</h1>
+        <h1 style="font-size:clamp(32px,9vw,42px)">אתה נותן הכול, אז למה זה לא מרגיש מספיק?</h1>
         <p class="muted">תשעים יום. כל יום כמה דקות של תוכן, צעד אחד קטן ושאלה אחת לערב.</p>
       </div>
       <div class="notice">
