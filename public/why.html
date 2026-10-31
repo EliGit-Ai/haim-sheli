@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="למה בנינו את חיים שלי: תוכנית תרגול של 90 יום לגברים, עם מטרה אחת רצינית, שינוי אמיתי בחיים.">
+<title>למה בנינו את חיים שלי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Heebo:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one calm column, RTL; a 90-day track in the hero is the signature; sections separated by space and soft bands, not boxes */
+:root{
+  --bg:#EEF1EA;          /* pale sage stone */
+  --surface:#F7F8F4;
+  --band:#E2E8DC;
+  --ink:#1D2820;         /* forest ink */
+  --muted:#56635A;
+  --line:#C9D2C3;
+  --moss:#4E6B3C;        /* accent: moss green */
+  --moss-ink:#F4F7F0;
+  --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-ink:#8A5A2B;
+  --sand:var(--bronze);  /* earth secondary: bronze, same as the app */
+  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8;
+  --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
+  --body:"Heebo", "Segoe UI", Arial, sans-serif;
+  --util:"Heebo", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
+  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
+  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.65;direction:rtl}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.narrow{max-width:680px}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.15}
+html{font-synthesis:none}
+h2{font-size:clamp(28px,4.2vw,40px);font-weight:400}
+h3{font-size:21px;font-weight:400}
+p{margin:0}
+a{color:inherit}
+.eyebrow{font-family:var(--util);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--moss)}
+.muted{color:var(--muted)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--moss);color:var(--moss-ink);font-family:var(--body);font-weight:700;font-size:19px;text-decoration:none;padding:14px 28px;border-radius:999px;border:0;cursor:pointer;transition:transform .15s ease, filter .15s ease}
+.btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.btn:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--sand);outline-offset:3px}
+.btn.small{font-size:15px;padding:9px 18px}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.brand{font-family:var(--display);font-weight:400;font-size:24px;text-decoration:none}
+
+/* hero */
+.hero{padding-block:64px 40px}
+.hero h1{font-size:clamp(38px,6.4vw,68px);font-weight:400;max-width:16ch}
+.hero .lede{font-size:clamp(19px,2.2vw,22px);max-width:34em;margin-top:22px;color:var(--muted)}
+.hero .cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 20px;margin-top:32px}
+.hero .note{font-family:var(--util);font-size:14px;color:var(--muted)}
+
+.track{margin-top:56px}
+.track-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px 20px;margin-bottom:14px}
+.track-head .eyebrow{color:var(--muted)}
+.days{display:grid;grid-template-columns:repeat(30,minmax(0,1fr));gap:5px;direction:rtl}
+.day{aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--m1)}
+.day.m2{background:var(--m2)} .day.m3{background:var(--m3)} .day.rest{background:transparent;border:2px solid var(--rest)}
+.day.d1{outline:2px solid var(--sand);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:14px;font-family:var(--util);font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;background:var(--m1)}
+.legend i.m2{background:var(--m2)} .legend i.m3{background:var(--m3)} .legend i.rest{background:transparent;border:2px solid var(--rest)}
+@media (max-width:620px){.days{grid-template-columns:repeat(15,minmax(0,1fr));gap:6px}}
+
+section{padding-block:72px}
+.band{background:var(--band)}
+
+/* recognition */
+.recog p.big{font-family:var(--body);font-size:clamp(24px,3.2vw,32px);font-weight:500;line-height:1.45}
+.recog p+p{margin-top:18px}
+
+/* stages */
+.stages-head{display:grid;gap:12px;max-width:640px}
+.stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:44px}
+.stage{display:grid;align-content:start;gap:14px;border-top:3px solid var(--m1);padding-top:18px;min-width:0}
+.stage.s2{border-color:var(--m2)} .stage.s3{border-color:var(--m3)}
+.stage .range{font-family:var(--util);font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stage ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.stage li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
+.stage li b{font-family:var(--util);font-weight:500;font-size:13px;color:var(--muted);min-width:4.2em;font-variant-numeric:tabular-nums}
+.stage li.rest span{color:var(--sand)}
+@media (max-width:820px){.stages{grid-template-columns:1fr;gap:36px}}
+
+/* a day */
+.dayflow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:48px;align-items:start}
+.dayflow .intro{display:grid;gap:16px}
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.timeline li{display:grid;grid-template-columns:86px 1fr;gap:18px;padding-block:18px;border-top:1px solid var(--line)}
+.timeline li:first-child{border-top:0;padding-top:0}
+.timeline .when{font-family:var(--util);font-size:14px;font-weight:600;color:var(--moss);padding-top:3px}
+.timeline h3{font-size:19px;margin-bottom:6px}
+.sample{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:8px}
+.sample .tag{font-family:var(--util);font-size:13px;color:var(--muted);margin-bottom:10px}
+.sample blockquote{margin:0;font-family:var(--body);font-weight:500;font-size:20px;line-height:1.6}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:0;list-style:none}
+.choices li{font-size:15px;border:1px solid var(--line);border-radius:999px;padding:5px 14px;background:var(--bg)}
+@media (max-width:820px){.dayflow{grid-template-columns:1fr;gap:28px}}
+@media (max-width:440px){.timeline li{grid-template-columns:1fr;gap:4px}}
+
+/* fit */
+.fit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:40px}
+.fit div{display:grid;gap:8px;align-content:start;min-width:0}
+.fit .q{font-family:var(--display);font-size:22px;font-weight:400}
+@media (max-width:820px){.fit{grid-template-columns:1fr;gap:24px}}
+
+/* privacy */
+.privacy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start}
+.privacy ul{margin:0;padding:0;list-style:none;display:grid;gap:14px}
+.privacy li{padding-inline-start:26px;position:relative}
+.privacy li::before{content:"";position:absolute;inset-inline-start:0;top:.62em;width:10px;height:10px;border-radius:50%;background:var(--moss)}
+@media (max-width:820px){.privacy{grid-template-columns:1fr;gap:24px}}
+
+/* faq */
+.faq{margin-top:28px;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;list-style:none;padding-block:18px;font-weight:700;font-size:19px;display:flex;justify-content:space-between;gap:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--util);color:var(--moss);font-size:22px;line-height:1}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding-bottom:20px;color:var(--muted)}
+
+/* final */
+.final{text-align:start}
+.final h2{font-size:clamp(32px,5vw,52px);font-weight:400;max-width:18ch}
+.final .cta{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:center;margin-top:28px}
+/* signup */
+.signup{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:48px;align-items:start;margin-top:8px}
+.signup-intro{display:grid;gap:16px}
+.form{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;display:grid;gap:22px}
+.field{display:grid;gap:8px}
+.field label,.q-label{font-weight:700;font-size:17px}
+.field input[type=email]{font:inherit;font-size:18px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;direction:ltr;text-align:right;width:100%}
+.field input[type=email]:focus-visible{outline:3px solid var(--sand);outline-offset:1px}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}
+legend{padding:0;font-weight:700;font-size:17px}
+.legend-hint{display:block;font-weight:400;color:var(--muted);font-size:15px}
+#join{scroll-margin-top:72px}
+.seg{display:flex;gap:10px}
+.seg label{flex:1;position:relative;cursor:pointer}
+.seg input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.seg span{display:block;text-align:center;border:1px solid var(--line);border-radius:999px;padding:9px 12px;background:var(--bg);font-weight:600;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.seg input:checked+span{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
+.seg input:focus-visible+span{outline:3px solid var(--sand);outline-offset:2px}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--muted);cursor:pointer}
+.consent input{margin-top:5px;width:18px;height:18px;accent-color:var(--moss);flex:none}
+.hp{position:absolute;inset-inline-start:-9999px;width:1px;height:1px;overflow:hidden}
+.form .btn{width:100%}
+.form .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+.form-msg{font-size:16px;min-height:1.2em}
+.form-msg.err{color:var(--ink);font-weight:700}
+.done{display:grid;gap:12px;text-align:start}
+.done h3{font-size:26px}
+@media (max-width:820px){.signup{grid-template-columns:1fr;gap:28px}}
+
+.pact{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(26px,5vw,48px);display:grid;gap:18px;overflow:hidden}
+.pact::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:linear-gradient(to left, transparent, var(--bronze-hi) 25%, var(--bronze) 50%, var(--bronze-hi) 75%, transparent)}
+.pact .eyebrow{color:var(--bronze-ink)}
+.pact h2{max-width:18ch}
+.pact .lead{font-size:clamp(19px,2.2vw,22px);max-width:34em}
+.sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:10px}
+.sides div{display:grid;gap:10px;align-content:start;min-width:0}
+.sides h3{font-size:20px}
+.sides ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.sides li{padding-inline-start:24px;position:relative}
+.sides li::before{content:"";position:absolute;inset-inline-start:0;top:.62em;width:10px;height:10px;border-radius:50%;background:var(--moss)}
+.sides .yours li::before{background:var(--bronze)}
+.pact .last{border-top:1px solid var(--line);padding-top:18px;margin-top:6px;font-weight:500;font-size:clamp(19px,2.4vw,23px)}
+@media (max-width:620px){.sides{grid-template-columns:1fr;gap:22px}}
+footer{padding-block:36px;border-top:1px solid var(--line);font-family:var(--util);font-size:14px;color:var(--muted)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px}
+.mail{user-select:all;direction:ltr;unicode-bidi:isolate;color:var(--ink)}
+</style>
+<style>
+/* the "why" page: one long reading column, numbered sections, the same tokens as the landing page */
+.w-hero{padding-block:64px 36px;display:grid;gap:20px}
+.w-hero h1{font-size:clamp(38px,6.4vw,64px);max-width:15ch}
+.w-hero .lede{font-size:clamp(19px,2.2vw,22px);color:var(--muted);max-width:34em}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.toc a{font-size:15px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:var(--surface);color:var(--ink)}
+.toc a:hover{border-color:var(--moss)}
+section[id]{scroll-margin-top:72px}
+.prose{display:grid;gap:16px}
+.prose h2{margin-bottom:6px}
+.num{font-family:var(--display);font-size:15px;letter-spacing:.12em;color:var(--bronze-ink)}
+.prose .big{font-family:var(--display);font-size:clamp(23px,3vw,29px);line-height:1.4}
+blockquote.pull{margin:10px 0;padding:6px 20px;border-inline-start:4px solid var(--bronze);font-family:var(--display);font-size:clamp(25px,3.4vw,32px);line-height:1.35}
+.note-line{font-size:16px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin-top:8px}
+.goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px 28px;margin-block:34px 30px}
+.goals div{display:grid;gap:8px;align-content:start;border-top:3px solid var(--m2);padding-top:14px;min-width:0}
+.goals h3{font-size:24px}
+@media (max-width:820px){.goals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.goals{grid-template-columns:1fr;gap:20px}}
+.stages3{list-style:none;margin:34px auto 30px;padding:0;max-width:760px;display:grid;gap:0}
+.stages3 li{display:grid;gap:8px;padding:20px 0 22px;padding-inline-start:26px;border-inline-start:4px solid var(--m1);position:relative}
+.stages3 li.s2{border-color:var(--m2)} .stages3 li.s3{border-color:var(--m3)} .stages3 li.rest{border-color:var(--rest)}
+.stages3 li.rest h3{color:var(--bronze-ink)}
+.stages3 .range{font-size:14px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.stages3 h3{font-size:26px}
+.moments{list-style:none;margin:34px 0 30px;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.moments li{display:grid;gap:8px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}
+.moments .when{font-size:14px;font-weight:600;color:var(--moss)}
+.moments h3{font-size:26px}
+@media (max-width:900px){.moments{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.moments{grid-template-columns:1fr}}
+.dots,.nots{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:16px}
+.dots li,.nots li{position:relative;padding-inline-start:26px}
+.dots li::before{content:"";position:absolute;inset-inline-start:0;top:.6em;width:10px;height:10px;border-radius:50%;background:var(--moss)}
+.nots li::before{content:"";position:absolute;inset-inline-start:0;top:.85em;width:12px;height:2px;background:var(--bronze)}
+.quiet{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:8px}
+.pact .cta{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;margin-top:8px}
+.text-link{color:var(--moss);font-weight:600}
+</style>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="/">חיים שלי</a>
+    <a class="btn small" href="/#join">להתחיל בחינם</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap narrow">
+    <div class="w-hero">
+      <p class="eyebrow">למה בנינו את "חיים שלי"</p>
+      <h1>זו לא עוד אפליקציה. זה תרגול.</h1>
+      <p class="lede">בנינו את "חיים שלי" מתוך מטרה אחת, רצינית: שינוי אמיתי בחיים של גבר. לא השראה לרגע, ולא סרטון שנשכח עד הערב. תשעים ימים של תרגול יומיומי, קטן ועקבי, שמשנה את הדרך שבה אתה מגיב, מחליט וחי.</p>
+      <nav class="toc" aria-label="תוכן העמוד">
+        <a href="#for">בשביל מי</a>
+        <a href="#gap">למה ידע לבד לא מספיק</a>
+        <a href="#goal">לאן מגיעים</a>
+        <a href="#path">הדרך</a>
+        <a href="#day">יום אחד</a>
+        <a href="#see">לראות את השינוי</a>
+        <a href="#not">מה זה לא</a>
+      </nav>
+    </div>
+  </div>
+
+  <section class="band" id="for">
+    <div class="wrap narrow prose">
+      <p class="num">01</p>
+      <h2>בנינו את זה בשבילך</h2>
+      <p class="big">אתה עובד. אתה דואג. אתה מחזיק בית, משפחה, עבודה, ולפעמים גם את כל מי שסביבך.</p>
+      <p>מבחוץ זה נראה בסדר. אבל בפנים משהו לא שקט. אולי אתה מתפרץ מהר יותר ממה שהיית רוצה, ואחר כך מצטער. אולי אתה אומר "כן" לכולם, ומגיע לסוף היום ריק. אולי אתה פשוט לא בטוח לאן כל זה הולך.</p>
+      <p>רוב הגברים למדו לנהל את זה לבד. לא מתלוננים, לא מדברים, ממשיכים. ואף אחד לא באמת שואל אותם מה שלומם.</p>
+      <p>"חיים שלי" נבנתה בשביל הגבר הזה. לא בשביל מי שמחפש פתרון קסם, אלא בשביל מי שמוכן לתת לעצמו כמה דקות ביום, כדי שהחיים שלו ירגישו שוב שלו.</p>
+    </div>
+  </section>
+
+  <section id="gap">
+    <div class="wrap narrow prose">
+      <p class="num">02</p>
+      <h2>למה ידע לבד לא משנה כלום</h2>
+      <p>כמעט כל גבר יודע שכדאי לנשום לפני שעונים, להקשיב במקום לתקן, ולשים את הטלפון בצד. ובכל זאת, ברגע האמת, הגוף מגיב לפני הראש.</p>
+      <p>הסיבה פשוטה: שינוי לא קורה כשמבינים משהו. הוא קורה כשעושים אותו שוב ושוב, ברגעים הקטנים של היום. בשלוש השניות שלפני שאתה עונה. בדקה שלפני שאתה פותח את דלת הבית. ברגע שבו אתה עומד להגיד "כן" ומתכוון "לא".</p>
+      <blockquote class="pull">הבנה זה ההתחלה. תרגול זה מה שמשנה.</blockquote>
+      <p>לכן "חיים שלי" לא בנויה מהרצאות. היא בנויה מתרגול: כל יום רעיון אחד קצר, ומיד אחריו צעד אחד קטן שעושים בחיים האמיתיים, באותו יום.</p>
+    </div>
+  </section>
+
+  <section class="band" id="goal">
+    <div class="wrap">
+      <div class="narrow prose">
+        <p class="num">03</p>
+        <h2>לאן אנחנו רוצים שתגיע ביום ה־90</h2>
+        <p>זו המטרה שאליה כל יום בתוכנית מכוון. לא כהבטחה, אלא כיעד ברור, כדי שתדע למה אתה עושה את הצעד הקטן של היום.</p>
+      </div>
+      <div class="goals">
+        <div><h3>שקט</h3><p class="muted">פחות התפרצויות, פחות רעש בראש. אתה מגיב מתוך בחירה, ולא מתוך לחץ.</p></div>
+        <div><h3>שליטה</h3><p class="muted">אתה מרגיש שאתה מנהל את היום שלך, ולא שהיום מנהל אותך.</p></div>
+        <div><h3>ביטחון</h3><p class="muted">אתה מדבר ברור, מבקש מה שאתה צריך, ויודע להגיד לא בלי להתנצל.</p></div>
+        <div><h3>כיוון</h3><p class="muted">אתה יודע מה חשוב לך, ולאן אתה הולך. לא לפי מה שמצפים ממך.</p></div>
+        <div><h3>חיבור</h3><p class="muted">אתה נוכח יותר בבית, עם בת הזוג, עם הילדים ועם החברים.</p></div>
+        <div><h3>שלמות</h3><p class="muted">התחושה שהחיים שלך שלך. שאתה הגבר שרצית להיות, או לפחות בדרך אליו.</p></div>
+      </div>
+      <div class="narrow prose">
+        <p class="note-line">ביום הראשון תענה על כמה שאלות פשוטות: כמה אתה מרגיש בשליטה, כמה ביטחון, וכמה אתה יודע לאן אתה הולך. ביום ה־89 תענה עליהן שוב, בלי להציץ, ותשווה.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="path">
+    <div class="wrap">
+      <div class="narrow prose">
+        <p class="num">04</p>
+        <h2>הדרך: למה דווקא בסדר הזה</h2>
+        <p>את התוכנית לא בנינו כאוסף של טיפים. היא דרך, וכל שלב בה נשען על השלב שלפניו.</p>
+      </div>
+      <ol class="stages3">
+        <li class="s1">
+          <span class="range">ימים 1–30</span>
+          <h3>שקט ושליטה</h3>
+          <p class="muted">אי אפשר לבנות ביטחון על בסיס של לחץ. לכן מתחילים מהבסיס: מאיפה התגובות שלך מגיעות, איך עוצרים, נושמים ומזהים מה מפעיל אותך, ואיך מגיבים במקום להתפרץ. גם מול אנשים, וגם בבית.</p>
+        </li>
+        <li class="s2">
+          <span class="range">ימים 31–60</span>
+          <h3>ביטחון וכיוון</h3>
+          <p class="muted">כשיש שקט, אפשר לשאול את השאלות הגדולות: מי אני בלי התפקידים, מה הערכים שלי, איך מבקשים, איך מסרבים, ולאן אני הולך. והחודש נגמר בלמידה איך לעמוד במילה שלך, קודם כול מול עצמך.</p>
+        </li>
+        <li class="rest">
+          <span class="range">ימים 59–60</span>
+          <h3>מנוחה</h3>
+          <p class="muted">יומיים בלי צעד חדש. גם לעצור זה חלק מהדרך.</p>
+        </li>
+        <li class="s3">
+          <span class="range">ימים 61–90</span>
+          <h3>הגשמה</h3>
+          <p class="muted">עכשיו מביאים את כל מה שבנית אל החיים עצמם: זוגיות ומשיכה, תקשורת ותיקון אחרי ריב, אבהות, חברויות ושייכות, עבודה, כסף ומשמעות. ובסוף, מסתכלים אחורה ורואים כמה רחוק הגעת.</p>
+        </li>
+      </ol>
+      <div class="narrow prose">
+        <p class="note-line">התוכנית מתאימה את עצמה אליך. מי שלא בזוגיות כרגע מקבל שבועיים על הגבר שהוא מביא לזוגיות הבאה. מי שאין לו ילדים מקבל ימים על הדוד, האח והמנטור שהוא יכול להיות. ומי ששומר שבת מקבל את התוכן של שבת כבר ביום שישי.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="day">
+    <div class="wrap">
+      <div class="narrow prose">
+        <p class="num">05</p>
+        <h2>יום אחד: ארבעה רגעים, כל אחד מסיבה</h2>
+        <p>כל יום בנוי מאותם ארבעה חלקים. לא במקרה. כל חלק עושה עבודה אחרת בתהליך של שינוי.</p>
+      </div>
+      <ol class="moments">
+        <li>
+          <span class="when">בוקר</span>
+          <h3>להבין</h3>
+          <p class="muted">הקראה של כמה דקות, עם צלילי טבע עדינים ברקע. רעיון אחד, פשוט וברור. אפשר להקשיב ברכב, בהליכה או עם אוזניות.</p>
+        </li>
+        <li>
+          <span class="when">בוקר</span>
+          <h3>לתרגל</h3>
+          <p class="muted">הצעד של היום: פעולה אחת קטנה שאתה בוחר מתוך כמה אפשרויות. קטנה בכוונה, כדי שבאמת תעשה אותה, גם ביום עמוס.</p>
+        </li>
+        <li>
+          <span class="when">צהריים</span>
+          <h3>לזכור</h3>
+          <p class="muted">משפט אחד שמזכיר את הצעד, באמצע היום. כי הכוונה של הבוקר נעלמת מהר בתוך הרעש.</p>
+        </li>
+        <li>
+          <span class="when">ערב</span>
+          <h3>להפנים</h3>
+          <p class="muted">שאלה אחת לערב. רגע קצר של מבט על מה שקרה היום. ככה ניסיון של יום אחד הופך להבנה שנשארת.</p>
+        </li>
+      </ol>
+      <div class="narrow prose">
+        <p>כמעט כל תשובה היא בחירה מתוך כמה אפשרויות. לא צריך לכתוב חיבורים, ולא צריך לחפור בעבר. מי שרוצה, יכול להוסיף כמה מילים משלו.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="see">
+    <div class="wrap narrow prose">
+      <p class="num">06</p>
+      <h2>כדי שתראה את השינוי בעצמך</h2>
+      <p>שינוי אמיתי קורה לאט, ולכן קל לפספס אותו. בנינו לתוכנית כמה דרכים לראות אותו בעיניים שלך:</p>
+      <ul class="dots">
+        <li><b>המראה שלך.</b> שמונה הרגלים קטנים, כמו לקום בשעה שתכננת, לעשות קודם את הדבר הקשה, ולקיים הבטחות קטנות לעצמך. ביום 1 אתה מסמן איפה אתה עומד, ובימים 30, 60 ו־90 אתה מסמן שוב ורואה מה זז.</li>
+        <li><b>השאלות של היום הראשון.</b> חוזרות בסוף כל חודש, כדי שתשווה את עצמך לעצמך, ולא לאף אחד אחר.</li>
+        <li><b>היומן שלי.</b> כל מה שענית, יום אחרי יום, במקום אחד.</li>
+        <li><b>מילה בדרך.</b> בימים מסוימים, כמו אחרי שבוע, אחרי חודש ובחצי הדרך, מחכה לך משפט קצר שמזכיר לך כמה כבר עשית.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band" id="not">
+    <div class="wrap narrow prose">
+      <p class="num">07</p>
+      <h2>מה "חיים שלי" לא</h2>
+      <ul class="nots">
+        <li><b>לא קבוצה, ולא שיחות וידאו.</b> אף אחד לא מבקש ממך להופיע, לשתף או להציג את עצמך.</li>
+        <li><b>לא מוטיבציה של רגע.</b> אין כאן צעקות, הבטחות גדולות או "תשנה את החיים בשבוע". יש צעד קטן, כל יום.</li>
+        <li><b>לא מנוי שלא נגמר.</b> התוכנית מסתיימת ביום ה־90. המטרה היא שתמשיך לבד, עם מה שבנית.</li>
+        <li><b>לא טיפול.</b> זו תוכנית להתפתחות אישית, והיא לא מחליפה ייעוץ או טיפול מקצועי. אם אתה במצב קשה, כדאי לפנות לאיש מקצוע.</li>
+      </ul>
+      <p class="quiet"><b>ומה שאתה כותב נשאר אצלך.</b> התשובות נשמרות בטלפון שלך בלבד. אנחנו לא רואים אותן, ואין צורך לכתוב שום דבר אישי כדי להשתתף.</p>
+    </div>
+  </section>
+
+  <section id="pact">
+    <div class="wrap narrow">
+      <div class="pact">
+        <p class="eyebrow">ההסכם שלנו</p>
+        <h2>אנחנו עשינו את החלק שלנו.</h2>
+        <p class="lead muted">90 ימים, כל אחד נכתב והוקלט בכוונה. החלק שלך קצר יותר: כמה דקות ביום. אבל אותו אף אחד לא יכול לעשות במקומך.</p>
+        <p class="last">יהיו ימים שלא תרצה לפתוח. זה בסדר. מה שחשוב זה שתחזור.</p>
+        <div class="cta">
+          <a class="btn" href="/#join">להתחיל את האתגר בחינם</a>
+          <a class="text-link" href="/">חזרה לדף הבית</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>חיים שלי · haim-sheli.com</span>
+    <span>יצירת קשר: <span class="mail">gever@haim-sheli.com</span></span>
+  </div>
+</footer>
+
+</body>
+</html>
