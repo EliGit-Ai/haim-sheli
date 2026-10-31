@@ -176,26 +176,26 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .prompt{font-weight:700}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
-/* evening feelings: one row per answer, a thick line with three stops and a bronze handle; dragging left to right = more, 0-3 */
-.feel{display:grid;gap:4px}
-.feel-chip{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 12px;padding:8px 2px 4px;cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none;border-radius:14px}
+/* evening feelings: one compact row per answer (name, a short line with three stops and a small bronze handle, the word); dragging left to right = more, 0-3 */
+.feel{display:grid}
+.feel-chip{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) 4.6em;align-items:center;gap:10px;padding:5px 2px;cursor:pointer;touch-action:pan-y;user-select:none;-webkit-user-select:none;border-radius:12px}
 .feel-chip:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
-.feel-name{font-size:17px;line-height:1.35;min-width:0}
+.feel-name{grid-column:1;grid-row:1;font-size:17px;line-height:1.3;min-width:0}
 .feel-chip.on .feel-name{font-weight:700}
-.feel-word{font-size:13px;font-weight:700;color:var(--moss);white-space:nowrap}
-.feel-line{grid-column:1 / -1;position:relative;height:44px;direction:ltr;--k:16px}
-.feel-line .t,.feel-line .f{position:absolute;left:var(--k);top:50%;height:10px;margin-top:-5px;border-radius:5px}
+.feel-word{grid-column:3;grid-row:1;font-size:13px;font-weight:700;color:var(--moss);white-space:nowrap;text-align:left}
+.feel-line{grid-column:2;grid-row:1;position:relative;height:34px;direction:ltr;--k:9px}
+.feel-line .t,.feel-line .f{position:absolute;left:var(--k);top:50%;height:4px;margin-top:-2px;border-radius:2px}
 .feel-line .t{right:var(--k);background:var(--faint)}
 .feel-line .f{width:calc((100% - 2 * var(--k)) * var(--p, 0) / 3);background:var(--moss);transition:width .15s ease}
 .feel-line .s{position:absolute;left:var(--k);right:var(--k);top:50%;pointer-events:none}
-.feel-line .s i{position:absolute;top:0;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--surface);border:2px solid var(--line)}
+.feel-line .s i{position:absolute;top:0;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;border-radius:50%;background:var(--surface);border:1.5px solid var(--line)}
 .feel-line .s i:nth-child(1){left:33.333%}.feel-line .s i:nth-child(2){left:66.667%}.feel-line .s i:nth-child(3){left:100%}
-.feel-line .s i.f{border-color:var(--moss-ink);background:var(--moss-ink)}
-.feel-line .k{position:absolute;top:50%;left:calc(var(--k) + (100% - 2 * var(--k)) * var(--p, 0) / 3);width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, var(--bronze-hi), var(--bronze) 55%, var(--bronze-lo));box-shadow:0 2px 6px rgba(0,0,0,.25);transition:left .15s ease, transform .15s ease}
-.feel-chip:not(.on) .feel-line .k{background:var(--surface);border:2px solid var(--line);box-shadow:none}
-.feel-chip:active .feel-line .k{transform:scale(1.1)}
-.feel-hint{display:flex;justify-content:space-between;direction:ltr;font-size:13px;color:var(--muted);padding-inline:2px;margin-top:2px}
+.feel-line .s i.f{border-color:var(--moss);background:var(--moss)}
+.feel-line .k{position:absolute;top:50%;left:calc(var(--k) + (100% - 2 * var(--k)) * var(--p, 0) / 3);width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--bronze-hi), var(--bronze) 55%, var(--bronze-lo));box-shadow:0 1px 3px rgba(0,0,0,.22);transition:left .15s ease, transform .15s ease}
+.feel-chip:not(.on) .feel-line .k{background:var(--surface);border:1.5px solid var(--line);box-shadow:none}
+.feel-chip:active .feel-line .k{transform:scale(1.15)}
+.feel-hint{display:flex;justify-content:space-between;direction:ltr;font-size:12px;color:var(--muted);padding-inline:2px;margin-top:4px}
 @media (prefers-reduced-motion: reduce){.feel-line .f,.feel-line .k{transition:none}}
 .chip[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
 .scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;direction:rtl}
@@ -1492,7 +1492,7 @@ function bindDay(n, c) {
     };
     // left end of the line = 0, right end = 3, whatever the page direction
     const valueAt = (chip, x) => {
-      const r = chip.querySelector(".feel-line").getBoundingClientRect(), k = 16;
+      const r = chip.querySelector(".feel-line").getBoundingClientRect(), k = 9;
       return Math.max(0, Math.min(FEEL_MAX, Math.round(((x - r.left - k) / (r.width - 2 * k)) * FEEL_MAX)));
     };
     let drag = null;
