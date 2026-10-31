@@ -143,21 +143,21 @@ nav.tabs a[aria-current="page"]{color:var(--moss)}
 .prompt{font-weight:700}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;cursor:pointer;font-size:17px;line-height:1.35;text-align:start;min-height:44px}
-/* evening feelings: every option has its own strength slider, 0 = not at all */
-.feel{display:grid;gap:10px}
-.feel-row{display:grid;grid-template-columns:minmax(0,1fr) 2.2em;align-items:center;gap:4px 12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 14px 12px}
-.feel-row.on{border-color:var(--moss)}
+/* evening feelings: every option is a chip that fills from left to right as he drags across it, 0-5 */
+.feel{display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.feel-chip{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:10px 18px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;transition:border-color .2s ease}
+.feel-chip:active{cursor:grabbing}
+.feel-chip.on{border-color:var(--moss)}
+.feel-chip:focus-visible{outline:3px solid var(--sand);outline-offset:2px}
+.feel-fill{position:absolute;inset:0 auto 0 0;width:calc(var(--p, 0) * 20%);background:color-mix(in srgb, var(--moss) 24%, var(--surface));transition:width .18s ease}
+.feel-name,.feel-dots{position:relative}
 .feel-name{font-size:17px;line-height:1.35}
-.feel-val{font-size:15px;font-weight:700;color:var(--moss);text-align:center;font-variant-numeric:tabular-nums}
-.feel-row:not(.on) .feel-val{color:var(--muted);font-weight:400}
-.feel-row input{grid-column:1 / -1;width:100%;margin:6px 0 0;height:32px;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
-.feel-row input::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(to left, var(--moss) 0 var(--p,0%), var(--faint) var(--p,0%) 100%)}
-.feel-row input::-moz-range-track{height:8px;border-radius:4px;background:var(--faint)}
-.feel-row input::-moz-range-progress{height:8px;border-radius:4px;background:var(--moss)}
-.feel-row input::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-10px;border-radius:50%;background:var(--surface);border:3px solid var(--moss);box-shadow:0 1px 4px rgba(0,0,0,.18)}
-.feel-row input::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--surface);border:3px solid var(--moss)}
-.feel-row input:focus-visible{outline:3px solid var(--sand);outline-offset:2px;border-radius:8px}
-.feel-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding-inline:4px}
+.feel-chip.on .feel-name{font-weight:700}
+.feel-dots{display:flex;gap:5px;direction:ltr;flex:none}
+.feel-dots i{width:8px;height:8px;border-radius:50%;background:var(--faint);transition:background-color .15s ease}
+.feel-dots i.f{background:var(--moss)}
+.feel-hint{display:flex;justify-content:space-between;direction:ltr;font-size:13px;color:var(--muted);padding-inline:18px}
+@media (prefers-reduced-motion: reduce){.feel-fill,.feel-dots i{transition:none}}
 .chip[aria-pressed="true"]{background:var(--moss);color:var(--moss-ink);border-color:var(--moss)}
 .scale{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;direction:rtl}
 .scale button{aspect-ratio:1;min-height:30px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:16px;padding:0;font-variant-numeric:tabular-nums}
@@ -1031,28 +1031,33 @@ function compareRating(n, b, value) {
   const word = diff > 0 ? `עלייה של ${diff}` : diff < 0 ? `ירידה של ${-diff}` : "אותו מקום";
   return `<p class="compare">ביום 1 ענית <b>${first}</b>. היום <b>${value}</b> · ${word}</p>`;
 }
-// evening answers are stored as { option index: strength 1-10 }; older answers were one pick or a list
+// evening answers are stored as { option index: strength 1-5 }; older answers were one pick, a list, or 1-10
+const FEEL_MAX = 5;
 function levels(v) {
   if (v == null) return {};
-  if (typeof v === "number") return { [v]: 5 };
-  if (Array.isArray(v)) return Object.fromEntries(v.map(k => [k, 5]));
-  return v;
+  if (typeof v === "number") return { [v]: 3 };
+  if (Array.isArray(v)) return Object.fromEntries(v.map(k => [k, 3]));
+  const big = Object.values(v).some(x => x > FEEL_MAX); // saved on the old 1-10 scale
+  return big ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, Math.max(1, Math.ceil(x / 2))])) : v;
 }
+const FEEL_WORDS = ["בכלל לא", "קצת", "במידה מסוימת", "די הרבה", "הרבה", "מאוד"];
+const dotsHTML = v => Array.from({ length: FEEL_MAX }, (_, j) => `<i${j < v ? ' class="f"' : ""}></i>`).join("");
 function feelHTML(b, i, value, id) {
   const lv = levels(value);
   return `<div class="block" role="group" aria-labelledby="${id}">
     ${b.prompt ? `<p class="prompt" id="${id}">${esc(b.prompt)}</p>` : ""}
-    <p class="small muted">אפשר להרגיש כמה דברים יחד. תמשוך כל אחד לפי כמה הוא נכון לך היום.</p>
+    <p class="small muted">אפשר להרגיש כמה דברים יחד. תגרור כל אחד משמאל לימין, לפי כמה הוא נכון לך היום.</p>
     <div class="feel" data-feel="${i}">
       ${b.options.map((o, k) => {
-        const v = lv[k] || 0;
-        return `<label class="feel-row${v ? " on" : ""}">
+        const v = Math.min(FEEL_MAX, lv[k] || 0);
+        return `<div class="feel-chip${v ? " on" : ""}" role="slider" tabindex="0" data-k="${k}" data-v="${v}" style="--p:${v}"
+          aria-label="${esc(o)}" aria-valuemin="0" aria-valuemax="${FEEL_MAX}" aria-valuenow="${v}" aria-valuetext="${FEEL_WORDS[v]}">
+          <span class="feel-fill" aria-hidden="true"></span>
           <span class="feel-name">${esc(o)}</span>
-          <span class="feel-val" aria-hidden="true">${v || "—"}</span>
-          <input type="range" min="0" max="10" step="1" value="${v}" data-k="${k}" style="--p:${v * 10}%" aria-label="${esc(o)}" aria-valuetext="${v ? `${v} מתוך 10` : "בכלל לא"}">
-        </label>`;
+          <span class="feel-dots" aria-hidden="true">${dotsHTML(v)}</span>
+        </div>`;
       }).join("")}
-      <div class="feel-ends" aria-hidden="true"><span>בכלל לא</span><span>מאוד</span></div>
+      <div class="feel-hint" aria-hidden="true"><span>← בכלל לא</span><span>מאוד →</span></div>
     </div>
   </div>`;
 }
@@ -1099,25 +1104,65 @@ function bindDay(n, c) {
       t.hidden = false; t.focus();
     }
   });
-  // evening strength sliders: saved as he drags, without redrawing under his finger
+  // evening strength chips: drag across a chip from left to right (or tap a spot) to set 0-5
   root.querySelectorAll("[data-feel]").forEach(group => {
     const i = Number(group.dataset.feel);
-    group.addEventListener("input", e => {
-      const r = e.target.closest('input[type="range"]'); if (!r) return;
-      const v = Number(r.value), row = r.closest(".feel-row");
-      r.style.setProperty("--p", `${v * 10}%`);
-      r.setAttribute("aria-valuetext", v ? `${v} מתוך 10` : "בכלל לא");
-      row.querySelector(".feel-val").textContent = v || "—";
-      row.classList.toggle("on", v > 0);
-    });
-    group.addEventListener("change", () => {
+    const show = (chip, v) => {
+      chip.dataset.v = v;
+      chip.style.setProperty("--p", v);
+      chip.classList.toggle("on", v > 0);
+      chip.setAttribute("aria-valuenow", v);
+      chip.setAttribute("aria-valuetext", FEEL_WORDS[v]);
+      chip.querySelector(".feel-dots").innerHTML = dotsHTML(v);
+    };
+    const save = () => {
       const wasDone = dayStatus(n) === "done";
       const a = ans(n); a.evening = a.evening || {};
       const lv = {};
-      group.querySelectorAll('input[type="range"]').forEach(r => { if (Number(r.value) > 0) lv[r.dataset.k] = Number(r.value); });
+      group.querySelectorAll(".feel-chip").forEach(ch => { const v = Number(ch.dataset.v); if (v > 0) lv[ch.dataset.k] = v; });
       if (Object.keys(lv).length) a.evening[i] = lv; else delete a.evening[i];
       touch(n);
       if (!wasDone && dayStatus(n) === "done") toast(`יום ${n} הושלם`);
+    };
+    // left edge = 0, right edge = 5, whatever the page direction
+    const valueAt = (chip, x) => {
+      const r = chip.getBoundingClientRect();
+      return Math.max(0, Math.min(FEEL_MAX, Math.round(((x - r.left) / r.width) * FEEL_MAX)));
+    };
+    let drag = null;
+    group.addEventListener("pointerdown", e => {
+      const chip = e.target.closest(".feel-chip"); if (!chip) return;
+      drag = { chip, id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false, start: Number(chip.dataset.v) };
+    });
+    group.addEventListener("pointermove", e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+      if (!drag.moved) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { drag = null; return; } // he is scrolling the page
+        if (Math.abs(dx) < 6) return;
+        drag.moved = true;
+        drag.chip.setPointerCapture?.(e.pointerId);
+      }
+      show(drag.chip, valueAt(drag.chip, e.clientX));
+    });
+    const end = e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const { chip, moved, start } = drag; drag = null;
+      if (!moved && e.type === "pointerup") {
+        const v = valueAt(chip, e.clientX);
+        show(chip, v === start ? 0 : v); // tapping the same spot again clears it
+      }
+      save();
+    };
+    group.addEventListener("pointerup", end);
+    group.addEventListener("pointercancel", end);
+    group.addEventListener("keydown", e => {
+      const chip = e.target.closest(".feel-chip"); if (!chip) return;
+      const v = Number(chip.dataset.v);
+      const next = { ArrowRight: v + 1, ArrowUp: v + 1, ArrowLeft: v - 1, ArrowDown: v - 1, Home: 0, End: FEEL_MAX }[e.key];
+      if (next === undefined) return;
+      e.preventDefault();
+      show(chip, Math.max(0, Math.min(FEEL_MAX, next))); save();
     });
   });
   root.querySelectorAll("textarea[data-note]").forEach(t => {
@@ -1157,7 +1202,7 @@ function summary(n, part, content, a) {
     if (b.type === "rating") out.push(`<li>${esc(label)}: <b>${v}</b></li>`);
     if (b.type === "choice" && part === "evening") {
       const lv = Object.entries(levels(v)).sort((x, y) => y[1] - x[1]);
-      if (lv.length) out.push(`<li>${esc(label)}: <b>${lv.map(([k, l]) => `${esc(b.options[k])} ${l}/10`).join(", ")}</b></li>`);
+      if (lv.length) out.push(`<li>${esc(label)}: <b>${lv.map(([k, l]) => `${esc(b.options[k])} ${l}/${FEEL_MAX}`).join(", ")}</b></li>`);
     } else if (b.type === "choice") out.push(`<li>${esc(label)}: <b>${(Array.isArray(v) ? v : [v]).map(k => esc(b.options[k])).join(", ")}</b></li>`);
   });
   const note = a[part + "Note"];
