@@ -28,7 +28,7 @@
 
 :root{
   --bg:#F8F0E8; --surface:#FFFBF7; --band:#F2E0D2; --ink:#3B2B22; --muted:#735F52; --line:#E2C6B3;
-  --moss:#A84C33; --moss-ink:#FFFAF6; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
+  --moss:#9E472F; --moss-ink:#FFFAF6; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
   --m1:#E3B89A; --m2:#C77B57; --m3:#8E3F2A; --rest:#D9C6A8; --faint:#EEDFD2; --sky:#F5E6D9; --head:var(--bronze);
   --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
   --body:"Heebo", "Segoe UI", Arial, sans-serif;
@@ -287,6 +287,8 @@ input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;back
 .settings section{display:grid;gap:12px;padding-block:22px;border-top:1px solid var(--line)}
 .settings section:first-of-type{border-top:0;padding-top:4px}
 .settings h2{font-size:22px}
+.legal-links{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0}
+.legal-links a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding-block:8px}
 .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:4px 12px;background:var(--band);font-size:15px;font-weight:700}
 /* the pill doubles as a day picker: the real <select> covers it, invisible, so the phone opens its own list */
 .daypick{position:relative;cursor:pointer;min-height:36px;padding-inline-end:10px}
@@ -625,6 +627,7 @@ function renderWelcome() {
       <div class="notice">
         <h3>מה שאתה עונה נשאר רק אצלך</h3>
         <p class="small muted">התשובות נשמרות בטלפון הזה בלבד. הן לא נשלחות אלינו ולא לאף אחד אחר, ואף אחד לא רואה אותן. בהגדרות אפשר לשמור גיבוי לקובץ.</p>
+        <p class="legal-links small"><a href="/privacy">מדיניות פרטיות</a><a href="/terms">תנאי שימוש</a><a href="/accessibility">הצהרת נגישות</a></p>
       </div>
       <form class="card stack" id="wf">
         <p style="font-weight:700">שלוש שאלות קצרות, כדי שהתוכנית תתאים לחיים שלך:</p>
@@ -1902,6 +1905,7 @@ function renderSettings() {
         <button class="btn ghost" id="wipe" type="button">למחוק הכול</button>
       </section>
       <p class="small muted" style="padding-block:12px">שאלות? <span style="direction:ltr;unicode-bidi:isolate">gever@haim-sheli.com</span></p>
+      <p class="legal-links small"><a href="/privacy">מדיניות פרטיות</a><a href="/terms">תנאי שימוש</a><a href="/accessibility">הצהרת נגישות</a></p>
     </div>`;
 
   const pf = $("#pf");

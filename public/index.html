@@ -17,7 +17,7 @@
   --ink:#3B2B22;         /* forest ink */
   --muted:#735F52;
   --line:#E2C6B3;
-  --moss:#A84C33;        /* accent: terracotta (the token keeps its old name) */
+  --moss:#9E472F;        /* accent: terracotta (the token keeps its old name) */
   --moss-ink:#FFFAF6;
   --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-ink:#8A5A2B;
   --sand:var(--bronze);  /* earth secondary: bronze, same as the app */
@@ -97,7 +97,7 @@ section{padding-block:72px}
 .stage ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .stage li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline}
 .stage li b{font-family:var(--util);font-weight:500;font-size:13px;color:var(--muted);min-width:4.2em;font-variant-numeric:tabular-nums}
-.stage li.rest span{color:var(--sand)}
+.stage li.rest span{color:var(--bronze-ink)}
 @media (max-width:820px){.stages{grid-template-columns:1fr;gap:36px}}
 
 /* a day */
@@ -165,6 +165,8 @@ legend{padding:0;font-weight:700;font-size:17px}
 .hp{position:absolute;inset-inline-start:-9999px;width:1px;height:1px;overflow:hidden}
 .form .btn{width:100%}
 .form .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+.form-legal{font-size:14px;color:var(--muted);margin:0}
+.form-legal a{color:var(--ink)}
 .form-msg{font-size:16px;min-height:1.2em}
 .form-msg.err{color:var(--ink);font-weight:700}
 .done{display:grid;gap:12px;text-align:start}
@@ -189,6 +191,9 @@ legend{padding:0;font-weight:700;font-size:17px}
 .why-link a{color:var(--moss);font-weight:600;text-decoration:none;border-bottom:1px solid currentColor}
 footer{padding-block:36px;border-top:1px solid var(--line);font-family:var(--util);font-size:14px;color:var(--muted)}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px}
+.legal-links{display:flex;flex-wrap:wrap;gap:6px 18px}
+.legal-links a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding-block:6px}
+
 .mail{user-select:all;direction:ltr;unicode-bidi:isolate;color:var(--ink)}
 </style>
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -428,6 +433,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 
 
         <button class="btn" type="submit" id="su-submit">להתחיל את האתגר בחינם</button>
         <p class="form-msg" id="su-msg" role="status" aria-live="polite"></p>
+        <p class="form-legal">המייל והתשובות נשמרים כדי לשלוח לך את התוכן ולהתאים אותו. פרטים ב<a href="/privacy">מדיניות הפרטיות</a> וב<a href="/terms">תנאי השימוש</a>.</p>
       </form>
 
       <div class="form done" id="signup-done" hidden>
@@ -441,6 +447,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 
 <footer>
   <div class="wrap">
     <span>חיים שלי · haim-sheli.com · <a href="/why">למה בנינו את חיים שלי</a></span>
+    <nav class="legal-links" aria-label="מידע משפטי"><a href="/privacy">מדיניות פרטיות</a><a href="/terms">תנאי שימוש</a><a href="/accessibility">הצהרת נגישות</a></nav>
     <span>יצירת קשר: <span class="mail">gever@haim-sheli.com</span></span>
   </div>
 </footer>
