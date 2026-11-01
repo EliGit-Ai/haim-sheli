@@ -200,6 +200,13 @@ details.map[open] summary{margin-bottom:10px}
 .listen .music[aria-pressed="true"]{color:var(--moss);font-weight:700}
 @media (prefers-reduced-motion: reduce){.narration .w{transition:none}.narration .w.now{transform:none}}
 .part{display:grid;gap:18px}
+/* the anchor: tie today's step to a moment that happens anyway */
+.anchor{display:grid;gap:10px;border-inline-start:3px solid var(--bronze);padding:2px 14px 4px}
+.anchor .prompt{font-weight:700}
+.anchor .small{margin-top:-4px}
+.anchor .chips{display:flex;flex-wrap:wrap;gap:8px}
+.anchor .set{font-size:15px;color:var(--bronze-ink);font-weight:700}
+.today-card .anc{font-size:14px;color:var(--bronze-ink);font-weight:700}
 /* the mirror: eight small habits, marked on day 1 and again on days 30, 60 and 90 to show the change */
 .mirror{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;display:grid;gap:12px}
 .mirror::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:linear-gradient(to left, transparent, var(--bronze-hi) 25%, var(--bronze) 50%, var(--bronze-hi) 75%, transparent)}
@@ -502,7 +509,7 @@ function dayStatus(n) {
   if (!a) return "none";
   const ev = Object.keys(a.evening || {}).length > 0 || (a.eveningNote || "").trim();
   if (a.stepDone && (ev || dayMeta(n).rest || n === 1)) return "done";
-  if (a.stepDone || ev || Object.keys(a.step || {}).length || (a.stepNote || "").trim()) return "started";
+  if (a.stepDone || ev || a.anchor || Object.keys(a.step || {}).length || (a.stepNote || "").trim()) return "started";
   return "none";
 }
 
@@ -801,6 +808,7 @@ function renderHome() {
       <a class="today-card" href="#/day/${n}">
         <span class="eyebrow">${n === reached || reached === 2 ? "היום" : "היום שלך"} · יום ${n}${m.weekName ? ` · ${esc(m.weekName)}` : ""}</span>
         <h2>${esc(c?.title || m.title)}</h2>
+        ${peek(n)?.anchor && st !== "done" ? `<span class="anc">העוגן שלך: ${esc(anchorText(peek(n).anchor))}</span>` : ""}
         <span class="status ${st}"><i></i>${stText}</span>
         <span class="btn" style="justify-self:start">${st === "none" ? "להתחיל" : st === "done" ? "לחזור ליום" : "להמשיך"}</span>
       </a>`}
@@ -1196,6 +1204,7 @@ function renderDay(n) {
     </div>`;
   bindBack();
   bindDay(n, c);
+  bindAnchor(n);
   bindMirror(n);
   if (c.audio && c.timing) bindListen(c);
   bindEvening(c);
@@ -1575,6 +1584,37 @@ function checkHTML(on, label) {
   return `<button class="check" type="button" data-done aria-pressed="${Boolean(on)}"><span class="box">${ICON.check}</span><span>${esc(label)}</span></button>`;
 }
 
+// ---------- the anchor: "right after X, I'll do the step". Saved only on this phone, by key, so the list can change later
+const ANCHORS = [
+  { k: "coffee", t: "אחרי הקפה של הבוקר" },
+  { k: "commute", t: "בדרך לעבודה" },
+  { k: "lunch", t: "בהפסקת הצהריים" },
+  { k: "home", t: "כשאני נכנס הביתה" },
+  { k: "kids", t: "אחרי שהילדים נרדמים", needs: "kids" },
+  { k: "bed", t: "לפני השינה" },
+];
+const anchorText = k => ANCHORS.find(x => x.k === k)?.t || "";
+function lastAnchor(n) { for (let d = n - 1; d >= 1; d--) { const k = state.answers[d]?.anchor; if (k) return k; } return null; }
+function anchorHTML(n) {
+  const k = ans(n).anchor, prev = lastAnchor(n);
+  const list = ANCHORS.filter(x => !(x.needs === "kids" && state.profile?.kids === "no"));
+  return `<div class="anchor" id="anchor">
+    <p class="prompt">מתי תעשה את זה?</p>
+    <p class="small muted">צעד קטן נתפס כשמצמידים אותו לרגע שקורה בכל מקרה.${!k && prev ? ` אתמול בחרת: ${esc(anchorText(prev))}.` : ""}</p>
+    <div class="chips">${list.map(x => `<button type="button" class="chip" data-anchor="${x.k}" aria-pressed="${k === x.k}">${esc(x.t)}</button>`).join("")}</div>
+    ${k ? `<p class="set">${esc(anchorText(k))}, אני עושה את הצעד.</p>` : ""}
+  </div>`;
+}
+function bindAnchor(n) {
+  $("#anchor")?.addEventListener("click", e => {
+    const b = e.target.closest("[data-anchor]"); if (!b) return;
+    const a = ans(n);
+    if (a.anchor === b.dataset.anchor) delete a.anchor; else a.anchor = b.dataset.anchor;
+    touch(n);
+    $("#anchor").outerHTML = anchorHTML(n); bindAnchor(n);
+  });
+}
+
 function partHTML(n, part, content, a, onShabbat) {
   const vals = a[part] || {};
   const blocks = content.blocks.map((b, i) => blockHTML(n, part, b, i, vals[i])).join("");
@@ -1590,6 +1630,7 @@ function partHTML(n, part, content, a, onShabbat) {
       ? `<textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך">${esc(note)}</textarea>`
       : `<button class="btn quiet note-toggle" type="button" data-note-toggle="${noteKey}" ${note ? "hidden" : ""}>+ להוסיף כמה מילים משלי</button>
          <textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך" ${note ? "" : "hidden"}>${esc(note)}</textarea>`}
+    ${part === "step" && n !== 1 ? anchorHTML(n) : ""}
     ${part === "step" && n !== 1 ? checkHTML(a.stepDone, "עשיתי את הצעד") : ""}
   </section>`;
 }
@@ -1683,7 +1724,7 @@ function compareChoice(n, b, picked) {
 function bindDay(n, c) {
   const root = $("#view").firstElementChild; // new element on every render, so listeners never pile up
   root.addEventListener("click", e => {
-    const chip = e.target.closest(".chip");
+    const chip = e.target.closest("[data-choice] .chip"); // anchor chips have their own handler
     const rate = e.target.closest("[data-rating] button");
     const done = e.target.closest("[data-done]");
     const noteBtn = e.target.closest("[data-note-toggle]");
