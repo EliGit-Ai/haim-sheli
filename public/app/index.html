@@ -288,6 +288,11 @@ input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;back
 .settings section:first-of-type{border-top:0;padding-top:4px}
 .settings h2{font-size:22px}
 .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:4px 12px;background:var(--band);font-size:15px;font-weight:700}
+/* the pill doubles as a day picker: the real <select> covers it, invisible, so the phone opens its own list */
+.daypick{position:relative;cursor:pointer;min-height:36px;padding-inline-end:10px}
+.daypick svg{width:16px;height:16px;color:var(--moss)}
+.daypick select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font:inherit;font-size:16px}
+.daypick:focus-within{outline:3px solid var(--sand);outline-offset:2px}
 
 /* install sheet */
 .sheet-wrap{position:fixed;inset:0;z-index:20;background:rgba(24,14,10,.45);display:grid;align-items:end}
@@ -788,7 +793,7 @@ function renderHome() {
   $("#view").innerHTML = `
     <div class="stack-lg">
       <div class="band" id="band"><canvas id="band-c" role="img" aria-label="שדה קנים שגדל עם כל יום שהשלמת. אפשר לגעת בקנים."></canvas><span class="cap" id="band-cap"></span></div>
-      <div class="topbar"><span class="brand">חיים שלי</span><span class="pill">יום ${n} מתוך 90</span></div>
+      <div class="topbar"><span class="brand">חיים שלי</span>${dayPickHTML(n)}</div>
       ${locked ? "" : milestoneHTML(reached)}
       ${installBanner()}
       ${pushBanner()}
@@ -811,12 +816,31 @@ function renderHome() {
       </div>
     </div>`;
   bindTrack();
+  bindDayPick();
   bindInstallBanner();
   bindPushBanner();
   bindMilestone();
   startBand("reeds");
   // the banner appears once we know the server has push turned on
   if (pushKey === undefined && !state.push?.on && pushSupport() === "ok") getPushKey().then(k => { if (k && location.hash.replace(/^#\/?/, "") === "") renderHome(); });
+}
+
+// the "day N of 90" pill opens a list of every day that is already open, to go back to any of them
+function dayPickHTML(n) {
+  const open = openThrough();
+  if (open < 2) return `<span class="pill">יום ${n} מתוך 90</span>`;
+  const opts = [];
+  for (let k = open; k >= 1; k--) {
+    const t = dayContent(k)?.title || dayMeta(k).title || "";
+    const done = dayStatus(k) === "done" ? " ✓" : "";
+    opts.push(`<option value="${k}" ${k === n ? "selected" : ""}>יום ${k}${t ? ` · ${esc(t)}` : ""}${done}</option>`);
+  }
+  return `<label class="pill daypick">יום ${n} מתוך 90
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    <select id="daypick" aria-label="לבחור יום">${opts.join("")}</select></label>`;
+}
+function bindDayPick() {
+  $("#daypick")?.addEventListener("change", e => { location.hash = `#/day/${e.target.value}`; });
 }
 
 function countDone() { let k = 0; for (let n = 1; n <= 90; n++) if (dayStatus(n) === "done") k++; return k; }
