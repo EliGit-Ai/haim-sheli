@@ -1,7 +1,7 @@
 // Service worker של האפליקציה: שומר את המעטפת (דף, גופנים, אייקונים) כדי שהאפליקציה תיפתח גם בלי רשת.
 // התוכן עצמו נשמר על ידי האפליקציה בזיכרון המקומי של המכשיר. התשובות לא עוברות כאן בכלל.
 
-const SHELL = "haim-sheli-shell-v3";
+const SHELL = "haim-sheli-shell-v4"; // v4: terracotta colors and icons
 const FILES = [
   "/app",
   "/app/manifest.webmanifest",
