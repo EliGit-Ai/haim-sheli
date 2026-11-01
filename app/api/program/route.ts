@@ -14,14 +14,18 @@ export const dynamic = "force-dynamic";
 
 
 type Day = (typeof program.days)[number];
-type Timed = { end: number; words: number[][] };
-const voiced = narration.items as Record<string, Timed | undefined>;
+type Timed = { end: number; words: number[][]; parts?: (number | string)[][] };
+const voiced = narration.items as unknown as Record<string, Timed | undefined>;
 
-// adds the narration audio and the time of every word, when they exist for this day
+// adds the narration audio (the morning text and the step) and the time of every word,
+// and the evening question's own recording, when they exist for this day
 function withAudio<T extends { day: number }>(d: T, prefix: "d" | "nr" | "nk") {
   const key = `${prefix}${d.day}`;
-  const v = voiced[key];
-  return v ? { ...d, audio: `/app/audio/n/${key}.mp3`, timing: v } : d;
+  const v = voiced[key], e = voiced[`e${key}`];
+  let out: T & Record<string, unknown> = d;
+  if (v) out = { ...out, audio: `/app/audio/n/${key}.mp3`, timing: v };
+  if (e) out = { ...out, eveningAudio: `/app/audio/n/e${key}.mp3`, eveningTiming: e };
+  return out;
 }
 
 const meta = (d: Day) => ({
