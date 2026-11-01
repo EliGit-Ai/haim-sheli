@@ -1,13 +1,13 @@
 // Service worker של האפליקציה: שומר את המעטפת (דף, גופנים, אייקונים) כדי שהאפליקציה תיפתח גם בלי רשת.
 // התוכן עצמו נשמר על ידי האפליקציה בזיכרון המקומי של המכשיר. התשובות לא עוברות כאן בכלל.
 
-const SHELL = "haim-sheli-shell-v4"; // v4: terracotta colors and icons
+const SHELL = "haim-sheli-shell-v5"; // v5: terracotta icons under new file names
 const FILES = [
   "/app",
-  "/app/manifest.webmanifest",
-  "/app/icon-192.png",
-  "/app/icon-512.png",
-  "/app/apple-touch-icon.png",
+  "/app/manifest.webmanifest?v=2",
+  "/app/icon-192-v2.png",
+  "/app/icon-512-v2.png",
+  "/app/apple-touch-icon-v2.png",
   "/app/fonts/secular-one-hebrew-400-normal.woff2",
   "/app/fonts/secular-one-latin-400-normal.woff2",
   "/app/fonts/heebo-hebrew-400-normal.woff2",
@@ -64,8 +64,8 @@ self.addEventListener("push", event => {
   event.waitUntil(self.registration.showNotification(data.title || "חיים שלי", {
     body: data.body || "",
     tag: data.tag,
-    icon: "/app/icon-192.png",
-    badge: "/app/icon-192.png",
+    icon: "/app/icon-192-v2.png",
+    badge: "/app/icon-192-v2.png",
     lang: "he",
     dir: "rtl",
     data: { url: data.url || "/app" },
