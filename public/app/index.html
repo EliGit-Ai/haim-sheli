@@ -160,6 +160,10 @@ details.map[open] summary{margin-bottom:10px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 
 /* day */
+.dayword{margin:0;display:grid;gap:2px;text-align:center;padding:4px 8px 2px}
+.dayword .w{font-family:var(--display);font-size:clamp(34px,10vw,44px);line-height:1.1;color:var(--moss)}
+.dayword .l{font-size:16px;color:var(--muted);max-width:30em;margin:0 auto}
+.milestone h3.word{font-size:34px;color:var(--moss)}
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
 /* living band at the top: reeds on the home screen, a breathing circle inside a day */
@@ -672,16 +676,27 @@ function renderCommit() {
   });
 }
 
+// the word of the day: one word from the list and one line that makes it small and doable today
+function dayWordHTML(n) {
+  const wl = program?.words?.days?.[n];
+  if (!wl) return "";
+  return `<p class="dayword"><span class="w">${esc(wl[0])}.</span> <span class="l">${esc(wl[1])}</span></p>`;
+}
+
 // the message of the day on the way (from /api/program), or a word when he comes back after a few days away
 function milestoneHTML(reached) {
   const today = todayISO();
-  if (state.back?.date === today && !state.back.closed) return `
+  if (state.back?.date === today && !state.back.closed) {
+    const missed = state.back.missed || 2, B = program?.words?.back || {};
+    const [w, line] = (missed >= 7 ? B[7] : missed >= 2 ? B[2] : B[1]) || ["", "חזרת. זה מה שחשוב. ממשיכים מהיום."];
+    return `
     <div class="milestone" id="milestone" data-kind="back">
       <span class="eyebrow">ברוך שובך</span>
-      <h3>חזרת. זה מה שחשוב.</h3>
-      <p class="small muted">יהיו ימים שלא תרצה לפתוח, ואמרנו שזה בסדר. לא צריך להשלים הכול. ממשיכים מהיום.</p>
+      ${w ? `<h3 class="word">${esc(w)}.</h3>` : ""}
+      <p class="small muted">${esc(line)}</p>
       <button class="btn quiet x" type="button">ממשיכים</button>
     </div>`;
+  }
   const m = program?.milestones?.find(x => x.day === Math.min(reached, 90));
   if (!m || state.milestones?.includes(m.day)) return "";
   return `
@@ -700,10 +715,10 @@ function bindMilestone() {
     save(); el.remove();
   });
 }
-// remembers the last day he opened the app, to welcome him back after three days or more
+// remembers the last day he opened the app, to welcome him back after a day or more away
 function noteVisit() {
   const today = todayISO(), last = state.seen;
-  if (last && last !== today && daysBetween(last, today) >= 3 && countDone() > 0) state.back = { date: today };
+  if (last && last !== today && daysBetween(last, today) >= 2 && countDone() > 0) state.back = { date: today, missed: daysBetween(last, today) - 1 };
   if (last !== today) { state.seen = today; save(); }
 }
 
@@ -1140,6 +1155,7 @@ function renderDay(n) {
   $("#view").innerHTML = `
     <div class="stack-lg">
       <div class="band breath" id="band"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button><button class="back" id="back" type="button">${ICON.back}חזרה</button></div>
+      ${dayWordHTML(n)}
       <div class="day-head">
         <span class="eyebrow">יום ${n}${m.weekName || c.weekName ? ` · ${esc(c.weekName || m.weekName)}` : ""}</span>
         <h1>${esc(c.title)}</h1>

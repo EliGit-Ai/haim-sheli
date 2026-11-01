@@ -4,6 +4,7 @@ import { verifyCode } from "@/lib/access-code.mjs";
 import { FREE_DAYS } from "@/lib/push-schedule";
 import narration from "@/content/narration.json";
 import { MILESTONES } from "@/lib/milestones";
+import words from "@/content/words.json";
 
 // התוכן של האפליקציה (/app).
 // בלי קוד: ימי האתגר החינמי (FREE_DAYS, בזמן הפיילוט כל 90). עם קוד גישה תקין: כל 90 הימים והגרסאות החלופיות.
@@ -51,6 +52,8 @@ export async function GET(req: Request) {
     freeDays: FREE_DAYS,
     months: program.months,
     milestones: MILESTONES,
+    // a word and one line for each day, and for coming back after days away (content/words.json)
+    words: { days: words.days, back: words.back },
     map: program.days.map(meta),
     days: program.days.filter(d => allowed(d.day)).map(d => withAudio(d, "d")),
     alternates: {
