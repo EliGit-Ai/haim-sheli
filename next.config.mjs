@@ -10,6 +10,10 @@ const nextConfig = {
         { source: "/app", destination: "/app/index.html" },
         // עמוד "למה בנינו את חיים שלי"
         { source: "/why", destination: "/why.html" },
+        // מידע משפטי
+        { source: "/privacy", destination: "/privacy.html" },
+        { source: "/terms", destination: "/terms.html" },
+        { source: "/accessibility", destination: "/accessibility.html" },
       ],
     };
   },

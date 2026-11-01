@@ -17,7 +17,7 @@
   --ink:#3B2B22;         /* forest ink */
   --muted:#735F52;
   --line:#E2C6B3;
-  --moss:#A84C33;        /* accent: terracotta (the token keeps its old name) */
+  --moss:#9E472F;        /* accent: terracotta (the token keeps its old name) */
   --moss-ink:#FFFAF6;
   --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-ink:#8A5A2B;
   --sand:var(--bronze);  /* earth secondary: bronze, same as the app */
@@ -187,6 +187,9 @@ legend{padding:0;font-weight:700;font-size:17px}
 @media (max-width:620px){.sides{grid-template-columns:1fr;gap:22px}}
 footer{padding-block:36px;border-top:1px solid var(--line);font-family:var(--util);font-size:14px;color:var(--muted)}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px}
+.legal-links{display:flex;flex-wrap:wrap;gap:6px 18px}
+.legal-links a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding-block:6px}
+
 .mail{user-select:all;direction:ltr;unicode-bidi:isolate;color:var(--ink)}
 </style>
 <style>
@@ -417,6 +420,7 @@ blockquote.pull{margin:10px 0;padding:6px 20px;border-inline-start:4px solid var
 <footer>
   <div class="wrap">
     <span>חיים שלי · haim-sheli.com</span>
+    <nav class="legal-links" aria-label="מידע משפטי"><a href="/privacy">מדיניות פרטיות</a><a href="/terms">תנאי שימוש</a><a href="/accessibility">הצהרת נגישות</a></nav>
     <span>יצירת קשר: <span class="mail">gever@haim-sheli.com</span></span>
   </div>
 </footer>
