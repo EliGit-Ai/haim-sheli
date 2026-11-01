@@ -178,6 +178,12 @@ details.map[open] summary{margin-bottom:10px}
 .narration.playing .w{color:var(--muted)}
 .narration.playing .w.read{color:var(--ink)}
 .narration .w.now{color:var(--moss);transform:scale(1.1);background:var(--faint)}
+.part .speaking{background:color-mix(in srgb, var(--moss) 13%, transparent);box-shadow:0 0 0 6px color-mix(in srgb, var(--moss) 13%, transparent);border-radius:8px;transition:background .2s ease, box-shadow .2s ease}
+.part .chip.speaking,.part .feel-chip.speaking{border-color:var(--moss);border-radius:999px}
+.part h2.speaking{color:var(--moss)}
+.part-title .say{width:36px;height:36px;flex:none;align-self:center;border-radius:50%;border:1px solid var(--moss);background:transparent;color:var(--moss);display:grid;place-items:center;cursor:pointer;margin-inline-start:10px;margin-inline-end:auto;padding:0}
+.part-title .say svg{width:15px;height:15px}
+.part-title .say.on{background:var(--moss);color:var(--moss-ink)}
 .listen{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px}
 .listen .row{display:flex;align-items:center;gap:12px}
 .listen .play{width:48px;height:48px;flex:none;border-radius:50%;border:0;background:var(--moss);color:var(--moss-ink);display:grid;place-items:center;cursor:pointer}
@@ -532,6 +538,7 @@ function show(name, arg) {
 }
 window.addEventListener("hashchange", () => {
   stopListening();
+  if (evening) { evening.voice.pause(); evening = null; }
   if (!location.hash.startsWith("#/day/")) { music.want = 0; musicSync(); } // home, journal, settings: quiet
   route();
 });
@@ -1151,6 +1158,7 @@ function renderDay(n) {
   bindDay(n, c);
   bindMirror(n);
   if (c.audio && c.timing) bindListen(c);
+  bindEvening(c);
   startBand("breath");
   musicFor(1); // the same soundscape on every day
 }
@@ -1337,7 +1345,7 @@ document.addEventListener("pointerdown", () => {
   if (musicOn() && music.want && (!music.el || music.el.paused || music.ctx?.state === "suspended")) musicSync();
 }, { capture: true });
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) { music.el?.pause(); if (listen) listen.voice.pause(); }
+  if (document.hidden) { music.el?.pause(); if (listen) listen.voice.pause(); evening?.voice.pause(); }
   else if (music.want) musicSync();
 });
 let listen = null; // the player of the day on screen
@@ -1383,9 +1391,13 @@ function bindListen(c) {
   stopListening();
   const spans = [...document.querySelectorAll("#narration .w")];
   // for each timed word, the span that holds it
-  const words = c.timing.words.map(([t, d, o]) => ({ t, d, i: spans.findIndex(s => o >= +s.dataset.o && o < +s.dataset.e) })).filter(w => w.i >= 0);
+  const words = c.timing.words.map(([t, d, o]) => {
+    const i = spans.findIndex(s => o >= +s.dataset.o && o < +s.dataset.e);
+    const target = i < 0 ? partAt(c.timing.parts, o) : null; // after the narration comes the step
+    return { t, d, i, target };
+  }).filter(w => w.i >= 0 || w.target);
   const voice = new Audio(c.audio); voice.preload = "metadata";
-  const L = listen = { voice, raf: 0, current: -1 };
+  const L = listen = { voice, raf: 0, current: -1, target: null };
   const narr = $("#narration"), playBtn = $("#l-play");
   $("#l-dur").textContent = mmss(c.timing.end || 0);
   voice.addEventListener("loadedmetadata", () => { $("#l-dur").textContent = mmss(voice.duration); });
@@ -1397,15 +1409,18 @@ function bindListen(c) {
     return ans;
   }
   function mark(k) {
-    const i = k >= 0 ? words[k].i : -1;
+    const w = k >= 0 ? words[k] : null;
+    const tgt = w?.target || null;
+    if (tgt !== L.target) { speakOn("step", L.target, false); speakOn("step", tgt, true); L.target = tgt; }
+    const i = w ? (w.i >= 0 ? w.i : spans.length) : -1; // while the step is read, the whole narration counts as read
     if (i === L.current) return;
     const upTo = i >= 0 ? i : L.current;
     spans.forEach((s, j) => { s.classList.toggle("read", j < upTo || (i < 0 && j <= upTo)); s.classList.toggle("now", j === i); });
-    if (i >= 0) {
+    if (i >= 0 && i < spans.length) {
       const r = spans[i].getBoundingClientRect();
       if (r.top < 80 || r.bottom > innerHeight - 120) spans[i].scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-      L.current = i;
     }
+    if (i >= 0) L.current = i;
   }
   function tick() {
     if (listen !== L) return;
@@ -1428,8 +1443,9 @@ function bindListen(c) {
     } else voice.pause();
   });
   voice.addEventListener("play", () => { setUI(true); musicDuck(true); tick(); });
-  voice.addEventListener("pause", () => { setUI(false); musicDuck(false); });
+  voice.addEventListener("pause", () => { setUI(false); musicDuck(false); speakOn("step", L.target, false); L.target = null; });
   voice.addEventListener("ended", () => { setUI(false); mark(-1); musicDuck(false); }); // the music keeps going
+  voice.addEventListener("play", () => evening?.voice.pause());
 
   $("#l-music").addEventListener("click", e => {
     state.music = !musicOn(); save();
@@ -1449,6 +1465,65 @@ function bindListen(c) {
     voice.currentTime = ((r.right - e.clientX) / r.width) * voice.duration; // fills from the right
     L.current = -2; tick();
   });
+}
+
+// the step and the evening question are read too: "parts" says which piece of the screen each stretch of the
+// spoken text belongs to. "h" the section title, "t3" text block 3, "p3" its question, "o3.2" its option 2.
+function partAt(parts, o) {
+  const p = (parts || []).find(([a, b]) => o >= a && o < b);
+  return p ? p[2] : null;
+}
+function pieceEl(part, target) {
+  const sec = document.querySelector(`#view .part[data-part="${part}"]`);
+  if (!sec || !target) return null;
+  if (target === "h") return sec.querySelector(".part-title h2");
+  const m = /^([tpo])(\d+)(?:\.(\d+))?$/.exec(target);
+  if (!m) return null;
+  const block = sec.querySelectorAll(":scope > .block")[+m[2]];
+  if (!block) return null;
+  if (m[1] === "p") return block.querySelector(".prompt") || block;
+  if (m[1] === "o") return block.querySelector(`[data-k="${m[3]}"]`);
+  return block;
+}
+function speakOn(part, target, on) {
+  const el = pieceEl(part, target); // looked up each time: answering redraws a block
+  if (!el) return;
+  el.classList.toggle("speaking", on);
+  if (on) {
+    const r = el.getBoundingClientRect();
+    if (r.top < 80 || r.bottom > innerHeight - 140) el.scrollIntoView({ block: "center", behavior: calm.matches ? "auto" : "smooth" });
+  }
+}
+
+let evening = null; // the evening question's own short recording
+function bindEvening(c) {
+  evening?.voice.pause();
+  evening = null;
+  const title = document.querySelector('#view .part[data-part="evening"] .part-title');
+  if (!c.eveningAudio || !c.eveningTiming || !title) return;
+  const btn = document.createElement("button");
+  btn.type = "button"; btn.className = "say"; btn.setAttribute("aria-label", "להאזין לשאלה"); btn.innerHTML = PLAY_ICON;
+  title.querySelector("h2").after(btn);
+  const voice = new Audio(c.eveningAudio); voice.preload = "none";
+  const words = c.eveningTiming.words.map(([t, d, o]) => ({ t, d, target: partAt(c.eveningTiming.parts, o) })).filter(w => w.target);
+  const E = evening = { voice, raf: 0, target: null };
+  const at = t => { let k = -1; for (let j = 0; j < words.length && words[j].t <= t + 0.05; j++) k = j; return k >= 0 && t <= words[k].t + words[k].d + 0.6 ? words[k].target : null; };
+  function tick() {
+    if (evening !== E) return;
+    const tgt = voice.paused && voice.ended ? null : at(voice.currentTime);
+    if (tgt !== E.target) { speakOn("evening", E.target, false); speakOn("evening", tgt, true); E.target = tgt; }
+    if (!voice.paused) E.raf = requestAnimationFrame(tick);
+  }
+  const ui = on => { btn.innerHTML = on ? PAUSE_ICON : PLAY_ICON; btn.setAttribute("aria-label", on ? "השהיה" : "להאזין לשאלה"); btn.classList.toggle("on", on); };
+  btn.addEventListener("click", async () => {
+    if (!voice.paused) { voice.pause(); return; }
+    listen?.voice.pause();
+    if (voice.ended) voice.currentTime = 0;
+    try { await voice.play(); } catch { toast("לא הצלחנו לנגן. כדאי לבדוק את החיבור לרשת."); }
+  });
+  voice.addEventListener("play", () => { ui(true); musicDuck(true); tick(); });
+  voice.addEventListener("pause", () => { ui(false); musicDuck(false); });
+  voice.addEventListener("ended", () => { ui(false); musicDuck(false); speakOn("evening", E.target, false); E.target = null; });
 }
 
 function backBar() {
