@@ -8,6 +8,8 @@ const nextConfig = {
         { source: "/", destination: "/index.html" },
         // האפליקציה למובייל (PWA) מוגשת מתוך public/app/index.html
         { source: "/app", destination: "/app/index.html" },
+        // עמוד "למה בנינו את חיים שלי"
+        { source: "/why", destination: "/why.html" },
       ],
     };
   },
