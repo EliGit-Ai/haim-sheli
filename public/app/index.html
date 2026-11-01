@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#EEF1EA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#141B16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F8F0E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1512" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="חיים שלי">
@@ -27,22 +27,22 @@
    The man's answers live only in this device's storage (localStorage). */
 
 :root{
-  --bg:#EEF1EA; --surface:#F7F8F4; --band:#E2E8DC; --ink:#1D2820; --muted:#56635A; --line:#C9D2C3;
-  --moss:#4E6B3C; --moss-ink:#F4F7F0; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
-  --m1:#8FA98A; --m2:#5E8455; --m3:#2F4F2A; --rest:#D6C7A8; --faint:#D5DCD0; --sky:#E4EBDD; --head:var(--bronze);
+  --bg:#F8F0E8; --surface:#FFFBF7; --band:#F2E0D2; --ink:#3B2B22; --muted:#735F52; --line:#E2C6B3;
+  --moss:#A84C33; --moss-ink:#FFFAF6; --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sand:var(--bronze);
+  --m1:#E3B89A; --m2:#C77B57; --m3:#8E3F2A; --rest:#D9C6A8; --faint:#EEDFD2; --sky:#F5E6D9; --head:var(--bronze);
   --display:"Secular One", "Heebo", "Segoe UI", Arial, sans-serif;
   --body:"Heebo", "Segoe UI", Arial, sans-serif;
   --safe-b:env(safe-area-inset-bottom, 0px);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
-  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
-  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:var(--bronze); color-scheme:dark}}
+  --bg:#1C1512; --surface:#251C18; --band:#2C211C; --ink:#F2E7DF; --muted:#BCA699; --line:#47362D;
+  --moss:#E3906F; --moss-ink:#2A140C; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --m1:#6B4534; --m2:#A9603F; --m3:#EBAA8B; --rest:#6E5A44; --faint:#33261F; --sky:#221915; --head:var(--bronze); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#141B16; --surface:#1B241D; --band:#1F2A22; --ink:#E6ECE2; --muted:#A3B0A5; --line:#33433A;
-  --moss:#9BBE84; --moss-ink:#142012; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
-  --m1:#56704F; --m2:#7FA470; --m3:#B6D3A2; --rest:#6E6247; --faint:#26322A; --sky:#18211A; --head:var(--bronze); color-scheme:dark}
+  --bg:#1C1512; --surface:#251C18; --band:#2C211C; --ink:#F2E7DF; --muted:#BCA699; --line:#47362D;
+  --moss:#E3906F; --moss-ink:#2A140C; --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sand:var(--bronze);
+  --m1:#6B4534; --m2:#A9603F; --m3:#EBAA8B; --rest:#6E5A44; --faint:#33261F; --sky:#221915; --head:var(--bronze); color-scheme:dark}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0}
@@ -286,7 +286,7 @@ input[type=text]{width:100%;border:1px solid var(--line);border-radius:12px;back
 .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:4px 12px;background:var(--band);font-size:15px;font-weight:700}
 
 /* install sheet */
-.sheet-wrap{position:fixed;inset:0;z-index:20;background:rgba(10,15,12,.45);display:grid;align-items:end}
+.sheet-wrap{position:fixed;inset:0;z-index:20;background:rgba(24,14,10,.45);display:grid;align-items:end}
 .sheet{background:var(--bg);border-radius:22px 22px 0 0;padding:22px 18px calc(22px + var(--safe-b));max-width:620px;width:100%;margin:0 auto;display:grid;gap:16px;max-height:88dvh;overflow:auto}
 .steps{margin:0;padding:0;list-style:none;display:grid;gap:12px;counter-reset:s}
 .steps li{display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:start;counter-increment:s}
