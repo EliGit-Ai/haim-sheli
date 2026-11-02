@@ -1226,8 +1226,7 @@ function bindPulse(n) {
     }
     save();
     $("#pulse").outerHTML = pulseHTML(n);
-    bindPulse(n);
-  });
+    });
 }
 // the first answer next to the latest one, in words and as a row of small bars (fewer outbursts = shorter bar)
 function pulseTrend(upTo = 90, withBars = false) {
@@ -1437,7 +1436,6 @@ function renderDay(n) {
       ${narrationHTML(c)}
       ${parts.join("")}
       ${mirrorHTML(n)}
-      ${n === 1 ? pulseHTML(1) : ""}
       <p class="saved">${ICON.check.replace("<svg", '<svg class="ico"')} נשמר רק בטלפון שלך</p>
       <div class="daynav">
         ${n > 1 ? `<a class="btn ghost" href="#/day/${n - 1}">יום ${n - 1}</a>` : "<span></span>"}
