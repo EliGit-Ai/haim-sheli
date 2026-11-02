@@ -1294,14 +1294,9 @@ function mirrorHTML(n) {
     <p class="lead">${first ? "כמה הרגלים קטנים. תסמן איפה אתה היום, בלי ציונים ובלי לשפוט. נחזור לזה ביום 30, 60 ו-90, ותראה מה זז." : "אותם הרגלים. תסמן איפה אתה היום."}</p>
     ${sum}
     ${first ? "" : pulseTrend(n, true)}
-    ${pos < keys.length ? `<div class="mirror-swipe-card" tabindex="0" role="group" aria-label="${esc(h)}. החלק שמאלה ללא עדיין, למעלה לפעמים, ימינה בדרך כלל" style="touch-action:none;user-select:none;cursor:grab;min-height:185px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;border:1px solid var(--line,#d9bca9);border-radius:22px;padding:28px 18px;background:var(--card,#fffaf5);transition:transform .2s ease,opacity .2s ease;will-change:transform">
-       <p class="habit" style="font-size:1.3rem;text-align:center;margin:0">${esc(h)}</p>
-       ${pv != null ? `<p class="was">ביום ${prev}: ${MIRROR_LEVELS[pv]}</p>` : ""}
-       ${v != null ? `<p class="small muted">תשובה קודמת: ${MIRROR_LEVELS[v]}</p>` : ""}
-      </div>
-      <div class="small muted" style="display:flex;justify-content:space-between;gap:8px;text-align:center;margin-top:14px">
-       <span>← לא עדיין</span><span>↑ לפעמים</span><span>בדרך כלל →</span>
-      </div>`
+    ${pos < keys.length ? `<div class="mirror-question"><p class="habit">${esc(h)}</p>
+      ${pv != null ? `<p class="was">ביום ${prev}: ${pv === 0 ? "לא כלכך" : MIRROR_LEVELS[pv]}</p>` : ""}
+      <div class="pick" role="group" aria-label="${esc(h)}">${[[0,"לא כלכך"],[2,"בדרך כלל"]].map(([j,l])=>`<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v===j}">${l}</button>`).join("")}</div></div>`
       : '<p class="sum">ענית על כל השאלות. התשובות נשמרו.</p>'}
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px">
       <button type="button" class="btn quiet" data-mirror-back ${pos===0 ? "disabled" : ""}>לשאלה הקודמת</button>
@@ -1311,55 +1306,23 @@ function mirrorHTML(n) {
 }
 function bindMirror(n) {
   startSeas();
-  const section = $("#mirror");
-  if (!section) return;
-  const move = (value, back = false) => {
+  $("#mirror")?.addEventListener("click", e => {
+    const back = e.target.closest("[data-mirror-back]");
+    const b = e.target.closest("[data-k]");
+    if (!back && !b) return;
     state.mirrorGuidedIndex = state.mirrorGuidedIndex || {};
-    const answers = (state.mirror = state.mirror || {})[n] ||= {};
+    const m = state.mirror = state.mirror || {};
+    const answers = m[n] = m[n] || {};
     if (back) state.mirrorGuidedIndex[n] = Math.max(0, (state.mirrorGuidedIndex[n] ?? 0) - 1);
     else {
-      const pos = state.mirrorGuidedIndex[n] ?? Math.max(0, MIRROR_ORDER.findIndex(k => answers[k] == null));
-      if (pos >= MIRROR_ORDER.length) return;
-      answers[MIRROR_ORDER[pos]] = value;
-      state.mirrorGuidedIndex[n] = pos + 1;
+      answers[Number(b.dataset.k)] = Number(b.dataset.v);
+      const position = MIRROR_ORDER.findIndex(k => String(k) === b.dataset.k);
+      state.mirrorGuidedIndex[n] = Math.min(position + 1, MIRROR_ORDER.length);
     }
     save();
-    section.outerHTML = mirrorHTML(n);
+    $("#mirror").outerHTML = mirrorHTML(n);
     bindMirror(n);
-    if (!back && Object.keys(answers).length === MIRROR.length) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : "המראה נשמרה.");
-  };
-  section.querySelector("[data-mirror-back]")?.addEventListener("click", () => move(null, true));
-  const card = section.querySelector(".mirror-swipe-card");
-  if (!card) return;
-  let start = null, busy = false;
-  card.addEventListener("pointerdown", e => {
-    if (busy) return;
-    start = {x:e.clientX,y:e.clientY,id:e.pointerId};
-    card.setPointerCapture(e.pointerId);
-    card.style.transition = "none";
-    card.style.cursor = "grabbing";
-  });
-  card.addEventListener("pointermove", e => {
-    if (!start || e.pointerId !== start.id) return;
-    const dx = e.clientX-start.x, dy = e.clientY-start.y;
-    card.style.transform = `translate(${dx}px,${Math.min(0,dy)}px) rotate(${dx/35}deg)`;
-  });
-  card.addEventListener("pointerup", e => {
-    if (!start || e.pointerId !== start.id || busy) return;
-    const dx=e.clientX-start.x, dy=e.clientY-start.y;
-    start=null;
-    const value = dy < -65 && Math.abs(dy) > Math.abs(dx)*1.15 ? 1 : dx < -65 ? 0 : dx > 65 ? 2 : null;
-    card.style.transition = "transform .22s ease,opacity .22s ease";
-    if (value == null) {card.style.transform="";return;}
-    busy=true;
-    card.style.transform=`translate(${dx < -65 ? -450 : dx > 65 ? 450 : 0}px,${value===1?-450:0}px) rotate(${dx/20}deg)`;
-    card.style.opacity="0";
-    setTimeout(()=>move(value),window.matchMedia("(prefers-reduced-motion: reduce)").matches?0:220);
-  });
-  card.addEventListener("pointercancel",()=>{start=null;card.style.transform="";});
-  card.addEventListener("keydown",e=>{
-    const value=e.key==="ArrowLeft"?0:e.key==="ArrowUp"?1:e.key==="ArrowRight"?2:null;
-    if(value!==null){e.preventDefault();move(value);}
+    if (Object.keys(answers).length === MIRROR.length && !back) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : "המראה נשמרה.");
   });
 }
 
