@@ -242,12 +242,26 @@ details.map[open] summary{margin-bottom:10px}
 .day-head .dayword{text-align:start;padding:2px 0 0}
 .day-head .dayword .w{font-size:22px}
 .day-head .dayword .l{font-size:15px;margin:0}
-details.later{border:1px solid var(--line);border-radius:16px;background:var(--surface)}
-details.later>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:14px 18px;min-height:48px}
+/* the evening: a night card, different from the day around it (in light and in dark mode) */
+.night{--bg:#1C1512;--surface:#2C211C;--band:#2C211C;--ink:#F2E7DF;--muted:#C9B4A6;--line:#4E3B31;--moss:#E3906F;--moss-ink:#2A140C;
+  --m1:#6B4534;--m2:#A9603F;--m3:#EBAA8B;--sand:#C48A50;--faint:#4A3830;--rest:#6E5A44;--bronze-ink:#D9A46C;color:var(--ink);color-scheme:dark;
+  position:relative;border-radius:22px;border:1px solid #3A2A26;
+  background:radial-gradient(1.5px 1.5px at 14% 18px,#F2E7DF 99%,transparent),radial-gradient(1px 1px at 27% 34px,#F2E7DF 99%,transparent),
+    radial-gradient(1.5px 1.5px at 39% 12px,#EBC38F 99%,transparent),radial-gradient(1px 1px at 52% 40px,#F2E7DF 99%,transparent),
+    radial-gradient(1px 1px at 8% 46px,#F2E7DF 99%,transparent),radial-gradient(1px 1px at 33% 58px,#CDB9AA 99%,transparent),
+    linear-gradient(to bottom,#2A1D24 0,#201719 140px,#1C1512 100%)}
+.night .muted,.night .small.muted{color:var(--muted)}
+#view > .stack-lg > .part.night{padding:22px 18px 18px;margin-inline:-4px}
+.night .part-title{border-top:0;padding-top:0}
+.night .part-title .when::before,.night summary .moon{content:"";display:inline-block;width:14px;height:14px;border-radius:50%;box-shadow:-4px 2px 0 0 #EBC38F;transform:rotate(-20deg);margin-inline-end:10px;vertical-align:-1px}
+details.later.night>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 18px;min-height:56px}
 details.later>summary::-webkit-details-marker{display:none}
-details.later>summary .t{font-weight:700}
+details.later>summary .t{font-weight:700;font-size:18px}
 details.later[open]>summary{border-bottom:1px solid var(--line)}
 details.later>.part{padding:16px 18px}
+details.later>.part.night{border:0;background:none;border-radius:0}
+details.later>.part .part-title h2,details.later>.part .part-title .when{display:none}
+details.later>.part .part-title{justify-content:flex-start}
 .today-card .anc{font-size:14px;color:var(--bronze-ink);font-weight:700}
 /* the mirror: eight small habits, marked on day 1 and again on days 30, 60 and 90 to show the change */
 .mirror{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;display:grid;gap:12px}
@@ -1209,7 +1223,7 @@ function renderDay(n) {
     const ev = partHTML(n, "evening", c.evening, a, onShabbat);
     const answered = Object.keys(a.evening || {}).length || (a.eveningNote || "").trim();
     const open = answered || n < reachedDay() || new Date().getHours() >= 17;
-    parts.push(open ? ev : `<details class="later"><summary><span class="t">שאלה לערב</span><span class="small muted">נחזור אליה בערב</span></summary>${ev}</details>`);
+    parts.push(open ? ev : `<details class="later night"><summary><span class="t">שאלה לערב</span><span class="small muted"><i class="moon" aria-hidden="true"></i>נחזור אליה בערב</span></summary>${ev}</details>`);
   }
 
   $("#view").innerHTML = `
@@ -1724,7 +1738,7 @@ function partHTML(n, part, content, a, onShabbat) {
   const note = a[noteKey] || "";
   const onlyText = content.blocks.every(b => b.type === "text");
   const isEvening = part === "evening";
-  return `<section class="part" data-part="${part}">
+  return `<section class="part${isEvening ? " night" : ""}" data-part="${part}">
     <div class="part-title"><h2>${isEvening ? "שאלה לערב" : esc(content.title || "הצעד של היום")}</h2>
       <span class="when">${isEvening ? (onShabbat ? "במוצאי שבת" : "בערב") : "היום"}</span></div>
     ${blocks}
