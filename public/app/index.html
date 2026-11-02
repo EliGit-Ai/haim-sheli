@@ -1882,7 +1882,7 @@ function shownOptions(b) {
 function blockHTML(n, part, b, i, value) {
   const id = `${part}-${i}`;
   if (b.type === "text") return `<p class="block">${esc(b.text)}</p>`;
-  if (b.type === "choice" && part === "evening") return feelHTML(b, i, value, id);
+  if (b.type === "choice" && part === "evening" && n !== 1) return feelHTML(b, i, value, id);
   if (b.type === "choice") {
     const picked = Array.isArray(value) ? value : value != null ? [value] : [];
     return `<div class="block" role="group" aria-labelledby="${id}">
