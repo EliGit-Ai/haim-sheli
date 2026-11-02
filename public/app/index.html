@@ -279,10 +279,9 @@ details.later>.part .part-title{justify-content:flex-start}
 .pulse .chip{font-size:15px;padding:7px 14px;min-height:40px}
 .pulse .sum,.mirror .sum{font-size:15px;background:var(--band);border-radius:12px;padding:10px 12px;margin:0}
 .pulse .sum b{color:var(--bronze-ink)}
-.pbars{display:flex;align-items:flex-end;gap:6px;height:72px;padding-top:4px}
-.pbars .b{flex:1;display:grid;grid-template-rows:1fr auto;justify-items:center;height:100%;gap:4px}
-.pbars .b i{align-self:end;width:100%;max-width:22px;border-radius:6px 6px 2px 2px;background:var(--moss);height:calc(8px + var(--v) * 14px);opacity:calc(.45 + var(--v) * .18)}
-.pbars .b em{font-style:normal;font-size:11px;color:var(--muted)}
+.sea{display:grid;gap:4px}
+.sea canvas{width:100%;height:110px;display:block;touch-action:pan-y;cursor:pointer}
+.sea-cap{margin:0;text-align:center;min-height:1.4em}
 .mirror .was.up{color:var(--moss);font-weight:700}
 .mirror .pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .mirror .pick button{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:999px;padding:7px 4px;background:var(--bg);color:var(--ink);cursor:pointer;white-space:nowrap}
@@ -1187,6 +1186,7 @@ function pulseHTML(n) {
   </div>`;
 }
 function bindPulse(n) {
+  startSeas();
   $("#pulse")?.addEventListener("click", e => {
     const b = e.target.closest("[data-pulse]"); if (!b) return;
     state.pulse = state.pulse || {};
@@ -1204,8 +1204,71 @@ function pulseTrend(upTo = 90, withBars = false) {
   const lessOut = Z.o < A.o, moreHere = Z.h != null && A.h != null && Z.h > A.h;
   const words = `<p class="sum">התפרצויות: ביום ${a}: <b>${PULSE_OUT[A.o]}</b>. ביום ${z}: <b>${PULSE_OUT[Z.o]}</b>.${A.h != null && Z.h != null ? ` נוכחות: <b>${PULSE_HERE[A.h]}</b> ← <b>${PULSE_HERE[Z.h]}</b>.` : ""}${lessOut || moreHere ? " זה השינוי שלך." : ""}</p>`;
   if (!withBars) return words;
-  const bars = ds.map(d => `<span class="b" style="--v:${pulseAt(d).o}" title="יום ${d}: ${PULSE_OUT[pulseAt(d).o]}"><i></i><em>${d}</em></span>`).join("");
-  return `${words}<div class="pbars" role="img" aria-label="התפרצויות לפי שבוע, מיום ${a} עד יום ${z}">${bars}</div>`;
+  const pts = ds.map(d => [d, pulseAt(d).o]);
+  const said = pts.map(([d, o]) => `יום ${d}: ${PULSE_OUT[o]}`).join(", ");
+  return `${words}<div class="sea" data-sea='${JSON.stringify(pts)}'>
+    <canvas role="img" aria-label="ים שנרגע: גובה הגלים הוא מספר ההתפרצויות בכל שבוע. ${esc(said)}."></canvas>
+    <p class="sea-cap small muted" aria-hidden="true">לגעת בים כדי לראות כל שבוע</p></div>`;
+}
+
+// ---------- the sea: one stretch of water per week; wave height = outbursts that week.
+// It opens stormy and settles to the real weeks, a small boat rocks on the latest one, and a touch shows a week.
+function startSeas() {
+  document.querySelectorAll(".sea:not([data-on])").forEach(box => {
+    box.dataset.on = "1";
+    const pts = JSON.parse(box.dataset.sea), cv = box.querySelector("canvas"), cap = box.querySelector(".sea-cap");
+    const ctx = cv.getContext("2d"), still = calm.matches, t0 = performance.now();
+    let w = 0, h = 0, pick = -1;
+    const size = () => { const dpr = Math.min(2, devicePixelRatio || 1); w = cv.clientWidth; h = cv.clientHeight; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+    size();
+    const n = pts.length, pad = 18;
+    const xOf = i => w - pad - (w - 2 * pad) * (n === 1 ? 0 : i / (n - 1)); // right to left: day 1 on the right
+    const ampAt = (x, settle) => { // amplitude along the strip, smoothly between weeks
+      const f = (w - pad - x) / (w - 2 * pad) * (n - 1), i = Math.max(0, Math.min(n - 2, Math.floor(f))), k = Math.max(0, Math.min(1, f - i));
+      const s = (1 - Math.cos(Math.PI * k)) / 2, v = pts[i][1] * (1 - s) + pts[Math.min(n - 1, i + 1)][1] * s;
+      const real = 1 + v * 7.5, storm = 1 + 3 * 7.5;
+      return storm + (real - storm) * settle;
+    };
+    const col = cssVar("--moss"), pale = cssVar("--m1"), ink = cssVar("--muted"), bronze = cssVar("--bronze");
+    const frame = now => {
+      if (!cv.isConnected) return;
+      if (cv.clientWidth !== w) size();
+      const t = (now - t0) / 1000, settle = still ? 1 : Math.min(1, t / 1.8), ease = 1 - Math.pow(1 - settle, 3);
+      const floor = h - 20, base = floor * 0.62;
+      ctx.clearRect(0, 0, w, h);
+      for (const [layer, color, alpha, sp, off] of [[0, pale, 0.7, 0.8, 1.7], [1, col, 0.9, 1.2, 0]]) {
+        ctx.beginPath(); ctx.moveTo(0, floor);
+        for (let x = 0; x <= w; x += 3) {
+          const A = ampAt(x, ease) * (layer ? 1 : 0.7);
+          const y = base + layer * 6 + Math.sin(x / 19 + (still ? 0 : t * sp * 2) + off) * A + Math.sin(x / 7.3 - t * sp) * A * 0.18;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, floor); ctx.closePath(); ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // the boat on the latest week: it rocks as much as that week's sea
+      const bx = xOf(n - 1), A = ampAt(bx, ease), by = base + 6 + Math.sin(bx / 19 + (still ? 0 : t * 2.4)) * A;
+      const tilt = still ? 0 : Math.cos(bx / 19 + t * 2.4) * A * 0.035;
+      ctx.save(); ctx.translate(bx, by - 4); ctx.rotate(tilt);
+      ctx.fillStyle = bronze; ctx.beginPath(); ctx.moveTo(-13, 0); ctx.lineTo(13, 0); ctx.lineTo(8, 7); ctx.lineTo(-8, 7); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-0.75, -20, 1.5, 20);
+      ctx.beginPath(); ctx.moveTo(1.5, -19); ctx.lineTo(12, -3); ctx.lineTo(1.5, -3); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      // week labels, and a marker on the touched one
+      ctx.font = "11px Heebo, sans-serif"; ctx.textAlign = "center"; ctx.fillStyle = ink;
+      pts.forEach(([d], i) => { ctx.fillText(String(d), xOf(i), h - 3); });
+      if (pick >= 0) { ctx.strokeStyle = ink; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(xOf(pick), 6); ctx.lineTo(xOf(pick), floor); ctx.stroke(); ctx.setLineDash([]); }
+      if (!still || settle < 1) requestAnimationFrame(frame);
+    };
+    const touch = e => {
+      const r = cv.getBoundingClientRect(), x = e.clientX - r.left;
+      let best = 0; pts.forEach((_, i) => { if (Math.abs(xOf(i) - x) < Math.abs(xOf(best) - x)) best = i; });
+      pick = best; cap.textContent = `יום ${pts[best][0]}: ${PULSE_OUT[pts[best][1]]}`;
+      if (still) requestAnimationFrame(frame);
+    };
+    cv.addEventListener("pointerdown", touch); cv.addEventListener("pointermove", e => { if (e.buttons) touch(e); });
+    requestAnimationFrame(frame);
+  });
 }
 const MIRROR_LEVELS = ["לא עדיין", "לפעמים", "בדרך כלל"];
 const mirrorAt = n => state.mirror?.[n] || {};
@@ -1234,6 +1297,7 @@ function mirrorHTML(n) {
   </section>`;
 }
 function bindMirror(n) {
+  startSeas();
   $("#mirror")?.addEventListener("click", e => {
     const b = e.target.closest("[data-k]"); if (!b) return;
     state.mirror = state.mirror || {};
@@ -2068,6 +2132,7 @@ function renderJournal() {
         }).join("") : `<p class="empty">עוד אין כאן כלום. מה שתענה בימים יופיע כאן.</p>`}
       </div>
     </div>`;
+  startSeas();
 }
 
 // ---------- settings
