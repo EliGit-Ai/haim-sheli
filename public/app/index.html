@@ -270,6 +270,19 @@ details.later>.part .part-title{justify-content:flex-start}
 .mirror li:first-child{border-top:0;padding-top:4px}
 .mirror .habit{font-weight:700;font-size:16px}
 .mirror .was{font-size:13px;color:var(--muted)}
+.pulse{display:grid;gap:14px;padding-top:6px}
+.part .pulse{border-top:1px solid var(--line);padding-top:16px;margin-top:4px}
+.stack-lg > .pulse{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px}
+.pulse .eyebrow{color:var(--bronze-ink)}
+.pulse .pq{display:grid;gap:8px}
+.pulse .prompt,.pulse .pq .prompt{font-weight:700;margin:0}
+.pulse .chip{font-size:15px;padding:7px 14px;min-height:40px}
+.pulse .sum,.mirror .sum{font-size:15px;background:var(--band);border-radius:12px;padding:10px 12px;margin:0}
+.pulse .sum b{color:var(--bronze-ink)}
+.pbars{display:flex;align-items:flex-end;gap:6px;height:72px;padding-top:4px}
+.pbars .b{flex:1;display:grid;grid-template-rows:1fr auto;justify-items:center;height:100%;gap:4px}
+.pbars .b i{align-self:end;width:100%;max-width:22px;border-radius:6px 6px 2px 2px;background:var(--moss);height:calc(8px + var(--v) * 14px);opacity:calc(.45 + var(--v) * .18)}
+.pbars .b em{font-style:normal;font-size:11px;color:var(--muted)}
 .mirror .was.up{color:var(--moss);font-weight:700}
 .mirror .pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .mirror .pick button{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:999px;padding:7px 4px;background:var(--bg);color:var(--ink);cursor:pointer;white-space:nowrap}
@@ -1149,7 +1162,51 @@ const MIRROR = [
   "מדבר ישר כשמשהו מפריע לי",
   "לא ממהר להחליט רק כדי שיירגע",
   "מקיים הבטחות קטנות לעצמי",
+  // the promise itself: less blowing up, more being there (added later, so they keep keys 8 and 9 and show first)
+  "עוצר לפני שאני מגיב בכעס",
+  "נוכח באמת עם האנשים שלי",
 ];
+const MIRROR_ORDER = [8, 9, 0, 1, 2, 3, 4, 5, 6, 7];
+
+// ---------- the weekly pulse: the two things the program promises, counted once a week (on this phone only)
+// day 1 asks about the week before, as a starting point; then the evening of every 7th day, and day 90
+const PULSE_DAYS = [1, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 90];
+const PULSE_OUT = ["אף פעם", "פעם אחת", "פעמיים-שלוש", "4 פעמים ומעלה"];
+const PULSE_HERE = ["כמעט לא", "לפעמים", "רוב הזמן", "כמעט תמיד"];
+const pulseAt = n => state.pulse?.[n] || {};
+function pulseHTML(n) {
+  if (!PULSE_DAYS.includes(n)) return "";
+  const v = pulseAt(n), first = n === 1;
+  const q = (key, prompt, opts) => `<div class="pq"><p class="prompt">${prompt}</p>
+    <div class="chips" role="group" aria-label="${esc(prompt)}">${opts.map((o, j) => `<button type="button" class="chip" data-pulse="${key}" data-v="${j}" aria-pressed="${v[key] === j}">${o}</button>`).join("")}</div></div>`;
+  return `<div class="pulse" id="pulse">
+    <span class="eyebrow">${first ? "נקודת הפתיחה · שתי שאלות" : "הדופק השבועי · שתי שאלות"}</span>
+    ${q("o", first ? "כמה פעמים התפרצתי בשבוע האחרון?" : "כמה פעמים התפרצתי השבוע?", PULSE_OUT)}
+    ${q("h", first ? "בשבוע האחרון, הייתי באמת שם עם האנשים שלי:" : "השבוע, הייתי באמת שם עם האנשים שלי:", PULSE_HERE)}
+    ${pulseTrend(n)}
+  </div>`;
+}
+function bindPulse(n) {
+  $("#pulse")?.addEventListener("click", e => {
+    const b = e.target.closest("[data-pulse]"); if (!b) return;
+    state.pulse = state.pulse || {};
+    const m = state.pulse[n] = state.pulse[n] || {}, key = b.dataset.pulse, v = Number(b.dataset.v);
+    if (m[key] === v) delete m[key]; else m[key] = v;
+    save();
+    $("#pulse").outerHTML = pulseHTML(n); bindPulse(n);
+  });
+}
+// the first answer next to the latest one, in words and as a row of small bars (fewer outbursts = shorter bar)
+function pulseTrend(upTo = 90, withBars = false) {
+  const ds = PULSE_DAYS.filter(d => d <= upTo && pulseAt(d).o != null);
+  if (ds.length < 2) return "";
+  const a = ds[0], z = ds[ds.length - 1], A = pulseAt(a), Z = pulseAt(z);
+  const lessOut = Z.o < A.o, moreHere = Z.h != null && A.h != null && Z.h > A.h;
+  const words = `<p class="sum">התפרצויות: ביום ${a}: <b>${PULSE_OUT[A.o]}</b>. ביום ${z}: <b>${PULSE_OUT[Z.o]}</b>.${A.h != null && Z.h != null ? ` נוכחות: <b>${PULSE_HERE[A.h]}</b> ← <b>${PULSE_HERE[Z.h]}</b>.` : ""}${lessOut || moreHere ? " זה השינוי שלך." : ""}</p>`;
+  if (!withBars) return words;
+  const bars = ds.map(d => `<span class="b" style="--v:${pulseAt(d).o}" title="יום ${d}: ${PULSE_OUT[pulseAt(d).o]}"><i></i><em>${d}</em></span>`).join("");
+  return `${words}<div class="pbars" role="img" aria-label="התפרצויות לפי שבוע, מיום ${a} עד יום ${z}">${bars}</div>`;
+}
 const MIRROR_LEVELS = ["לא עדיין", "לפעמים", "בדרך כלל"];
 const mirrorAt = n => state.mirror?.[n] || {};
 const usually = m => Object.values(m).filter(v => v === 2).length;
@@ -1165,9 +1222,10 @@ function mirrorHTML(n) {
   return `<section class="mirror" id="mirror" aria-labelledby="mirror-h">
     <span class="eyebrow">${first ? "נקודת הפתיחה" : `${n} ימים אחרי`}</span>
     <h2 id="mirror-h">המראה שלך</h2>
-    <p class="lead">${first ? "שמונה הרגלים קטנים. תסמן איפה אתה היום, בלי ציונים ובלי לשפוט. נחזור לזה ביום 30, 60 ו-90, ותראה מה זז." : "אותם שמונה הרגלים. תסמן איפה אתה היום, ומתחת לכל אחד תראה מה סימנת קודם."}</p>
+    <p class="lead">${first ? "כמה הרגלים קטנים. תסמן איפה אתה היום, בלי ציונים ובלי לשפוט. נחזור לזה ביום 30, 60 ו-90, ותראה מה זז." : "אותם הרגלים. תסמן איפה אתה היום, ומתחת לכל אחד תראה מה סימנת קודם."}</p>
     ${sum}
-    <ol>${MIRROR.map((h, k) => {
+    ${first ? "" : pulseTrend(n, true)}
+    <ol>${MIRROR_ORDER.map(k => { const h = MIRROR[k];
       const v = now[k], pv = was?.[k];
       return `<li><span class="habit">${esc(h)}</span>
         ${pv != null ? `<span class="was ${v != null && v > pv ? "up" : ""}">ביום ${prev}: ${MIRROR_LEVELS[pv]}${v != null && v > pv ? " ↑" : ""}</span>` : ""}
@@ -1232,6 +1290,7 @@ function renderDay(n) {
       ${narrationHTML(c)}
       ${parts.join("")}
       ${mirrorHTML(n)}
+      ${n === 1 ? pulseHTML(1) : ""}
       <p class="saved">${ICON.check.replace("<svg", '<svg class="ico"')} נשמר רק בטלפון שלך</p>
       <div class="daynav">
         ${n > 1 ? `<a class="btn ghost" href="#/day/${n - 1}">יום ${n - 1}</a>` : "<span></span>"}
@@ -1242,6 +1301,7 @@ function renderDay(n) {
   bindDay(n, c);
   bindAnchor(n);
   bindMirror(n);
+  bindPulse(n);
   if (c.audio && c.timing) bindListen(c);
   bindEvening(c);
   if (n === 5) startBand("breath"); // the breathing circle belongs to the breathing day (and to Settings)
@@ -1739,6 +1799,7 @@ function partHTML(n, part, content, a, onShabbat) {
       ? `<textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך">${esc(note)}</textarea>`
       : `<button class="btn quiet note-toggle" type="button" data-note-toggle="${noteKey}" ${note ? "hidden" : ""}>+ להוסיף כמה מילים משלי</button>
          <textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך" ${note ? "" : "hidden"}>${esc(note)}</textarea>`}
+    ${isEvening && n !== 1 ? pulseHTML(n) : ""}
     ${part === "step" && n !== 1 ? anchorHTML(n) : ""}
     ${part === "step" && n !== 1 ? checkHTML(a.stepDone, "עשיתי את הצעד") : ""}
   </section>`;
@@ -1974,12 +2035,14 @@ function summary(n, part, content, a) {
 }
 
 function mirrorJournal() {
-  const checks = MIRROR_DAYS.filter(d => Object.keys(mirrorAt(d)).length === MIRROR.length);
-  if (!checks.length) return "";
-  return `<a class="mirror" href="#/day/${checks[checks.length - 1]}" style="text-decoration:none;color:inherit">
+  const checks = MIRROR_DAYS.filter(d => Object.keys(mirrorAt(d)).length >= 8);
+  const trend = pulseTrend(90, true);
+  if (!checks.length && !trend) return "";
+  return `<div class="mirror">
     <span class="eyebrow">המראה שלך</span>
-    <p class="small">"בדרך כלל" מתוך ${MIRROR.length} הרגלים: ${checks.map(d => `יום ${d}: <b>${usually(mirrorAt(d))}</b>`).join(" · ")}</p>
-  </a>`;
+    ${checks.length ? `<a class="small" href="#/day/${checks[checks.length - 1]}" style="color:inherit">"בדרך כלל" בהרגלים: ${checks.map(d => `יום ${d}: <b>${usually(mirrorAt(d))}</b>`).join(" · ")}</a>` : ""}
+    ${trend}
+  </div>`;
 }
 
 function renderJournal() {
