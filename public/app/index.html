@@ -167,7 +167,7 @@ details.map[open] summary{margin-bottom:10px}
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
 /* living band at the top: reeds on the home screen, a breathing circle inside a day */
-.band{position:relative;height:118px;margin:-20px -16px 0;background:radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bronze) 16%, transparent), transparent 75%),linear-gradient(to bottom, var(--sky), var(--bg))}
+.band{position:relative;height:190px;margin:-20px -16px 0;background:radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bronze) 16%, transparent), transparent 75%),linear-gradient(to bottom, var(--sky), var(--bg))}
 .band::after{content:"";position:absolute;inset-inline:0;bottom:0;height:2px;background:linear-gradient(to left, transparent, var(--bronze-hi) 30%, var(--bronze) 50%, var(--bronze-hi) 70%, transparent);opacity:.7;pointer-events:none}
 .band.breath{height:176px}
 .band.breath .cap{inset-inline-start:auto;inset-inline-end:16px;top:14px}
@@ -206,6 +206,20 @@ details.map[open] summary{margin-bottom:10px}
 .anchor .small{margin-top:-4px}
 .anchor .chips{display:flex;flex-wrap:wrap;gap:8px}
 .anchor .set{font-size:15px;color:var(--bronze-ink);font-weight:700}
+.today-card .msg{margin:0;font-size:15px;color:var(--muted);border-inline-start:3px solid var(--bronze);padding-inline-start:10px}
+.today-card .msg b{color:var(--bronze-ink)}
+.slim{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-radius:14px;padding:10px 14px;background:var(--band);font-size:15px}
+.slim span{flex:1 1 12em}
+.slim .btn{min-height:40px;padding:6px 14px;font-size:15px}
+.day-head .dayword{text-align:start;padding:2px 0 0}
+.day-head .dayword .w{font-size:22px}
+.day-head .dayword .l{font-size:15px;margin:0}
+details.later{border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+details.later>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:14px 18px;min-height:48px}
+details.later>summary::-webkit-details-marker{display:none}
+details.later>summary .t{font-weight:700}
+details.later[open]>summary{border-bottom:1px solid var(--line)}
+details.later>.part{padding:16px 18px}
 .today-card .anc{font-size:14px;color:var(--bronze-ink);font-weight:700}
 /* the mirror: eight small habits, marked on day 1 and again on days 30, 60 and 90 to show the change */
 .mirror{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;display:grid;gap:12px}
@@ -526,7 +540,7 @@ function answerByKey(n, key) {
 }
 
 // ---------------------------------------------------------------- router
-const routes = { home: renderHome, day: renderDay, journal: renderJournal, settings: renderSettings, welcome: renderWelcome, install: renderInstallFirst, commit: renderCommit };
+const routes = { home: renderHome, breathe: renderBreathe, day: renderDay, journal: renderJournal, settings: renderSettings, welcome: renderWelcome, install: renderInstallFirst, commit: renderCommit };
 
 function route() {
   const hash = location.hash.replace(/^#\/?/, "");
@@ -540,6 +554,7 @@ function route() {
   if (name === "day" && arg) return show("day", Number(arg));
   if (name === "journal") return show("journal");
   if (name === "settings") return show("settings");
+  if (name === "breathe") return show("breathe");
   return show("home");
 }
 
@@ -698,34 +713,14 @@ function dayWordHTML(n) {
 // the message of the day on the way (from /api/program), or a word when he comes back after a few days away
 function milestoneHTML(reached) {
   const today = todayISO();
-  if (state.back?.date === today && !state.back.closed) {
+  if (state.back?.date === today) {
     const missed = state.back.missed || 2, B = program?.words?.back || {};
     const [w, line] = (missed >= 7 ? B[7] : missed >= 2 ? B[2] : B[1]) || ["", "חזרת. זה מה שחשוב. ממשיכים מהיום."];
-    return `
-    <div class="milestone" id="milestone" data-kind="back">
-      <span class="eyebrow">ברוך שובך</span>
-      ${w ? `<h3 class="word">${esc(w)}.</h3>` : ""}
-      <p class="small muted">${esc(line)}</p>
-      <button class="btn quiet x" type="button">ממשיכים</button>
-    </div>`;
+    return `<p class="msg">${w ? `<b>${esc(w)}.</b> ` : ""}${esc(line)}</p>`;
   }
   const m = program?.milestones?.find(x => x.day === Math.min(reached, 90));
   if (!m || state.milestones?.includes(m.day)) return "";
-  return `
-    <div class="milestone" id="milestone" data-kind="day" data-day="${m.day}">
-      <span class="eyebrow">יום ${m.day} · ההסכם שלנו</span>
-      <h3>${esc(m.title)}</h3>
-      <p class="small muted">${esc(m.text)}</p>
-      <button class="btn quiet x" type="button">תודה</button>
-    </div>`;
-}
-function bindMilestone() {
-  const el = $("#milestone"); if (!el) return;
-  el.querySelector(".x").addEventListener("click", () => {
-    if (el.dataset.kind === "back") state.back.closed = true;
-    else state.milestones = [...(state.milestones || []), Number(el.dataset.day)];
-    save(); el.remove();
-  });
+  return `<p class="msg"><b>${esc(m.title)}</b> ${esc(m.text)}</p>`;
 }
 // remembers the last day he opened the app, to welcome him back after a day or more away
 function noteVisit() {
@@ -801,17 +796,17 @@ function renderHome() {
     <div class="stack-lg">
       <div class="band" id="band"><canvas id="band-c" role="img" aria-label="שדה קנים שגדל עם כל יום שהשלמת. אפשר לגעת בקנים."></canvas><span class="cap" id="band-cap"></span></div>
       <div class="topbar"><span class="brand">חיים שלי</span>${dayPickHTML(n)}</div>
-      ${locked ? "" : milestoneHTML(reached)}
-      ${installBanner()}
-      ${pushBanner()}
       ${locked ? paywall() : `
       <a class="today-card" href="#/day/${n}">
         <span class="eyebrow">${n === reached || reached === 2 ? "היום" : "היום שלך"} · יום ${n}${m.weekName ? ` · ${esc(m.weekName)}` : ""}</span>
         <h2>${esc(c?.title || m.title)}</h2>
+        ${milestoneHTML(reached)}
         ${peek(n)?.anchor && st !== "done" ? `<span class="anc">העוגן שלך: ${esc(anchorText(peek(n).anchor))}</span>` : ""}
         <span class="status ${st}"><i></i>${stText}</span>
         <span class="btn" style="justify-self:start">${st === "none" ? "להתחיל" : st === "done" ? "לחזור ליום" : "להמשיך"}</span>
       </a>`}
+      ${pushBanner()}
+      ${installBanner()}
       ${finished ? `<div class="notice"><h3>סיימת את 90 הימים.</h3><p class="small muted">כל מה שכתבת נשאר ביומן שלך. אפשר לחזור לכל יום, מתי שתרצה.</p></div>` : ""}
       <div class="stack">
         <div class="row" style="justify-content:space-between"><h3 style="font-size:20px">השבוע שלי</h3><span class="small muted">${wk.doneWeek === 1 ? "יום אחד הושלם השבוע" : `${wk.doneWeek} ימים הושלמו השבוע`}</span></div>
@@ -827,7 +822,6 @@ function renderHome() {
   bindDayPick();
   bindInstallBanner();
   bindPushBanner();
-  bindMilestone();
   startBand("reeds");
   // the banner appears once we know the server has push turned on
   if (pushKey === undefined && !state.push?.on && pushSupport() === "ok") getPushKey().then(k => { if (k && location.hash.replace(/^#\/?/, "") === "") renderHome(); });
@@ -889,12 +883,11 @@ window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferr
 window.addEventListener("appinstalled", () => { deferredPrompt = null; toast("האפליקציה נוספה למסך הבית"); });
 
 function installBanner() {
-  if (isStandalone() || localStorage.getItem("hs-install-dismissed") === "1") return "";
-  return `<div class="notice" id="install">
-    <h3>להוסיף למסך הבית?</h3>
-    <p class="small muted">נפתח בלחיצה אחת, ותשובות נשמרות בבטחה גם אם מנקים את הדפדפן.</p>
-    <div class="row"><button class="btn" id="install-go" type="button">${deferredPrompt ? "התקנה" : "איך מתקינים"}</button>
-    <button class="btn quiet" id="install-no" type="button">אחר כך</button></div>
+  if (isStandalone() || countDone() < 1 || localStorage.getItem("hs-install-dismissed") === "1") return "";
+  return `<div class="slim" id="install">
+    <span>להוסיף למסך הבית? נפתח בלחיצה אחת.</span>
+    <button class="btn" id="install-go" type="button">${deferredPrompt ? "התקנה" : "איך"}</button>
+    <button class="btn quiet" id="install-no" type="button" aria-label="לא עכשיו">לא עכשיו</button>
   </div>`;
 }
 function bindInstallBanner() {
@@ -1181,16 +1174,22 @@ function renderDay(n) {
   const parts = [];
   if (c.step) parts.push(partHTML(n, "step", c.step, a));
   else parts.push(`<div class="part">${checkHTML(a.stepDone, c.rest ? "נחתי היום" : "עברתי על היום")}</div>`);
-  if (c.midday) parts.push(`<div class="midday"><span class="t">לאמצע היום</span><p>${esc(c.midday)}</p></div>`);
-  if (c.evening) parts.push(partHTML(n, "evening", c.evening, a, onShabbat));
+  // the midday line arrives as a notification at midday; it is not repeated on the morning screen
+  if (c.evening) {
+    // in the morning the evening question waits folded; it opens by itself from five, on past days, or once answered
+    const ev = partHTML(n, "evening", c.evening, a, onShabbat);
+    const answered = Object.keys(a.evening || {}).length || (a.eveningNote || "").trim();
+    const open = answered || n < reachedDay() || new Date().getHours() >= 17;
+    parts.push(open ? ev : `<details class="later"><summary><span class="t">שאלה לערב</span><span class="small muted">נחזור אליה בערב</span></summary>${ev}</details>`);
+  }
 
   $("#view").innerHTML = `
     <div class="stack-lg">
-      <div class="band breath" id="band"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button><button class="back" id="back" type="button">${ICON.back}חזרה</button></div>
-      ${dayWordHTML(n)}
+      ${n === 5 ? `<div class="band breath" id="band"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button><button class="back" id="back" type="button">${ICON.back}חזרה</button></div>` : backBar()}
       <div class="day-head">
         <span class="eyebrow">יום ${n}${m.weekName || c.weekName ? ` · ${esc(c.weekName || m.weekName)}` : ""}</span>
         <h1>${esc(c.title)}</h1>
+        ${dayWordHTML(n)}
       </div>
       ${c.audio && c.timing ? listenHTML() : c.audio ? `<audio controls preload="none" src="${esc(c.audio)}"></audio>` : ""}
       ${narrationHTML(c)}
@@ -1208,7 +1207,7 @@ function renderDay(n) {
   bindMirror(n);
   if (c.audio && c.timing) bindListen(c);
   bindEvening(c);
-  startBand("breath");
+  if (n === 5) startBand("breath"); // the breathing circle belongs to the breathing day (and to Settings)
   musicFor(1); // the same soundscape on every day
 }
 
@@ -1247,12 +1246,12 @@ function startBand(kind) {
   ["pointerup", "pointerleave", "pointercancel"].forEach(ev => canvas.addEventListener(ev, leave));
 
   if (kind === "reeds") {
-    // more reeds, and taller, with every day he completes
-    B.reeds = makeReedField(120);
+    // a full field of reeds, always; in its middle a tree that grows a little with every day he completes
+    B.reeds = makeReedField(Math.max(120, Math.round(B.w / 2.6)));
+    B.reeds.forEach(rd => { const d = Math.abs(rd.x - 0.5); rd.target = d < 0.07 ? 0.12 : d < 0.12 ? 0.3 : 0.5; }); // a small clearing where the tree stands
     const done = countDone();
-    const shown = Math.round(10 + (B.reeds.length - 10) * Math.min(1, done / 75));
-    [...B.reeds].sort((a, b) => a.rank - b.rank).forEach((rd, k) => { rd.target = k < shown ? 0.5 + 0.5 * Math.min(1, done / 80) : 0; });
-    $("#band-cap").textContent = done ? `${done === 1 ? "יום אחד" : `${done} ימים`} בשדה שלך` : "השדה שלך מחכה ליום הראשון";
+    B.tree = makeTree(); B.treeGrow = 0; B.treeTarget = treeProgress(done);
+    $("#band-cap").textContent = done ? `${done === 1 ? "יום אחד" : `${done} ימים`}, והעץ שלך גדל` : "העץ שלך יתחיל לצמוח מהיום הראשון";
   } else {
     $("#band-go")?.addEventListener("click", e => {
       B.guide = B.guide > 0 ? 0 : 60;
@@ -1272,11 +1271,62 @@ function bandFrame(now) {
   B.raf = requestAnimationFrame(bandFrame);
 }
 
+// ---------- the tree: one branching shape, fixed for everyone, revealed in order as the days add up
+// progress 0..1: day 0 shows a small sprout, day 90 a full crown with leaves
+// faster at the start (a sqrt curve), so the first days show a visible change
+function treeProgress(done) { return 0.12 + 0.88 * Math.sqrt(Math.min(1, done / 90)); }
+function makeTree() {
+  let r = 11;
+  const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+  const MAX = 6;
+  const grow = (depth, ang, len, width) => {
+    const b = { depth, ang, len, width, kids: [], leaves: [] };
+    if (depth < MAX) {
+      const n = depth === 0 ? 3 : rnd() < 0.35 ? 3 : 2;
+      for (let i = 0; i < n; i++) {
+        const spread = (i - (n - 1) / 2) * (0.5 + rnd() * 0.25) + (rnd() - 0.5) * 0.25;
+        b.kids.push(grow(depth + 1, spread, len * (0.68 + rnd() * 0.12), width * 0.68));
+      }
+    }
+    if (depth >= 3) for (let i = 0; i < (depth === MAX ? 4 : 2); i++) b.leaves.push({ at: 0.35 + rnd() * 0.65, side: rnd() < 0.5 ? -1 : 1, size: 0.7 + rnd() * 0.6, tone: 1 + Math.floor(rnd() * 3), phase: rnd() * 6.28 });
+    return b;
+  };
+  return { root: grow(0, 0, 1, 1), max: MAX };
+}
+function drawTree(B) {
+  const { ctx, w, h } = B, still = calm.matches, T = B.tree;
+  B.treeGrow += (B.treeTarget - B.treeGrow) * (still ? 1 : 0.03);
+  const p = B.treeGrow, step = 1 / (T.max + 1.6); // each depth grows in its own slice of the progress
+  const unit = h * 0.235 * (0.5 + 0.5 * p), trunkW = Math.max(2.5, Math.min(11, w * 0.02)) * (0.35 + 0.65 * p);
+  const bark = cssVar("--m3"), leafCol = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--bronze") };
+  const sway = still ? 0 : Math.sin(B.t * 0.5) * 0.025;
+  const branch = (b, x, y, ang) => {
+    const g = Math.max(0, Math.min(1, (p - b.depth * step) / step));
+    if (g <= 0) return;
+    const a = ang + b.ang + sway * (b.depth + 1), len = unit * b.len * g;
+    const x2 = x + Math.sin(a) * len, y2 = y - Math.cos(a) * len;
+    ctx.strokeStyle = bark; ctx.lineCap = "round"; ctx.lineWidth = Math.max(1, trunkW * b.width);
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke();
+    const lg = Math.max(0, Math.min(1, (p - (b.depth + 0.8) * step) / step));
+    if (lg > 0) for (const L of b.leaves) {
+      const lx = x + (x2 - x) * L.at, ly = y + (y2 - y) * L.at, rs = (3 + 3.5 * L.size) * lg * Math.min(1.4, h / 150);
+      const la = a + L.side * 0.9 + (still ? 0 : Math.sin(B.t * 1.3 + L.phase) * 0.12);
+      ctx.save(); ctx.translate(lx + Math.sin(la) * rs, ly - Math.cos(la) * rs); ctx.rotate(la);
+      ctx.fillStyle = leafCol[L.tone]; ctx.globalAlpha = 0.92;
+      ctx.beginPath(); ctx.ellipse(0, 0, rs * 0.5, rs, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.globalAlpha = 1;
+    }
+    if (g >= 1) for (const k of b.kids) branch(k, x2, y2, a);
+  };
+  branch(T.root, w / 2, h + 2, 0);
+}
+
 function drawField(B) {
   const { ctx, w, h } = B, still = calm.matches;
   ctx.clearRect(0, 0, w, h);
   const col = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--m3") }, head = cssVar("--bronze"), bronzeHi = cssVar("--bronze-hi"), bronzeLo = cssVar("--bronze-lo");
+  let treeDone = !B.tree;
   for (const rd of [...B.reeds].sort((a, b) => a.tone - b.tone)) {
+    if (!treeDone && rd.tone === 3) { drawTree(B); treeDone = true; } // the near row stands in front of the trunk
     rd.grow += (rd.target - rd.grow) * (still ? 1 : 0.05);
     if (rd.grow < 0.01) continue;
     const baseX = rd.x * w, len = rd.h * h * 0.95 * rd.grow;
@@ -1299,6 +1349,7 @@ function drawField(B) {
       ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 5, 2 + 0.3 * rd.tone, 6 + 0.9 * rd.tone, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     }
   }
+  if (!treeDone) drawTree(B);
   ctx.globalAlpha = 1;
 }
 
@@ -1422,7 +1473,6 @@ function listenHTML() {
         <div class="time"><span id="l-cur">0:00</span><span id="l-dur"></span></div>
       </div>
     </div>
-    <button class="music" id="l-music" type="button" aria-pressed="${state.music !== false}">מוזיקת רקע: ${state.music !== false ? "פועלת" : "כבויה"}</button>
   </div>`;
 }
 
@@ -1496,12 +1546,6 @@ function bindListen(c) {
   voice.addEventListener("ended", () => { setUI(false); mark(-1); musicDuck(false); }); // the music keeps going
   voice.addEventListener("play", () => evening?.voice.pause());
 
-  $("#l-music").addEventListener("click", e => {
-    state.music = !musicOn(); save();
-    e.currentTarget.setAttribute("aria-pressed", String(musicOn()));
-    e.currentTarget.textContent = `מוזיקת רקע: ${musicOn() ? "פועלת" : "כבויה"}`;
-    musicSync();
-  });
   narr.addEventListener("click", e => {
     const s = e.target.closest(".w"); if (!s || !voice.duration) return;
     const i = spans.indexOf(s);
@@ -1575,6 +1619,16 @@ function bindEvening(c) {
   voice.addEventListener("ended", () => { ui(false); musicDuck(false); speakOn("evening", E.target, false); E.target = null; });
 }
 
+function renderBreathe() {
+  $("#view").innerHTML = `
+    <div class="stack-lg">
+      <div class="band breath" id="band" style="height:min(62vh,460px)"><canvas id="band-c" role="img" aria-label="עיגול נשימה: מתרחב בשאיפה ומתכווץ בנשיפה."></canvas><span class="cap" id="band-cap" aria-live="off"></span><button class="go" id="band-go" type="button">לנשום דקה</button><button class="back" id="back" type="button">${ICON.back}חזרה</button></div>
+      <p class="muted" style="text-align:center">ארבע שניות פנימה, שש החוצה. העיגול נושם איתך.</p>
+    </div>`;
+  $("#back").addEventListener("click", () => { location.hash = "#/settings"; });
+  startBand("breath");
+}
+
 function backBar() {
   return `<div class="topbar"><button class="back" id="back" type="button">${ICON.back}חזרה</button><span class="brand" style="font-size:18px">חיים שלי</span></div>`;
 }
@@ -1595,10 +1649,14 @@ const ANCHORS = [
 ];
 const anchorText = k => ANCHORS.find(x => x.k === k)?.t || "";
 function lastAnchor(n) { for (let d = n - 1; d >= 1; d--) { const k = state.answers[d]?.anchor; if (k) return k; } return null; }
+function stepPicked(n) {
+  const blocks = dayContent(n)?.step?.blocks || [];
+  return !blocks.some(b => b.type === "choice" || b.type === "rating") || Object.keys(ans(n).step || {}).length > 0;
+}
 function anchorHTML(n) {
   const k = ans(n).anchor, prev = lastAnchor(n);
   const list = ANCHORS.filter(x => !(x.needs === "kids" && state.profile?.kids === "no"));
-  return `<div class="anchor" id="anchor">
+  return `<div class="anchor" id="anchor" ${stepPicked(n) ? "" : "hidden"}>
     <p class="prompt">מתי תעשה את זה?</p>
     <p class="small muted">צעד קטן נתפס כשמצמידים אותו לרגע שקורה בכל מקרה.${!k && prev ? ` אתמול בחרת: ${esc(anchorText(prev))}.` : ""}</p>
     <div class="chips">${list.map(x => `<button type="button" class="chip" data-anchor="${x.k}" aria-pressed="${k === x.k}">${esc(x.t)}</button>`).join("")}</div>
@@ -1843,6 +1901,7 @@ function afterAnswer(n, c, part, i, group) {
   tmp.innerHTML = blockHTML(n, part, c[part].blocks[i], i, ans(n)[part][i]);
   block.replaceWith(tmp.firstElementChild);
   if (!wasDone && dayStatus(n) === "done") dayDone(n, n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
+  if (part === "step") { const an = $("#anchor"); if (an) an.hidden = !stepPicked(n); }
 }
 
 // ---------- journal
@@ -1935,6 +1994,13 @@ function renderSettings() {
           ${segField("kids", "יש לך ילדים?", "", draft.kids)}
         </form>
       </section>
+      <section>
+        <h2>שקט ונשימה</h2>
+        <div class="row">
+          <button class="btn ghost" id="s-music" type="button" aria-pressed="${musicOn()}">מוזיקת רקע בהקראה: ${musicOn() ? "פועלת" : "כבויה"}</button>
+          <a class="btn ghost" href="#/breathe">לנשום דקה</a>
+        </div>
+      </section>
       ${pushSettingsHTML()}
       ${isStandalone() ? "" : `<section><h2>הוספה למסך הבית</h2>${installSteps()}</section>`}
       <section>
@@ -1949,6 +2015,11 @@ function renderSettings() {
   bindSegs(pf, draft);
   pf.addEventListener("segchange", () => { state.profile = { ...draft }; save(); toast("נשמר"); syncPush(true); });
   bindPushSettings();
+  $("#s-music").addEventListener("click", e => {
+    state.music = !musicOn(); save();
+    e.currentTarget.setAttribute("aria-pressed", String(musicOn()));
+    e.currentTarget.textContent = `מוזיקת רקע בהקראה: ${musicOn() ? "פועלת" : "כבויה"}`;
+  });
 
   $("#export").onclick = exportBackup;
   $("#import-file").onchange = e => importBackup(e.target.files[0]);
