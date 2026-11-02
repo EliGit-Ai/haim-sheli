@@ -1295,8 +1295,8 @@ function mirrorHTML(n) {
     ${sum}
     ${first ? "" : pulseTrend(n, true)}
     ${pos < keys.length ? `<div class="mirror-question"><p class="habit">${esc(h)}</p>
-      ${pv != null ? `<p class="was">ביום ${prev}: ${pv === 0 ? "לא כלכך" : MIRROR_LEVELS[pv]}</p>` : ""}
-      <div class="pick" role="group" aria-label="${esc(h)}">${[[0,"לא כלכך"],[2,"בדרך כלל"]].map(([j,l])=>`<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v===j}">${l}</button>`).join("")}</div></div>`
+      ${pv != null ? `<p class="was">ביום ${prev}: ${MIRROR_LEVELS[pv]}</p>` : ""}
+      <div class="pick" role="group" aria-label="${esc(h)}">${MIRROR_LEVELS.map((l,j)=>`<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v===j}">${l}</button>`).join("")}</div></div>`
       : '<p class="sum">ענית על כל השאלות. התשובות נשמרו.</p>'}
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px">
       <button type="button" class="btn quiet" data-mirror-back ${pos===0 ? "disabled" : ""}>לשאלה הקודמת</button>
