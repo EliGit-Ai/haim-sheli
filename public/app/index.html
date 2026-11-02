@@ -1282,35 +1282,47 @@ function mirrorHTML(n) {
   if (!MIRROR_DAYS.includes(n)) return "";
   const now = mirrorAt(n), prev = mirrorBefore(n), was = prev ? mirrorAt(prev) : null;
   const first = n === 1;
+  const keys = MIRROR_ORDER;
+  const next = keys.findIndex(k => now[k] == null);
+  const pos = Math.min(state.mirrorGuidedIndex?.[n] ?? (next < 0 ? keys.length : next), keys.length);
   const done = Object.keys(now).length === MIRROR.length;
-  const sum = was && done ? `<p class="sum">ביום ${prev} סימנת "בדרך כלל" ב-<b>${usually(was)}</b> מתוך ${MIRROR.length}. היום ב-<b>${usually(now)}</b>.${usually(now) > usually(was) ? " זה השינוי שלך." : ""}</p>` : "";
+  const sum = was && done ? `<p class="sum">ביום ${prev} סימנת "בדרך כלל" ב-<b>${usually(was)}</b> מתוך ${MIRROR.length}. היום ב-<b>${usually(now)}</b>.</p>` : "";
+  const k = keys[pos], h = MIRROR[k], v = now[k], pv = was?.[k];
   return `<section class="mirror" id="mirror" aria-labelledby="mirror-h">
     <span class="eyebrow">${first ? "נקודת הפתיחה" : `${n} ימים אחרי`}</span>
     <h2 id="mirror-h">המראה שלך</h2>
-    <p class="lead">${first ? "כמה הרגלים קטנים. תסמן איפה אתה היום, בלי ציונים ובלי לשפוט. נחזור לזה ביום 30, 60 ו-90, ותראה מה זז." : "אותם הרגלים. תסמן איפה אתה היום, ומתחת לכל אחד תראה מה סימנת קודם."}</p>
+    <p class="lead">${first ? "כמה הרגלים קטנים. תסמן איפה אתה היום, בלי ציונים ובלי לשפוט. נחזור לזה ביום 30, 60 ו-90, ותראה מה זז." : "אותם הרגלים. תסמן איפה אתה היום."}</p>
     ${sum}
     ${first ? "" : pulseTrend(n, true)}
-    <ol>${MIRROR_ORDER.map(k => { const h = MIRROR[k];
-      const v = now[k], pv = was?.[k];
-      return `<li><span class="habit">${esc(h)}</span>
-        ${pv != null ? `<span class="was ${v != null && v > pv ? "up" : ""}">ביום ${prev}: ${MIRROR_LEVELS[pv]}${v != null && v > pv ? " ↑" : ""}</span>` : ""}
-        <span class="pick" role="group" aria-label="${esc(h)}">${MIRROR_LEVELS.map((l, j) => `<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v === j}">${l}</button>`).join("")}</span></li>`;
-    }).join("")}</ol>
+    ${pos < keys.length ? `<div class="mirror-question"><p class="habit">${esc(h)}</p>
+      ${pv != null ? `<p class="was">ביום ${prev}: ${MIRROR_LEVELS[pv]}</p>` : ""}
+      <div class="pick" role="group" aria-label="${esc(h)}">${MIRROR_LEVELS.map((l,j)=>`<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v===j}">${l}</button>`).join("")}</div></div>`
+      : '<p class="sum">ענית על כל השאלות. התשובות נשמרו.</p>'}
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px">
+      <button type="button" class="btn quiet" data-mirror-back ${pos===0 ? "disabled" : ""}>לשאלה הקודמת</button>
+      <span class="small muted">${pos===keys.length ? "הושלם" : `שאלה ${pos+1} מתוך ${keys.length}`}</span>
+    </div>
   </section>`;
 }
 function bindMirror(n) {
   startSeas();
   $("#mirror")?.addEventListener("click", e => {
-    const b = e.target.closest("[data-k]"); if (!b) return;
-    state.mirror = state.mirror || {};
-    const m = state.mirror[n] = state.mirror[n] || {};
-    const k = Number(b.dataset.k), v = Number(b.dataset.v), before = Object.keys(m).length;
-    if (m[k] === v) delete m[k]; else m[k] = v;
+    const back = e.target.closest("[data-mirror-back]");
+    const b = e.target.closest("[data-k]");
+    if (!back && !b) return;
+    state.mirrorGuidedIndex = state.mirrorGuidedIndex || {};
+    const m = state.mirror = state.mirror || {};
+    const answers = m[n] = m[n] || {};
+    if (back) state.mirrorGuidedIndex[n] = Math.max(0, (state.mirrorGuidedIndex[n] ?? 0) - 1);
+    else {
+      answers[Number(b.dataset.k)] = Number(b.dataset.v);
+      const position = MIRROR_ORDER.findIndex(k => String(k) === b.dataset.k);
+      state.mirrorGuidedIndex[n] = Math.min(position + 1, MIRROR_ORDER.length);
+    }
     save();
-    const y = window.scrollY;
-    $("#mirror").outerHTML = mirrorHTML(n); bindMirror(n);
-    window.scrollTo(0, y);
-    if (before === MIRROR.length - 1 && Object.keys(m).length === MIRROR.length) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : n === 90 ? "נשמר. זו המראה של הסוף." : `נשמר. נחזור לזה ביום ${n + 30}.`);
+    $("#mirror").outerHTML = mirrorHTML(n);
+    bindMirror(n);
+    if (Object.keys(answers).length === MIRROR.length && !back) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : "המראה נשמרה.");
   });
 }
 
