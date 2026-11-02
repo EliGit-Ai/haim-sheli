@@ -1294,7 +1294,7 @@ function mirrorHTML(n) {
       const v = now[k], pv = was?.[k];
       return `<li><span class="habit">${esc(h)}</span>
         ${pv != null ? `<span class="was ${v != null && v > pv ? "up" : ""}">ביום ${prev}: ${MIRROR_LEVELS[pv]}${v != null && v > pv ? " ↑" : ""}</span>` : ""}
-        <span class="pick" role="group" aria-label="${esc(h)}">${MIRROR_LEVELS.map((l, j) => `<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v === j}">${l}</button>`).join("")}</span></li>`;
+        <span class="pick" role="group" aria-label="${esc(h)}">${[[0, "לא כלכך"], [2, "בדרך כלל"]].map(([j, l]) => `<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v === j}">${l}</button>`).join("")}</span></li>`;
     }).join("")}</ol>
   </section>`;
 }
