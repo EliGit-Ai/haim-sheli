@@ -1853,14 +1853,19 @@ function bindAnchor(n) {
 function partHTML(n, part, content, a, onShabbat) {
   const vals = a[part] || {};
   const guided = n === 1 && part === "step";
-  const guidedIndices = guided ? content.blocks.map((b, i) => b.key === "first_day_focus" || b.key === "first_day_response" ? i : -1).filter(i => i >= 0) : [];
-  const currentGuided = guidedIndices.find(i => vals[i] == null);
-  const blocks = content.blocks.map((b, i) => {
-    if (guidedIndices.includes(i) && i !== (currentGuided ?? guidedIndices[guidedIndices.length - 1])) return "";
-    if (guidedIndices.includes(i) && currentGuided == null && i === guidedIndices[guidedIndices.length - 1]) return "";
-    if (guided && b.type === "text" && b.text?.startsWith("הצעד שלך להיום:") && currentGuided != null) return "";
-    return blockHTML(n, part, b, i, vals[i]);
-  }).join("");
+  const guidedIndices = guided ? content.blocks.map((b, i) => b.type === "choice" || b.type === "rating" ? i : -1).filter(i => i >= 0) : [];
+  const firstUnanswered = guidedIndices.find(i => vals[i] == null);
+  const selected = guided ? Math.min(state.day1GuidedIndex ?? (firstUnanswered ?? guidedIndices.length), guidedIndices.length) : 0;
+  const activeIndex = guidedIndices[selected];
+  const blocks = guided
+    ? (selected >= guidedIndices.length
+      ? '<p class="block">נקודת הפתיחה נשמרה. אפשר לחזור ולשנות תשובות בכל רגע.</p>'
+      : blockHTML(n, part, content.blocks[activeIndex], activeIndex, vals[activeIndex]))
+    : content.blocks.map((b, i) => blockHTML(n, part, b, i, vals[i])).join("");
+  const guidedNav = guided ? `<div class="day1-guided-nav" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin:12px 0">
+    <button type="button" class="btn quiet" data-day1-back ${selected === 0 ? "disabled" : ""}>לשאלה הקודמת</button>
+    <span class="small muted">${selected >= guidedIndices.length ? "הושלם" : `שאלה ${selected + 1} מתוך ${guidedIndices.length}`}</span>
+  </div>` : "";
   const noteKey = part + "Note";
   const note = a[noteKey] || "";
   const onlyText = content.blocks.every(b => b.type === "text");
@@ -1869,6 +1874,7 @@ function partHTML(n, part, content, a, onShabbat) {
     <div class="part-title"><h2>${isEvening ? "שאלה לערב" : esc(content.title || "הצעד של היום")}</h2>
       <span class="when">${isEvening ? (onShabbat ? "במוצאי שבת" : "בערב") : "היום"}</span></div>
     ${blocks}
+    ${guidedNav}
     ${isEvening && onlyText
       ? `<textarea data-note="${noteKey}" rows="3" maxlength="1000" placeholder="כמה מילים, רק לעצמך">${esc(note)}</textarea>`
       : `<button class="btn quiet note-toggle" type="button" data-note-toggle="${noteKey}" ${note ? "hidden" : ""}>+ להוסיף כמה מילים משלי</button>
@@ -1972,6 +1978,16 @@ function bindDay(n, c) {
     const rate = e.target.closest("[data-rating] button");
     const done = e.target.closest("[data-done]");
     const noteBtn = e.target.closest("[data-note-toggle]");
+    const back = e.target.closest("[data-day1-back]");
+    if (back && n === 1) {
+      state.day1GuidedIndex = Math.max(0, (state.day1GuidedIndex ?? 0) - 1);
+      save();
+      const section = document.querySelector('.part[data-part="step"]');
+      const refreshed = document.createElement("div");
+      refreshed.innerHTML = partHTML(n, "step", c.step, ans(n), false);
+      section?.replaceWith(refreshed.firstElementChild);
+      return;
+    }
     if (chip) {
       const group = chip.closest("[data-choice]"), part = chip.closest(".part").dataset.part;
       const i = Number(group.dataset.choice), multi = group.dataset.multi === "1", k = Number(chip.dataset.k);
@@ -2088,11 +2104,17 @@ function afterAnswer(n, c, part, i, group) {
   block.replaceWith(tmp.firstElementChild);
   if (!wasDone && dayStatus(n) === "done") dayDone(n, n === 1 ? "נקודת הפתיחה נשמרה" : `יום ${n} הושלם`);
   if (part === "step") { const an = $("#anchor"); if (an) an.hidden = !stepPicked(n); }
-  if (n === 1 && part === "step" && (c.step.blocks[i]?.key === "first_day_focus" || c.step.blocks[i]?.key === "first_day_response")) {
-    const section = group.closest(".part");
-    const refreshed = document.createElement("div");
-    refreshed.innerHTML = partHTML(n, "step", c.step, ans(n), false);
-    section.replaceWith(refreshed.firstElementChild);
+  if (n === 1 && part === "step") {
+    const indices = c.step.blocks.map((b, k) => b.type === "choice" || b.type === "rating" ? k : -1).filter(k => k >= 0);
+    const position = indices.indexOf(i);
+    if (position >= 0) {
+      state.day1GuidedIndex = Math.min(position + 1, indices.length);
+      save();
+      const section = document.querySelector('.part[data-part="step"]');
+      const refreshed = document.createElement("div");
+      refreshed.innerHTML = partHTML(n, "step", c.step, ans(n), false);
+      section?.replaceWith(refreshed.firstElementChild);
+    }
   }
 
 }
