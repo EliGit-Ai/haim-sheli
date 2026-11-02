@@ -1358,8 +1358,7 @@ function bindMirror(n) {
     save();
     const y = window.scrollY;
     root.outerHTML = mirrorHTML(n);
-    bindMirror(n);
-    window.scrollTo(0,y);
+      window.scrollTo(0,y);
     if (!back && MIRROR_ORDER.every(k => m[k] != null)) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : n === 90 ? "נשמר. זו המראה של הסוף." : `נשמר. נחזור לזה ביום ${n + 30}.`);
   }
   root.querySelector("[data-mirror-back]")?.addEventListener("click", () => move(null,true));
@@ -1452,7 +1451,7 @@ function renderDay(n) {
       ${c.audio && c.timing ? listenHTML() : c.audio ? `<audio controls preload="none" src="${esc(c.audio)}"></audio>` : ""}
       ${narrationHTML(c)}
       ${parts.join("")}
-      ${mirrorHTML(n)}
+      
       <p class="saved">${ICON.check.replace("<svg", '<svg class="ico"')} נשמר רק בטלפון שלך</p>
       <div class="daynav">
         ${n > 1 ? `<a class="btn ghost" href="#/day/${n - 1}">יום ${n - 1}</a>` : "<span></span>"}
