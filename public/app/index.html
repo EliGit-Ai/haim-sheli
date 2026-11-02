@@ -201,21 +201,15 @@ details.map[open] summary{margin-bottom:10px}
 @media (prefers-reduced-motion: reduce){.narration .w{transition:none}.narration .w.now{transform:none}}
 .part{display:grid;gap:18px}
 /* the anchor: tie today's step to a moment that happens anyway */
-.anchor{display:grid;gap:10px;border-inline-start:3px solid var(--bronze);padding:2px 14px 4px}
+.anchor{display:grid;gap:10px;padding:2px 0 4px}
 .anchor .prompt{font-weight:700}
 .anchor .small{margin-top:-4px}
 .anchor .chips{display:flex;flex-wrap:wrap;gap:8px}
 .anchor .set{font-size:15px;color:var(--bronze-ink);font-weight:700;margin:0}
 /* the moments as balloons */
-.balloons{row-gap:22px !important;padding:6px 0 12px}
-.chip.bl{position:relative;border-color:var(--m1);border-radius:999px;
-  background:radial-gradient(60% 90% at 28% 22%, color-mix(in srgb, #fff 70%, transparent), transparent 55%), var(--surface);
-  box-shadow:0 6px 12px -8px color-mix(in srgb, var(--m3) 45%, transparent);
-  animation:bob calc(2.6s + var(--i) * .37s) ease-in-out calc(var(--i) * -.6s) infinite alternate}
-.chip.bl::before{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-4px;border:4px solid transparent;border-top:6px solid var(--m1);border-bottom:0}
-.chip.bl::after{content:"";position:absolute;left:50%;top:calc(100% + 5px);width:1px;height:12px;background:var(--line);transform-origin:top;animation:sway calc(2.6s + var(--i) * .37s) ease-in-out calc(var(--i) * -.6s) infinite alternate}
-.chip.bl[aria-pressed="true"]{background:radial-gradient(60% 90% at 28% 22%, color-mix(in srgb, #fff 35%, transparent), transparent 55%), var(--moss)}
-.chip.bl[aria-pressed="true"]::before{border-top-color:var(--moss)}
+.balloons{gap:8px !important}
+.chip.bl{position:relative;font-size:15px;padding:7px 14px;min-height:40px;border-color:var(--line)}
+.chip.bl[aria-pressed="true"]{background:var(--moss)}
 .chip.bl.fly{animation:fly .95s cubic-bezier(.45,0,.6,1) forwards;z-index:2}
 .chip.bl.sink{animation:sink .7s ease-in forwards}
 @keyframes bob{from{transform:translateY(2px) rotate(-.6deg)}to{transform:translateY(-4px) rotate(.6deg)}}
@@ -1683,12 +1677,12 @@ function checkHTML(on, label) {
 
 // ---------- the anchor: "right after X, I'll do the step". Saved only on this phone, by key, so the list can change later
 const ANCHORS = [
-  { k: "coffee", t: "אחרי הקפה של הבוקר" },
-  { k: "commute", t: "בדרך לעבודה" },
-  { k: "lunch", t: "בהפסקת הצהריים" },
-  { k: "home", t: "כשאני נכנס הביתה" },
-  { k: "kids", t: "אחרי שהילדים נרדמים", needs: "kids" },
-  { k: "bed", t: "לפני השינה" },
+  { k: "coffee", t: "אחרי הקפה של הבוקר", s: "אחרי הקפה" },
+  { k: "commute", t: "בדרך לעבודה", s: "בדרך לעבודה" },
+  { k: "lunch", t: "בהפסקת הצהריים", s: "בצהריים" },
+  { k: "home", t: "כשאני נכנס הביתה", s: "כשאני חוזר הביתה" },
+  { k: "kids", t: "אחרי שהילדים נרדמים", s: "כשהילדים נרדמים", needs: "kids" },
+  { k: "bed", t: "לפני השינה", s: "לפני השינה" },
 ];
 const anchorText = k => ANCHORS.find(x => x.k === k)?.t || "";
 function lastAnchor(n) { for (let d = n - 1; d >= 1; d--) { const k = state.answers[d]?.anchor; if (k) return k; } return null; }
@@ -1711,8 +1705,7 @@ function anchorHTML(n) {
   </div>`;
   return `<div class="anchor" id="anchor" ${hide}>
     <p class="prompt">מתי תעשה את זה?</p>
-    <p class="small muted">צעד קטן נתפס כשמצמידים אותו לרגע שקורה בכל מקרה.${!k && prev ? ` אתמול בחרת: ${esc(anchorText(prev))}.` : ""}</p>
-    <div class="chips balloons">${list.map((x, i) => `<button type="button" class="chip bl" style="--i:${i}" data-anchor="${x.k}" aria-pressed="${k === x.k}">${esc(x.t)}</button>`).join("")}</div>
+    <div class="chips balloons">${list.map((x, i) => `<button type="button" class="chip bl" style="--i:${i}" data-anchor="${x.k}" aria-pressed="${k === x.k}">${esc(x.s)}</button>`).join("")}</div>
   </div>`;
 }
 function bindAnchor(n) {
