@@ -10,6 +10,8 @@ const nextConfig = {
         { source: "/app", destination: "/app/index.html" },
         // עמוד "למה בנינו את חיים שלי"
         { source: "/why", destination: "/why.html" },
+        // טיוטה: מפה לכיוון חדש בתוכנית ("דברים שחשבתי שאצליח לסדר")
+        { source: "/gever", destination: "/gever.html" },
       ],
     };
   },

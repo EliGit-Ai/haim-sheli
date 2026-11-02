@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>דברים שחשבתי שאצליח לסדר · חיים שלי</title>
+<meta name="description" content="טיוטה: מפה לכיוון חדש בתוכנית חיים שלי. גבולות היכולת, הנפרדות של מי שאתה אוהב, ולחיות עם מה שלא נפתר.">
+<link rel="icon" href="/app/icon-192.png">
+<style>
+@font-face{font-family:"Secular One";font-weight:400;font-display:swap;src:url(/app/fonts/secular-one-hebrew-400-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Secular One";font-weight:400;font-display:swap;src:url(/app/fonts/secular-one-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Heebo";font-weight:400;font-display:swap;src:url(/app/fonts/heebo-hebrew-400-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Heebo";font-weight:400;font-display:swap;src:url(/app/fonts/heebo-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Heebo";font-weight:500;font-display:swap;src:url(/app/fonts/heebo-hebrew-500-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Heebo";font-weight:500;font-display:swap;src:url(/app/fonts/heebo-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Heebo";font-weight:700;font-display:swap;src:url(/app/fonts/heebo-hebrew-700-normal.woff2) format("woff2");unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:"Heebo";font-weight:700;font-display:swap;src:url(/app/fonts/heebo-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+/* Layout: one calm reading column at phone width. A switching thesis line on top, then the daily door practice as a live demo,
+   the day's rhythm, the three stages as tabs with week rows that open to their days (two days readable in full), the new mirror, and open questions.
+   Same tokens as the app (terracotta and bronze), self-hosted fonts, no third-party requests. */
+:root{
+  --bg:#F8F0E8; --surface:#FFFBF7; --band:#F2E0D2; --ink:#3B2B22; --muted:#735F52; --line:#E2C6B3; --faint:#EEDFD2;
+  --accent:#A84C33; --accent-ink:#FFFAF6; --m1:#E3B89A; --m2:#C77B57; --m3:#8E3F2A;
+  --bronze:#A8703A; --bronze-hi:#E2B57E; --bronze-lo:#6E4520; --bronze-ink:#8A5A2B; --sky:#F5E6D9;
+  --display:"Secular One","Heebo","Segoe UI",Arial,sans-serif; --body:"Heebo","Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1C1512; --surface:#251C18; --band:#2C211C; --ink:#F2E7DF; --muted:#BCA699; --line:#47362D; --faint:#33261F;
+  --accent:#E3906F; --accent-ink:#2A140C; --m1:#6B4534; --m2:#A9603F; --m3:#EBAA8B;
+  --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sky:#221915; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1C1512; --surface:#251C18; --band:#2C211C; --ink:#F2E7DF; --muted:#BCA699; --line:#47362D; --faint:#33261F;
+  --accent:#E3906F; --accent-ink:#2A140C; --m1:#6B4534; --m2:#A9603F; --m3:#EBAA8B;
+  --bronze:#C48A50; --bronze-hi:#EBC38F; --bronze-lo:#7E5228; --bronze-ink:#D9A46C; --sky:#221915; color-scheme:dark}
+*{box-sizing:border-box}
+html{font-synthesis:none;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:calc(env(safe-area-inset-top, 0px) + 18px) calc(env(safe-area-inset-bottom, 0px) + 56px);display:grid;gap:44px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.2;text-wrap:balance}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:15px}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--bronze-ink)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--bronze);outline-offset:2px}
+section{display:grid;gap:16px}
+section > h2{font-size:clamp(26px,6.5vw,32px)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.brand{font-family:var(--display);font-size:20px}
+.draft{font-size:12px;font-weight:700;color:var(--bronze-ink);border:1px solid color-mix(in srgb, var(--bronze) 55%, transparent);border-radius:999px;padding:3px 10px}
+
+/* hero */
+.hero{display:grid;gap:18px;padding-top:6px}
+.hero h1{font-size:clamp(36px,10vw,52px)}
+.hero .lede{font-size:19px;color:var(--muted)}
+.shift{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 18px;display:grid;gap:12px;overflow:hidden}
+.shift::before{content:"";position:absolute;inset-inline:0;top:0;height:3px;background:linear-gradient(to left, transparent, var(--bronze-hi) 25%, var(--bronze) 50%, var(--bronze-hi) 75%, transparent)}
+.shift .say{font-family:var(--display);font-size:clamp(22px,6vw,27px);line-height:1.35;min-height:2.7em;transition:opacity .5s ease, transform .5s ease}
+.shift .say.out{opacity:0;transform:translateY(8px)}
+.shift .who{font-size:13px;font-weight:700;color:var(--muted)}
+.shift .who b{color:var(--bronze-ink)}
+.toggle{justify-self:start;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:14px;font-weight:700}
+
+/* compare */
+.compare{display:grid;gap:10px}
+.crow{display:grid;grid-template-columns:5.5em minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start;padding-block:10px;border-top:1px solid var(--line);font-size:15px}
+.crow:first-child{border-top:0;padding-top:0}
+.crow .k{font-weight:700;color:var(--muted);font-size:13px;padding-top:2px}
+.crow .old{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb, var(--muted) 45%, transparent)}
+.crow .new{font-weight:700}
+.chead{display:grid;grid-template-columns:5.5em minmax(0,1fr) minmax(0,1fr);gap:10px;font-size:12px;font-weight:700;color:var(--muted)}
+.chead .n{color:var(--bronze-ink)}
+
+/* the door */
+.door{position:relative;display:grid;justify-items:center;gap:14px;background:linear-gradient(to bottom, var(--sky), var(--bg));border-radius:24px;padding:24px 18px 22px;text-align:center;overflow:hidden}
+.door canvas{width:200px;height:200px;max-width:100%}
+.door .count{font-size:14px;font-weight:700;color:var(--muted);min-height:1.4em}
+.door .line{font-family:var(--display);font-size:22px;min-height:1.4em;transition:opacity .6s ease}
+.door .go{border:0;border-radius:999px;padding:12px 28px;font-weight:700;cursor:pointer;color:#FFF8EF;background:linear-gradient(160deg, var(--bronze-hi), var(--bronze) 45%, var(--bronze-lo))}
+
+/* rhythm */
+.rhythm{list-style:none;margin:0;padding:0;display:grid}
+.rhythm li{display:grid;grid-template-columns:4.8em minmax(0,1fr);gap:14px;padding-block:14px;border-top:1px solid var(--line)}
+.rhythm li:first-child{border-top:0;padding-top:0}
+.rhythm .when{font-weight:700;color:var(--accent);font-size:15px}
+.rhythm h3{font-size:19px;margin-bottom:4px}
+.rhythm .new-tag{display:inline-block;font-family:var(--body);font-size:11px;font-weight:700;color:var(--bronze-ink);border:1px solid color-mix(in srgb, var(--bronze) 55%, transparent);border-radius:999px;padding:0 8px;margin-inline-start:6px;vertical-align:3px}
+
+/* stages */
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.tabs button{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 6px;cursor:pointer;display:grid;gap:2px;text-align:center}
+.tabs button small{font-size:12px;color:var(--muted)}
+.tabs button b{font-family:var(--display);font-weight:400;font-size:16px;line-height:1.2}
+.tabs button[aria-selected="true"]{border-color:var(--accent);background:color-mix(in srgb, var(--accent) 9%, var(--surface))}
+.stage{display:grid;gap:12px;animation:fade .4s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}}
+.stage .intro{font-size:16px;color:var(--muted)}
+.week{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.week summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px}
+.week summary::-webkit-details-marker{display:none}
+.week .wn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--faint);color:var(--muted)}
+.week .wt{display:grid}
+.week .wt b{font-size:16px}
+.week .wt span{font-size:13px;color:var(--muted)}
+.week .chev{transition:transform .25s ease;color:var(--muted)}
+.week[open] .chev{transform:rotate(180deg)}
+.week[open] .wn{background:var(--accent);color:var(--accent-ink)}
+.days{list-style:none;margin:0;padding:0 14px 12px;display:grid}
+.days li{display:grid;grid-template-columns:2.4em minmax(0,1fr);gap:8px;padding-block:7px;border-top:1px solid var(--faint);font-size:15px;align-items:baseline}
+.days .d{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.days .from{display:block;font-size:12px;color:var(--muted)}
+.days .rest{color:var(--muted)}
+.days .sum{color:var(--bronze-ink);font-weight:700}
+.read{border:0;background:none;padding:0;cursor:pointer;color:var(--accent);font-weight:700;font-size:13px;text-decoration:underline;margin-inline-start:6px}
+
+/* a sample day */
+.sample{position:fixed;inset:0;z-index:20;background:color-mix(in srgb, #000 35%, transparent);display:grid;align-items:end;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.sample.on{opacity:1;pointer-events:auto}
+.sheet{background:var(--bg);border-radius:24px 24px 0 0;max-height:88vh;overflow:auto;padding:12px max(18px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 24px) max(18px, env(safe-area-inset-left, 0px));transform:translateY(100%);transition:transform .4s cubic-bezier(.2,.8,.2,1);display:grid;gap:16px;max-width:640px;margin:0 auto;width:100%}
+.sample.on .sheet{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);justify-self:center}
+.sheet h3{font-size:28px}
+.sheet .nar{font-size:18px;line-height:1.75}
+.part{display:grid;gap:10px;border-top:2px solid var(--m1);padding-top:12px}
+.part .pt{display:flex;justify-content:space-between;font-weight:700}
+.part .pt span{font-size:13px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:15px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.close{justify-self:center;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:10px 26px;font-weight:700;cursor:pointer}
+
+/* mirror */
+.mirror{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:m}
+.mirror li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:16px}
+.mirror li::before{counter-increment:m;content:counter(m);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:color-mix(in srgb, var(--bronze) 16%, var(--surface));color:var(--bronze-ink)}
+
+/* open questions */
+.open{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.open li{border-inline-start:3px solid var(--bronze);padding:2px 14px}
+.open b{display:block}
+.foot{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:18px;display:grid;gap:6px}
+.foot a{color:var(--accent);font-weight:700}
+@media (max-width:380px){.crow,.chead{grid-template-columns:4.6em minmax(0,1fr) minmax(0,1fr)}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><span class="brand">חיים שלי</span><span class="draft">טיוטה · כיוון חדש</span></div>
+
+  <header class="hero">
+    <p class="eyebrow">מפה לתוכנית של 90 יום</p>
+    <h1>דברים שחשבתי שאצליח לסדר</h1>
+    <p class="lede">לגבר שנותן הכול ומנסה לסדר את כולם. לא כדי שיסדר טוב יותר, אלא כדי שיפסיק לנסות לסדר את מה שלא בידיים שלו, ויתחיל להיות שם.</p>
+    <div class="shift" aria-live="polite">
+      <span class="who" id="who"><b>פעם</b> חשבתי</span>
+      <p class="say" id="say">אם רק אסדר את זה, יהיה שקט בבית.</p>
+      <button class="toggle" type="button" id="flip">ומה היום?</button>
+    </div>
+  </header>
+
+  <section aria-labelledby="h-shift">
+    <h2 id="h-shift">מה משתנה</h2>
+    <p class="muted">אותה אפליקציה ואותו עיצוב. הלב של התוכנית זז.</p>
+    <div class="chead" aria-hidden="true"><span></span><span>עד היום</span><span class="n">בכיוון החדש</span></div>
+    <div class="compare">
+      <div class="crow"><span class="k">ההבטחה</span><span class="old">פחות להתפרץ</span><span class="new">להפסיק לסדר את כולם, ולהיות שם</span></div>
+      <div class="crow"><span class="k">הצלחה</span><span class="old">שליטה ושקט</span><span class="new">לדעת מה בידיים שלי, ולשחרר את השאר</span></div>
+      <div class="crow"><span class="k">בת הזוג</span><span class="old">משהו שאפשר לשפר</span><span class="new">אדם נפרד, עם רגשות משלה</span></div>
+      <div class="crow"><span class="k">מה שלא נפתר</span><span class="old">בעיה שמחכה לפתרון</span><span class="new">חלק מהחיים, שאפשר לחיות לצידו</span></div>
+      <div class="crow"><span class="k">כל יום</span><span class="old">נושא חדש</span><span class="new">תרגול אחד שחוזר, ונושא שנבנה סביבו</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-door">
+    <h2 id="h-door">התרגול שחוזר כל יום: העצירה בדלת</h2>
+    <p class="muted">הדקה שאחרי שנכנסים הביתה היא הרגע שבו הכי קל להתחיל לסדר, לתקן ולהתפוצץ. לפני שהוא פותח את הדלת, הוא עוצר. שלוש נשימות, ומשפט אחד. כל יום, 90 יום.</p>
+    <div class="door">
+      <canvas id="breath" width="200" height="200" role="img" aria-label="עיגול נשימה"></canvas>
+      <span class="count" id="count">מוכן?</span>
+      <p class="line" id="doorline"></p>
+      <button class="go" type="button" id="door">אני בדלת</button>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-day">
+    <h2 id="h-day">יום אחד</h2>
+    <ol class="rhythm">
+      <li><span class="when">בוקר</span><div><h3>דקה אחת של תוכן</h3><p class="small muted">רגע אחד מהחיים, בקול. לא עצה, אלא מראה.</p></div></li>
+      <li><span class="when">היום</span><div><h3>צעד קטן ועוגן</h3><p class="small muted">פעולה של חצי דקה, ומתי הוא יעשה אותה.</p></div></li>
+      <li><span class="when">בדלת</span><div><h3>העצירה <span class="new-tag">חדש</span></h3><p class="small muted">שלוש נשימות ו"אני לא צריך לסדר כלום עכשיו. רק להיכנס."</p></div></li>
+      <li><span class="when">ערב</span><div><h3>סוגרים את המעגל <span class="new-tag">חדש</span></h3><p class="small muted">קודם: "עשית את הצעד? עבד, שכחתי, או ניסיתי ולא הצליח". אחר כך שאלה אחת על היום.</p></div></li>
+      <li><span class="when">פעם בשבוע</span><div><h3>מה לא היה בידיים שלי <span class="new-tag">חדש</span></h3><p class="small muted">אותה שאלה בכל שבוע: "מה השבוע לא היה בידיים שלי, והשארתי אותו כך?" ואם ירצה, הודעה מוכנה למישהו קרוב: "שמת לב למשהו שונה אצלי השבוע?"</p></div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-stages">
+    <h2 id="h-stages">שלושה שלבים, 13 שבועות</h2>
+    <div class="tabs" role="tablist" aria-label="שלבים" id="tabs"></div>
+    <div id="stage"></div>
+  </section>
+
+  <section aria-labelledby="h-mirror">
+    <h2 id="h-mirror">המראה, בכיוון החדש</h2>
+    <p class="muted">שמונה דברים שהוא מסמן בימים 1, 30, 60 ו-90: לא עדיין, לפעמים, או בדרך כלל. כך הוא רואה מה זז.</p>
+    <ol class="mirror">
+      <li>עוצר בדלת לפני שאני נכנס הביתה</li>
+      <li>עושה את החלק שלי, ומשחרר את התוצאה</li>
+      <li>נשאר רגוע כשמשהו לא מסתדר</li>
+      <li>מקשיב עד הסוף לפני שאני עונה</li>
+      <li>שואל במקום לנחש מה היא מרגישה</li>
+      <li>נותן לה להרגיש, בלי לסדר לה</li>
+      <li>רואה את הילד כמו שהוא, לא כמו שתכננתי</li>
+      <li>מסוגל להגיד "אני לא יודע"</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-open">
+    <h2 id="h-open">מה עוד פתוח</h2>
+    <ul class="open">
+      <li><b>השם</b><span class="small muted">האם "דברים שחשבתי שאצליח לסדר" הוא שם הסדרה בלבד, או גם שם התוכנית?</span></li>
+      <li><b>גבר בלי זוגיות או בלי ילדים</b><span class="small muted">השלב השני נשען על בת הזוג והילדים. צריך גרסה שלו: הורים, חברים, אקסית, מי שהוא מגדל לבד.</span></li>
+      <li><b>מה נשאר מהתוכן הקיים</b><span class="small muted">בערך שליש מהימים נשענים על ימים שכבר כתובים (מסומנים במפה), והשאר נכתבים מחדש.</span></li>
+      <li><b>הסדרה בווידאו</b><span class="small muted">כל פרק יכול להסתיים בתרגול מיום אחד בתוכנית, וכך הסדרה והאפליקציה מדברות באותה שפה.</span></li>
+    </ul>
+  </section>
+
+  <footer class="foot">
+    <p>זו טיוטה לעבודה, לא התוכנית עצמה. התוכנית הנוכחית ממשיכה כרגיל ב-<a href="/app">haim-sheli.com/app</a>.</p>
+    <p>מה מדבר אליך כאן, ומה לא? ספר לאליהו.</p>
+  </footer>
+</main>
+
+<div class="sample" id="sample" role="dialog" aria-modal="true" aria-labelledby="s-title"><div class="sheet" id="sheet"></div></div>
+
+<script>
+// ---------- the thesis line switches between "then" and "now"
+const SAY = [
+  ["<b>פעם</b> חשבתי", "אם רק אסדר את זה, יהיה שקט בבית.", "ומה היום?"],
+  ["<b>היום</b> אני לומד", "לא הכול בידיים שלי. ואני נשאר כאן.", "ומה חשבתי?"],
+];
+let si = 0;
+document.getElementById("flip").addEventListener("click", () => {
+  const say = document.getElementById("say");
+  say.classList.add("out");
+  setTimeout(() => { si = 1 - si; document.getElementById("who").innerHTML = SAY[si][0]; say.textContent = SAY[si][1]; document.getElementById("flip").textContent = SAY[si][2]; say.classList.remove("out"); }, 350);
+});
+
+// ---------- the door: three guided breaths, then the sentence
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cv = document.getElementById("breath"), cx = cv.getContext("2d");
+let run = null; // { t0 }
+const IN = 3.5, OUT = 4.5, CYCLE = IN + OUT;
+function drawBreath(now) {
+  const d = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * d)) { cv.width = Math.round(w * d); cv.height = Math.round(h * d); }
+  cx.setTransform(d, 0, 0, d, 0, 0); cx.clearRect(0, 0, w, h);
+  let k = 0.35, phase = "";
+  if (run) {
+    const t = (now - run.t0) / 1000, n = Math.floor(t / CYCLE), p = t % CYCLE;
+    if (n >= 3) { finishDoor(); }
+    else {
+      k = p < IN ? 0.5 - 0.5 * Math.cos(Math.PI * p / IN) : 0.5 + 0.5 * Math.cos(Math.PI * (p - IN) / OUT);
+      phase = `${p < IN ? "שאיפה" : "נשיפה"} · נשימה ${n + 1} מתוך 3`;
+      document.getElementById("count").textContent = phase;
+    }
+  } else if (!calm) k = 0.35 + 0.05 * Math.sin(now / 900);
+  const c = w / 2, r = (calm ? 0.6 : 0.3 + 0.55 * k) * w * 0.32;
+  for (let ring = 3; ring >= 1; ring--) { cx.globalAlpha = 0.07 * ring; cx.fillStyle = css("--bronze"); cx.beginPath(); cx.arc(c, c, r + ring * 9 * (0.4 + k), 0, Math.PI * 2); cx.fill(); }
+  const g = cx.createRadialGradient(c - r * .35, c - r * .4, r * .1, c, c, r);
+  g.addColorStop(0, css("--bronze-hi")); g.addColorStop(.55, css("--bronze")); g.addColorStop(1, css("--bronze-lo"));
+  cx.globalAlpha = 1; cx.fillStyle = g; cx.beginPath(); cx.arc(c, c, r, 0, Math.PI * 2); cx.fill();
+  requestAnimationFrame(drawBreath);
+}
+function finishDoor() {
+  run = null;
+  document.getElementById("count").textContent = "שלוש נשימות";
+  const line = document.getElementById("doorline");
+  line.style.opacity = 0; line.textContent = "אני לא צריך לסדר כלום עכשיו. רק להיכנס.";
+  requestAnimationFrame(() => { line.style.opacity = 1; });
+  document.getElementById("door").textContent = "עוד פעם";
+}
+document.getElementById("door").addEventListener("click", () => {
+  document.getElementById("doorline").textContent = "";
+  if (calm) { finishDoor(); return; }
+  run = { t0: performance.now() };
+  document.getElementById("door").textContent = "נושם...";
+});
+requestAnimationFrame(drawBreath);
+
+// ---------- the map: three stages, 13 weeks, 90 days. "from" = an existing day it builds on
+const STAGES = [
+  { name: "מה בידיים שלי", range: "ימים 1–30", intro: "הדחף לסדר, להבין מה בכלל שלי, ומה קורה בי כשהעולם לא מציית.", weeks: [
+    { t: "הדחף לסדר", s: "הגבר שמתקן, ומה זה עולה לו", days: [["היכרות: מה ניסיתי לסדר", 1], ["הגבר שמתקן"], ["מה זה עולה לי"], ["העצירה בדלת", 5, "sample:4"], ["מה קורה בגוף כשמשהו לא מסתדר", 3], ["לפני שאני מתקן"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "שלי ולא שלי", s: "שני עיגולים: מה בידיים שלי ומה לא", days: [["שני עיגולים"], ["האחריות שלי"], ["האחריות שלא שלי"], ['להגיד "זה לא בידיים שלי"'], ["לעשות את החלק שלי עד הסוף"], ["לשחרר את התוצאה"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "כשהעולם לא מציית", s: "מה הכעס מנסה לסדר", days: [["מה הכעס מנסה לסדר", 6], ["להגיב במקום להתפרץ", 12], ["התסכול שמתחת"], ["ויכוח בלי לנצח", 19], ["תוכנית שהשתבשה"], ["לסלוח לעצמי על הכעס", 23], ["סיכום שבוע", 0, "sum"]] },
+    { t: "לשאת", s: "אי נוחות, לא לדעת, ליפול ולקום", days: [["לשאת אי נוחות", 15], ["לא לברוח לטלפון", 14], ["לא לדעת"], ["עייפות היא לא כישלון"], ["מה לעשות כשנופלים", 26], ["השקט שאחרי הוויתור"], ["מה כבר בידיים שלי"], ["מבט קדימה", 29], ["סיכום החודש", 0, "sum"]] },
+  ]},
+  { name: "הם לא אני", range: "ימים 31–60", intro: "בת הזוג והילדים הם אנשים נפרדים. להיות לצידם, בלי לתקן אותם ובלי לשלוט בתוצאה.", weeks: [
+    { t: "היא אדם נפרד", s: "הרגשות שלה הם שלה", days: [["האישה שאני לא מכיר"], ["הרגשות שלה הם שלה"], ["כשהיא עצובה ואני לא אשם", 0, "sample:33"], ["כשהיא כועסת עליי"], ["לשאול במקום לנחש"], ["מה היא צריכה ממני באמת"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "להיות שם בלי לתקן", s: "להחזיק בלי להציל", days: [["להקשיב בלי לתקן", 70], ['"אני פה"'], ["לשבת עם כאב שלא שלי"], ["עצה שלא ביקשו"], ["להחזיק בלי להציל"], ["שיחה שלא נגמרה"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "הילדים בדרך שלהם", s: "הילד שתכננתי והילד שיש לי", days: [["הילד שתכננתי והילד שיש לי", 75], ["לראות אותו"], ["טעויות שהם צריכים לעשות"], ["לשחרר בלי לנטוש"], ["מה אני מעביר בלי לדבר"], ["ההורים שלי, הילדים שלי", 2], ["סיכום שבוע", 0, "sum"]] },
+    { t: "אהבה בלי שליטה", s: "קרוב ונפרד", days: [["לבקש בלי לדרוש"], ['לשמוע "לא"'], ["הגבול שלי, הגבול שלה", 9], ["קנאה ופחד לאבד"], ["משיכה: מה בידיים שלי", 62], ["קרוב ונפרד"], ["סיכום החודש", 0, "sum"], ["מנוחה", 59, "rest"], ["מנוחה", 60, "rest"]] },
+  ]},
+  { name: "לחיות עם מה שפתוח", range: "ימים 61–90", intro: "מה שלא ייפתר, ואיך חיים לצידו: נוכחות במקום פתרון, ומשמעות בתוך הלא-גמור.", weeks: [
+    { t: "מה שלא ייפתר", s: "להשלים זה לא לוותר", days: [["הרשימה של מה שלא נפתר"], ["אבא שלי"], ["מה שהפסדתי"], ["חלום שלא יתגשם"], ["עצב בלי סיבה ברורה"], ["להשלים זה לא לוותר"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "נוכחות במקום פתרון", s: "ערב בלי משימה", days: [["ערב בלי משימה"], ["להיות עם הילדים בלי תוכנית"], ["שיחה בלי מטרה"], ["שקט ביחד"], ["הגוף שלי היום", 13], ["רגע אחד שלם"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "עבודה וכסף, בלי להוכיח", s: "לעבוד בלי להציל את כולם", days: [["מה אני מנסה להוכיח"], ["לעבוד בלי להציל את כולם"], ["כסף ושקט", 84], ["כישלון בעבודה"], ['להגיד "אני לא יודע"'], ["לתת בלי לצפות", 80], ["סיכום שבוע", 0, "sum"]] },
+    { t: "משמעות בתוך הלא-גמור", s: "מה כן גדל", days: [["מה כן גדל"], ["האנשים שאני שייך אליהם"], ["לעזור לגבר אחר"], ["הגבר שאני כבר"], ["מכתב לעצמי של יום 1"], ["מה לא אסדר, וזה בסדר"], ["סיכום שבוע", 0, "sum"]] },
+    { t: "הלאה", s: "מה נשאר אחרי 90 יום", days: [["העצירה שנשארת"], ["דברים שחשבתי שאצליח לסדר"]] },
+  ]},
+];
+const SAMPLES = {
+  4: { title: "העצירה בדלת", nar: "יש רגע אחד ביום שבו הכי קל להתפוצץ: הדקה שאחרי שאתה נכנס הביתה. אתה מגיע עם כל היום על הכתפיים, ומיד מחכים לך: שאלה, ריב בין הילדים, כלים בכיור. והראש כבר מתחיל לסדר. מהיום יש לך תרגול אחד שילווה אותך כל 90 הימים. לפני שאתה פותח את הדלת, עוצר. שלוש נשימות. ומשפט אחד לעצמך: אני לא צריך לסדר כלום עכשיו. רק להיכנס.",
+    step: ["היום, לפני שאתה נכנס הביתה:", ["שלוש נשימות, יד על הידית", "לשבת עוד דקה באוטו", "להגיד את המשפט בלב", "להכניס את הטלפון לכיס לפני הדלת"]],
+    eve: ["עצרת בדלת היום?", ["כן", "שכחתי", "ניסיתי, ונכנסתי לסערה"]], eve2: "מה חיכה לך בפנים, שלא סידרת?" },
+  33: { title: "כשהיא עצובה ואני לא אשם", nar: "היא חוזרת הביתה שקטה. אתה שואל מה קרה, והיא אומרת \"כלום\". ומיד מתחיל אצלך מנגנון: מה עשיתי? איך אני מתקן? ואם זה לא קשור אליי, למה היא לא משתפת? הרבה גברים מרגישים שהעצב של בת הזוג הוא משימה שלהם. אבל העצב שלה שייך לה. לא תמיד יש לו סיבה, ולא תמיד יש לו פתרון. מה שהיא צריכה ממך הוא לא תיקון. היא צריכה שתישאר בחדר.",
+    step: ["בפעם הבאה שהיא עצובה או שקטה, תבחר אחד:", ["לשבת לידה בלי לשאול", 'להגיד "אני פה, אם תרצי"', "להכין לה משהו לשתות, בלי לדבר", "לשים לב לדחף לתקן, ולא לפעול עליו"]],
+    eve: ["עשית את הצעד?", ["עבד", "שכחתי", "ניסיתי ולא הצליח", "לא היה רגע כזה היום"]], eve2: "מה היה הכי קשה: לא לשאול, לא לתת עצה, או לא לקחת את זה אישית?" },
+};
+let cur = 0;
+function dayNumbers() { // number the days in order through all stages
+  let n = 0; return STAGES.map(st => st.weeks.map(w => w.days.map(() => ++n)));
+}
+const NUMS = dayNumbers();
+function renderTabs() {
+  document.getElementById("tabs").innerHTML = STAGES.map((s, i) => `<button type="button" role="tab" aria-selected="${i === cur}" data-i="${i}"><small>${s.range}</small><b>${s.name}</b></button>`).join("");
+}
+function renderStage() {
+  const st = STAGES[cur];
+  let wkBase = STAGES.slice(0, cur).reduce((a, s) => a + s.weeks.length, 0);
+  document.getElementById("stage").innerHTML = `<div class="stage"><p class="intro">${st.intro}</p>${st.weeks.map((w, wi) => `
+    <details class="week"${wi === 0 ? " open" : ""}><summary><span class="wn">${wkBase + wi + 1}</span><span class="wt"><b>${w.t}</b><span>${w.s}</span></span><span class="chev" aria-hidden="true">▾</span></summary>
+      <ol class="days">${w.days.map(([title, from, kind], di) => { const n = NUMS[cur][wi][di];
+        const s = kind && kind.startsWith("sample:") ? kind.split(":")[1] : null;
+        return `<li><span class="d">יום ${n}</span><span class="${kind === "rest" ? "rest" : kind === "sum" ? "sum" : ""}">${title}${kind === "sum" ? " · מה לא היה בידיים שלי" : ""}${s ? `<button type="button" class="read" data-sample="${s}">לקרוא את היום</button>` : ""}${from && kind !== "rest" ? `<span class="from">נשען על יום ${from} בתוכנית הנוכחית</span>` : ""}</span></li>`; }).join("")}</ol></details>`).join("")}</div>`;
+}
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-i]"); if (!b) return; cur = +b.dataset.i; renderTabs(); renderStage();
+});
+// a sample day in a sheet; the choices work but nothing is saved
+const sample = document.getElementById("sample"), sheet = document.getElementById("sheet");
+function chips(list) { return `<div class="chips">${list.map(t => `<button type="button" class="chip" aria-pressed="false">${t}</button>`).join("")}</div>`; }
+function openSample(n) {
+  const s = SAMPLES[n];
+  sheet.innerHTML = `<span class="grab"></span><span class="eyebrow">יום ${n} · דוגמה</span><h3 id="s-title">${s.title}</h3>
+    <p class="nar">${s.nar}</p>
+    <div class="part"><div class="pt">הצעד של היום<span>היום</span></div><p>${s.step[0]}</p>${chips(s.step[1])}</div>
+    <div class="part"><div class="pt">בערב<span>סוגרים את המעגל</span></div><p>${s.eve[0]}</p>${chips(s.eve[1])}<p class="small muted">${s.eve2}</p></div>
+    <button type="button" class="close" id="close">לסגור</button>`;
+  sample.classList.add("on"); document.body.style.overflow = "hidden";
+  setTimeout(() => document.getElementById("close").focus({ preventScroll: true }), 400);
+}
+function closeSample() { sample.classList.remove("on"); document.body.style.overflow = ""; }
+document.getElementById("stage").addEventListener("click", e => { const b = e.target.closest("[data-sample]"); if (b) { e.preventDefault(); openSample(b.dataset.sample); } });
+sample.addEventListener("click", e => {
+  if (e.target === sample || e.target.id === "close") return closeSample();
+  const c = e.target.closest(".chip"); if (!c) return;
+  c.parentElement.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", String(x === c && x.getAttribute("aria-pressed") !== "true")));
+});
+addEventListener("keydown", e => { if (e.key === "Escape") closeSample(); });
+renderTabs(); renderStage();
+</script>
+</body>
+</html>
