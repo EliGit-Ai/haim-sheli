@@ -167,7 +167,7 @@ details.map[open] summary{margin-bottom:10px}
 .day-head{display:grid;gap:8px}
 .day-head h1{font-size:clamp(30px,8.5vw,42px);font-weight:400}
 /* living band at the top: reeds on the home screen, a breathing circle inside a day */
-.band{position:relative;height:118px;margin:-20px -16px 0;background:radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bronze) 16%, transparent), transparent 75%),linear-gradient(to bottom, var(--sky), var(--bg))}
+.band{position:relative;height:190px;margin:-20px -16px 0;background:radial-gradient(70% 60% at 50% 100%, color-mix(in srgb, var(--bronze) 16%, transparent), transparent 75%),linear-gradient(to bottom, var(--sky), var(--bg))}
 .band::after{content:"";position:absolute;inset-inline:0;bottom:0;height:2px;background:linear-gradient(to left, transparent, var(--bronze-hi) 30%, var(--bronze) 50%, var(--bronze-hi) 70%, transparent);opacity:.7;pointer-events:none}
 .band.breath{height:176px}
 .band.breath .cap{inset-inline-start:auto;inset-inline-end:16px;top:14px}
@@ -1246,12 +1246,12 @@ function startBand(kind) {
   ["pointerup", "pointerleave", "pointercancel"].forEach(ev => canvas.addEventListener(ev, leave));
 
   if (kind === "reeds") {
-    // more reeds, and taller, with every day he completes
-    B.reeds = makeReedField(120);
+    // a full field of reeds, always; in its middle a tree that grows a little with every day he completes
+    B.reeds = makeReedField(Math.max(120, Math.round(B.w / 2.6)));
+    B.reeds.forEach(rd => { const d = Math.abs(rd.x - 0.5); rd.target = d < 0.07 ? 0.12 : d < 0.12 ? 0.3 : 0.5; }); // a small clearing where the tree stands
     const done = countDone();
-    const shown = Math.round(10 + (B.reeds.length - 10) * Math.min(1, done / 75));
-    [...B.reeds].sort((a, b) => a.rank - b.rank).forEach((rd, k) => { rd.target = k < shown ? 0.5 + 0.5 * Math.min(1, done / 80) : 0; });
-    $("#band-cap").textContent = done ? `${done === 1 ? "יום אחד" : `${done} ימים`} בשדה שלך` : "השדה שלך מחכה ליום הראשון";
+    B.tree = makeTree(); B.treeGrow = 0; B.treeTarget = treeProgress(done);
+    $("#band-cap").textContent = done ? `${done === 1 ? "יום אחד" : `${done} ימים`}, והעץ שלך גדל` : "העץ שלך יתחיל לצמוח מהיום הראשון";
   } else {
     $("#band-go")?.addEventListener("click", e => {
       B.guide = B.guide > 0 ? 0 : 60;
@@ -1271,11 +1271,62 @@ function bandFrame(now) {
   B.raf = requestAnimationFrame(bandFrame);
 }
 
+// ---------- the tree: one branching shape, fixed for everyone, revealed in order as the days add up
+// progress 0..1: day 0 shows a small sprout, day 90 a full crown with leaves
+// faster at the start (a sqrt curve), so the first days show a visible change
+function treeProgress(done) { return 0.12 + 0.88 * Math.sqrt(Math.min(1, done / 90)); }
+function makeTree() {
+  let r = 11;
+  const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+  const MAX = 6;
+  const grow = (depth, ang, len, width) => {
+    const b = { depth, ang, len, width, kids: [], leaves: [] };
+    if (depth < MAX) {
+      const n = depth === 0 ? 3 : rnd() < 0.35 ? 3 : 2;
+      for (let i = 0; i < n; i++) {
+        const spread = (i - (n - 1) / 2) * (0.5 + rnd() * 0.25) + (rnd() - 0.5) * 0.25;
+        b.kids.push(grow(depth + 1, spread, len * (0.68 + rnd() * 0.12), width * 0.68));
+      }
+    }
+    if (depth >= 3) for (let i = 0; i < (depth === MAX ? 4 : 2); i++) b.leaves.push({ at: 0.35 + rnd() * 0.65, side: rnd() < 0.5 ? -1 : 1, size: 0.7 + rnd() * 0.6, tone: 1 + Math.floor(rnd() * 3), phase: rnd() * 6.28 });
+    return b;
+  };
+  return { root: grow(0, 0, 1, 1), max: MAX };
+}
+function drawTree(B) {
+  const { ctx, w, h } = B, still = calm.matches, T = B.tree;
+  B.treeGrow += (B.treeTarget - B.treeGrow) * (still ? 1 : 0.03);
+  const p = B.treeGrow, step = 1 / (T.max + 1.6); // each depth grows in its own slice of the progress
+  const unit = h * 0.235 * (0.5 + 0.5 * p), trunkW = Math.max(2.5, Math.min(11, w * 0.02)) * (0.35 + 0.65 * p);
+  const bark = cssVar("--m3"), leafCol = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--bronze") };
+  const sway = still ? 0 : Math.sin(B.t * 0.5) * 0.025;
+  const branch = (b, x, y, ang) => {
+    const g = Math.max(0, Math.min(1, (p - b.depth * step) / step));
+    if (g <= 0) return;
+    const a = ang + b.ang + sway * (b.depth + 1), len = unit * b.len * g;
+    const x2 = x + Math.sin(a) * len, y2 = y - Math.cos(a) * len;
+    ctx.strokeStyle = bark; ctx.lineCap = "round"; ctx.lineWidth = Math.max(1, trunkW * b.width);
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke();
+    const lg = Math.max(0, Math.min(1, (p - (b.depth + 0.8) * step) / step));
+    if (lg > 0) for (const L of b.leaves) {
+      const lx = x + (x2 - x) * L.at, ly = y + (y2 - y) * L.at, rs = (3 + 3.5 * L.size) * lg * Math.min(1.4, h / 150);
+      const la = a + L.side * 0.9 + (still ? 0 : Math.sin(B.t * 1.3 + L.phase) * 0.12);
+      ctx.save(); ctx.translate(lx + Math.sin(la) * rs, ly - Math.cos(la) * rs); ctx.rotate(la);
+      ctx.fillStyle = leafCol[L.tone]; ctx.globalAlpha = 0.92;
+      ctx.beginPath(); ctx.ellipse(0, 0, rs * 0.5, rs, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); ctx.globalAlpha = 1;
+    }
+    if (g >= 1) for (const k of b.kids) branch(k, x2, y2, a);
+  };
+  branch(T.root, w / 2, h + 2, 0);
+}
+
 function drawField(B) {
   const { ctx, w, h } = B, still = calm.matches;
   ctx.clearRect(0, 0, w, h);
   const col = { 1: cssVar("--m1"), 2: cssVar("--m2"), 3: cssVar("--m3") }, head = cssVar("--bronze"), bronzeHi = cssVar("--bronze-hi"), bronzeLo = cssVar("--bronze-lo");
+  let treeDone = !B.tree;
   for (const rd of [...B.reeds].sort((a, b) => a.tone - b.tone)) {
+    if (!treeDone && rd.tone === 3) { drawTree(B); treeDone = true; } // the near row stands in front of the trunk
     rd.grow += (rd.target - rd.grow) * (still ? 1 : 0.05);
     if (rd.grow < 0.01) continue;
     const baseX = rd.x * w, len = rd.h * h * 0.95 * rd.grow;
@@ -1298,6 +1349,7 @@ function drawField(B) {
       ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 5, 2 + 0.3 * rd.tone, 6 + 0.9 * rd.tone, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     }
   }
+  if (!treeDone) drawTree(B);
   ctx.globalAlpha = 1;
 }
 
