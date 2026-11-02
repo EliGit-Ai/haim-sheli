@@ -1414,7 +1414,7 @@ function renderDay(n) {
 
   const parts = [];
   if (c.step) parts.push(partHTML(n, "step", c.step, a));
-  else parts.push(`<div class="part">${checkHTML(a.stepDone, c.rest ? "נחתי היום" : "עברתי על היום")}</div>`);
+  else if (n !== 1) parts.push(`<div class="part">${checkHTML(a.stepDone, c.rest ? "נחתי היום" : "עברתי על היום")}</div>`);
   // the midday line arrives as a notification at midday; it is not repeated on the morning screen
   if (c.evening) {
     // in the morning the evening question waits folded; it opens by itself from five, on past days, or once answered
