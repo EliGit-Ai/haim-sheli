@@ -284,6 +284,7 @@ details.later>.part .part-title{justify-content:flex-start}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sea1:#2F4B57;--sea2:#5A8FA5}}
 .sea canvas{width:100%;height:110px;display:block;touch-action:pan-y;cursor:pointer}
 .sea-cap{margin:0;text-align:center;min-height:1.4em}
+.mirror-slide{margin-top:16px}.mirror-slide-track{height:68px;border-radius:999px;background:var(--surface);border:1px solid var(--line);position:relative;touch-action:pan-y;user-select:none;overflow:hidden}.mirror-slide-handle{position:absolute;top:7px;left:calc(50% - 27px);width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);box-shadow:0 3px 12px #00000018;cursor:grab;touch-action:none;font-size:23px;color:var(--ink);z-index:2;transition:transform .16s ease}.mirror-slide-handle:active{cursor:grabbing}.mirror-slide-handle:focus-visible{outline:3px solid var(--sand);outline-offset:2px}.mirror-slide-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 17px;font-size:20px;color:var(--muted);pointer-events:none}.mirror-slide-labels{display:flex;justify-content:space-between;direction:ltr;margin-top:9px;gap:12px;font-size:14px;color:var(--muted)}.mirror-slide-labels span:first-child{direction:rtl}.mirror-slide-labels span:last-child{direction:rtl}@media(prefers-reduced-motion:reduce){.mirror-slide-handle{transition:none}}
 .mirror .was.up{color:var(--moss);font-weight:700}
 .mirror .pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .mirror .pick button{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:999px;padding:7px 4px;background:var(--bg);color:var(--ink);cursor:pointer;white-space:nowrap}
@@ -1296,7 +1297,13 @@ function mirrorHTML(n) {
     ${first ? "" : pulseTrend(n, true)}
     ${pos < keys.length ? `<ol><li><span class="habit">${esc(MIRROR[k])}</span>
       ${pv != null ? `<span class="was">ביום ${prev}: ${MIRROR_LEVELS[pv]}</span>` : ""}
-      <span class="pick" role="group" aria-label="${esc(MIRROR[k])}">${[[0,"לא כלכך"],[2,"בדרך כלל"]].map(([j,l])=>`<button type="button" data-k="${k}" data-v="${j}" aria-pressed="${v===j}">${l}</button>`).join("")}</span></li></ol>`
+      <div class="mirror-slide" aria-label="החלק לבחירת תשובה">
+        <div class="mirror-slide-track" data-mirror-track>
+          <div class="mirror-slide-hint" aria-hidden="true"><span>‹‹</span><span>››</span></div>
+          <button type="button" class="mirror-slide-handle" data-mirror-handle aria-label="החלק שמאלה: לא כלכך. החלק ימינה: בדרך כלל. אפשר גם להשתמש בחיצי המקלדת." title="החלק ימינה או שמאלה">↔</button>
+        </div>
+        <div class="mirror-slide-labels"><span>לא כלכך ←</span><span>→ בדרך כלל</span></div>
+      </div></li></ol>`
       : '<p class="sum">ענית על כל השאלות. התשובות נשמרו.</p>'}
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px">
       <button type="button" class="btn quiet" data-mirror-back ${pos===0 ? "disabled" : ""}>לשאלה הקודמת</button>
@@ -1306,26 +1313,55 @@ function mirrorHTML(n) {
 }
 function bindMirror(n) {
   startSeas();
-  $("#mirror")?.addEventListener("click", e => {
-    const back = e.target.closest("[data-mirror-back]");
-    const b = e.target.closest("[data-k]");
-    if (!back && !b) return;
+  const root = $("#mirror");
+  if (!root) return;
+  function move(answer, back = false) {
     state.mirrorGuidedIndex = state.mirrorGuidedIndex || {};
     state.mirror = state.mirror || {};
     const m = state.mirror[n] = state.mirror[n] || {};
-    if (back) {
-      state.mirrorGuidedIndex[n] = Math.max(0, (state.mirrorGuidedIndex[n] ?? 0) - 1);
-    } else {
-      const k = Number(b.dataset.k);
-      m[k] = Number(b.dataset.v);
-      state.mirrorGuidedIndex[n] = Math.min(MIRROR_ORDER.findIndex(x => Number(x) === k) + 1, MIRROR_ORDER.length);
+    if (back) state.mirrorGuidedIndex[n] = Math.max(0, (state.mirrorGuidedIndex[n] ?? 0) - 1);
+    else {
+      const pos = Math.min(state.mirrorGuidedIndex[n] ?? MIRROR_ORDER.findIndex(k => m[k] == null), MIRROR_ORDER.length - 1);
+      m[MIRROR_ORDER[Math.max(0,pos)]] = answer;
+      state.mirrorGuidedIndex[n] = Math.max(0,pos) + 1;
     }
     save();
     const y = window.scrollY;
-    $("#mirror").outerHTML = mirrorHTML(n);
+    root.outerHTML = mirrorHTML(n);
     bindMirror(n);
-    window.scrollTo(0, y);
+    window.scrollTo(0,y);
     if (!back && MIRROR_ORDER.every(k => m[k] != null)) toast(n === 1 ? "נשמר. נחזור לזה ביום 30." : n === 90 ? "נשמר. זו המראה של הסוף." : `נשמר. נחזור לזה ביום ${n + 30}.`);
+  }
+  root.querySelector("[data-mirror-back]")?.addEventListener("click", () => move(null,true));
+  const handle = root.querySelector("[data-mirror-handle]");
+  const track = root.querySelector("[data-mirror-track]");
+  if (!handle || !track) return;
+  let startX = null, delta = 0;
+  handle.addEventListener("pointerdown", e => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    startX = e.clientX; delta = 0;
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener("pointermove", e => {
+    if (startX == null) return;
+    const max = Math.max(35,(track.clientWidth - handle.offsetWidth)/2 - 8);
+    delta = Math.max(-max,Math.min(max,e.clientX-startX));
+    handle.style.transition = "none";
+    handle.style.transform = `translateX(${delta}px)`;
+  });
+  function finish() {
+    if (startX == null) return;
+    startX = null;
+    const threshold = Math.max(40,Math.min(75,track.clientWidth * .22));
+    if (Math.abs(delta) >= threshold) { move(delta > 0 ? 2 : 0); return; }
+    handle.style.transition = "";
+    handle.style.transform = "";
+  }
+  handle.addEventListener("pointerup",finish);
+  handle.addEventListener("pointercancel",finish);
+  handle.addEventListener("keydown",e => {
+    if (e.key === "ArrowRight") {e.preventDefault();move(2);}
+    if (e.key === "ArrowLeft") {e.preventDefault();move(0);}
   });
 }
 
